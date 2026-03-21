@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { SPELL_SCHOOLS, SPELL_CLASSES } from '@/lib/types'
 import type { Open5eSpell } from '@/lib/open5e'
+import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { useCampaignSpells, useSearchSrdSpells, useSaveSpell, useBulkImportSpells, useDeleteSpell } from './useSpells'
 import type { Spell } from '@/lib/types'
 
@@ -43,11 +44,16 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
   const deleteSpell = useDeleteSpell()
   const bulkImport = useBulkImportSpells()
   const [filter, setFilter] = useState('')
+  const [sourceBookFilter, setSourceBookFilter] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [importProgress, setImportProgress] = useState<string | null>(null)
 
+  const sourceBooks = [...new Set(spells?.map(s => s.source_book).filter(Boolean) ?? [])].sort()
+
   const filtered = spells?.filter((s) =>
     s.name.toLowerCase().includes(filter.toLowerCase())
+  ).filter((s) =>
+    !sourceBookFilter || s.source_book === sourceBookFilter
   )
 
   const handleBulkImport = async () => {
@@ -77,6 +83,16 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
           onChange={(e) => setFilter(e.target.value)}
           className="flex-1"
         />
+        <select
+          value={sourceBookFilter}
+          onChange={(e) => setSourceBookFilter(e.target.value)}
+          className="px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body text-sm"
+        >
+          <option value="">All Sources</option>
+          {sourceBooks.map((sb) => (
+            <option key={sb} value={sb!}>{sb === 'Systems Reference Document' ? 'SRD' : sb}</option>
+          ))}
+        </select>
         <Button
           size="sm"
           variant="secondary"
@@ -135,6 +151,11 @@ function SpellCard({ spell, expanded, onToggle, onDelete }: {
         className="w-full flex items-center gap-3 p-3 text-left hover:bg-bg-raised transition-colors cursor-pointer"
       >
         <span className="text-text-heading font-medium flex-1">{spell.name}</span>
+        {spell.source_book && (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
+            {spell.source_book === 'Systems Reference Document' ? 'SRD' : spell.source_book}
+          </span>
+        )}
         <span className="text-xs text-text-muted">{spell.school}</span>
         {spell.concentration && (
           <span className="text-[10px] text-info bg-info/10 px-1.5 py-0.5 rounded-[--radius-sm]">C</span>
@@ -176,13 +197,17 @@ function SrdSpellSearch({ campaignId }: { campaignId: string }) {
   const [level, setLevel] = useState<string>('')
   const [school, setSchool] = useState('')
   const [dndClass, setDndClass] = useState('')
+  const [includeOtherEdition, setIncludeOtherEdition] = useState(false)
   const saveSpell = useSaveSpell()
+  const { data: campaign } = useCampaign(campaignId)
 
   const { data, isLoading } = useSearchSrdSpells({
     search: search || undefined,
     level: level !== '' ? Number(level) : undefined,
     school: school || undefined,
     dnd_class: dndClass || undefined,
+    edition: campaign?.game_system,
+    includeOtherEdition,
     enabled: !!(search || level !== '' || school || dndClass),
   })
 
@@ -222,6 +247,16 @@ function SrdSpellSearch({ campaignId }: { campaignId: string }) {
           {SPELL_CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-stone-400 mb-4">
+        <input
+          type="checkbox"
+          checked={includeOtherEdition}
+          onChange={e => setIncludeOtherEdition(e.target.checked)}
+          className="rounded border-stone-600"
+        />
+        Include other edition
+      </label>
 
       {isLoading && <p className="text-text-muted text-sm py-4">Searching...</p>}
 

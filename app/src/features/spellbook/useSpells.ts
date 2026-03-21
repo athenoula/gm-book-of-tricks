@@ -26,6 +26,8 @@ export function useSearchSrdSpells(params: {
   level?: number
   school?: string
   dnd_class?: string
+  edition?: string
+  includeOtherEdition?: boolean
   enabled?: boolean
 }) {
   const { enabled = true, ...searchParams } = params
@@ -57,6 +59,7 @@ function spellFromSrd(srd: Open5eSpell, campaignId: string) {
     ritual: srd.ritual === 'yes',
     components: components.join(', '),
     classes: srd.dnd_class.split(', ').map((c) => c.trim()),
+    source_book: srd.document__title || null,
     spell_data: srd,
   }
 }
