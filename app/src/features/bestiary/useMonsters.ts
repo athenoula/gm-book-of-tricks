@@ -73,6 +73,105 @@ export function useSaveMonster() {
   })
 }
 
+export function useCreateMonster() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: {
+      campaignId: string
+      name: string
+      size: string
+      type: string
+      alignment: string
+      challenge_rating: string
+      armor_class: number
+      hit_points: number
+      hit_dice: string
+      speed: Record<string, string>
+      stat_block: Record<string, unknown>
+    }) => {
+      const { data, error } = await supabase
+        .from('monsters')
+        .insert({
+          campaign_id: input.campaignId,
+          source: 'homebrew',
+          srd_slug: null,
+          source_book: 'Homebrew',
+          name: input.name,
+          size: input.size,
+          type: input.type,
+          alignment: input.alignment,
+          challenge_rating: input.challenge_rating,
+          armor_class: input.armor_class,
+          hit_points: input.hit_points,
+          hit_dice: input.hit_dice,
+          speed: input.speed,
+          stat_block: input.stat_block,
+        })
+        .select()
+        .single()
+      if (error) throw error
+      return data as Monster
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['monsters', data.campaign_id] })
+      useToastStore.getState().addToast('success', 'Monster created')
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Something went wrong')
+    },
+  })
+}
+
+export function useUpdateMonster() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: {
+      id: string
+      campaignId: string
+      name: string
+      size: string
+      type: string
+      alignment: string
+      challenge_rating: string
+      armor_class: number
+      hit_points: number
+      hit_dice: string
+      speed: Record<string, string>
+      stat_block: Record<string, unknown>
+    }) => {
+      const { data, error } = await supabase
+        .from('monsters')
+        .update({
+          name: input.name,
+          size: input.size,
+          type: input.type,
+          alignment: input.alignment,
+          challenge_rating: input.challenge_rating,
+          armor_class: input.armor_class,
+          hit_points: input.hit_points,
+          hit_dice: input.hit_dice,
+          speed: input.speed,
+          stat_block: input.stat_block,
+        })
+        .eq('id', input.id)
+        .eq('source', 'homebrew')
+        .select()
+        .single()
+      if (error) throw error
+      return data as Monster
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['monsters', data.campaign_id] })
+      useToastStore.getState().addToast('success', 'Monster updated')
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Something went wrong')
+    },
+  })
+}
+
 export function useDeleteMonster() {
   const queryClient = useQueryClient()
 

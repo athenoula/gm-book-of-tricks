@@ -5,6 +5,7 @@ import { GameIcon } from '@/components/ui/GameIcon'
 import { GiSpikedDragonHead } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaignMonsters, useSearchSrdMonsters, useSaveMonster, useDeleteMonster } from './useMonsters'
+import { MonsterCreateForm } from './MonsterCreateForm'
 import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { Monster } from '@/lib/types'
@@ -45,6 +46,8 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
   const [sourceBookFilter, setSourceBookFilter] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingMonster, setEditingMonster] = useState<Monster | null>(null)
 
   const sourceBooks = [...new Set(monsters?.map(m => m.source_book).filter(Boolean) ?? [])].sort()
 
@@ -53,6 +56,16 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   ).filter((m) =>
     !sourceBookFilter || m.source_book === sourceBookFilter
   )
+
+  if (showCreateForm || editingMonster) {
+    return (
+      <MonsterCreateForm
+        campaignId={campaignId}
+        monster={editingMonster ?? undefined}
+        onClose={() => { setShowCreateForm(false); setEditingMonster(null) }}
+      />
+    )
+  }
 
   return (
     <div>
@@ -75,6 +88,9 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
             </option>
           ))}
         </select>
+        <Button variant="primary" size="sm" onClick={() => setShowCreateForm(true)}>
+          <GiSpikedDragonHead className="inline" size={16} /> Create Monster
+        </Button>
       </div>
 
       {isLoading && <p className="text-text-muted text-sm py-4">Loading monsters...</p>}
@@ -93,6 +109,7 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
               expanded={expandedId === monster.id}
               onToggle={() => setExpandedId(expandedId === monster.id ? null : monster.id)}
               onDelete={() => deleteMonster.mutate({ id: monster.id, campaignId })}
+              onEdit={() => setEditingMonster(monster)}
             />
           </StaggerItem>
         ))}
@@ -101,11 +118,12 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   )
 }
 
-function MonsterCard({ monster, expanded, onToggle, onDelete }: {
+function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit }: {
   monster: Monster
   expanded: boolean
   onToggle: () => void
   onDelete: () => void
+  onEdit: () => void
 }) {
   const sb = monster.stat_block as Open5eMonster | null
 
@@ -189,7 +207,12 @@ function MonsterCard({ monster, expanded, onToggle, onDelete }: {
             </div>
           )}
 
-          <div className="flex justify-end pt-1">
+          <div className="flex justify-end gap-2 pt-1">
+            {monster.source === 'homebrew' && (
+              <Button size="sm" variant="ghost" onClick={onEdit}>
+                Edit
+              </Button>
+            )}
             <Button size="sm" variant="ghost" onClick={onDelete} className="text-danger hover:text-danger">
               Remove
             </Button>
