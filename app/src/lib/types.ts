@@ -100,6 +100,7 @@ export type NPC = {
     wisdom?: number
     charisma?: number
   }
+  stat_block: Record<string, unknown> | null
   notes: string | null
   portrait_url: string | null
   created_at: string
@@ -122,6 +123,7 @@ export type Monster = {
   hit_dice: string | null
   speed: Record<string, number>
   stat_block: Record<string, unknown>
+  source_book: string | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -143,6 +145,7 @@ export type Spell = {
   components: string | null
   classes: string[]
   spell_data: Record<string, unknown> | null
+  source_book: string | null
   notes: string | null
   created_at: string
   updated_at: string
