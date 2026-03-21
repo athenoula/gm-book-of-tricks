@@ -23,7 +23,7 @@ export function useCampaignMonsters(campaignId: string) {
 export function useSearchSrdMonsters(search: string) {
   return useQuery({
     queryKey: ['srd-monsters', search],
-    queryFn: () => searchMonsters(search),
+    queryFn: () => searchMonsters({ search }),
     enabled: search.length >= 2,
     staleTime: 1000 * 60 * 5,
   })

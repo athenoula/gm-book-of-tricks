@@ -1,3 +1,5 @@
+import { EDITION_SLUGS } from '@/lib/data/editions'
+
 const BASE_URL = 'https://api.open5e.com/v1'
 
 interface PaginatedResponse<T> {
@@ -59,6 +61,8 @@ export interface Open5eMonster {
   damage_immunities: string
   condition_immunities: string
   saving_throws: Record<string, number>
+  document__title: string
+  document__slug: string
 }
 
 export async function searchSpells(params: {
@@ -67,14 +71,20 @@ export async function searchSpells(params: {
   school?: string
   dnd_class?: string
   limit?: number
+  edition?: string
+  includeOtherEdition?: boolean
 }): Promise<PaginatedResponse<Open5eSpell>> {
   const url = new URL(`${BASE_URL}/spells/`)
   url.searchParams.set('format', 'json')
-  url.searchParams.set('limit', String(params.limit ?? 20))
   if (params.search) url.searchParams.set('search', params.search)
   if (params.level !== undefined) url.searchParams.set('level_int', String(params.level))
   if (params.school) url.searchParams.set('school', params.school)
   if (params.dnd_class) url.searchParams.set('dnd_class', params.dnd_class)
+  if (params.edition && !params.includeOtherEdition) {
+    const slug = EDITION_SLUGS[params.edition]
+    if (slug) url.searchParams.set('document__slug', slug)
+  }
+  url.searchParams.set('limit', String(params.limit ?? 20))
 
   const res = await fetch(url.toString())
   if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
@@ -99,11 +109,19 @@ export async function fetchAllSpells(
   return all
 }
 
-export async function searchMonsters(search: string): Promise<PaginatedResponse<Open5eMonster>> {
+export async function searchMonsters(params: {
+  search?: string
+  edition?: string
+  includeOtherEdition?: boolean
+}): Promise<PaginatedResponse<Open5eMonster>> {
   const url = new URL(`${BASE_URL}/monsters/`)
   url.searchParams.set('format', 'json')
+  if (params.search) url.searchParams.set('search', params.search)
+  if (params.edition && !params.includeOtherEdition) {
+    const slug = EDITION_SLUGS[params.edition]
+    if (slug) url.searchParams.set('document__slug', slug)
+  }
   url.searchParams.set('limit', '20')
-  url.searchParams.set('search', search)
 
   const res = await fetch(url.toString())
   if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
