@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -18,9 +18,12 @@ interface Props {
   campaignId: string
   sessionId?: string
   onSaveToTimeline?: (battle: { title: string; snapshot: Record<string, unknown> }) => void
+  inline?: boolean
+  battleId?: string
+  onSnapshotUpdate?: (snapshot: Record<string, unknown>) => void
 }
 
-export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline }: Props) {
+export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inline, battleId, onSnapshotUpdate }: Props) {
   const { data: combatants, isLoading } = useCombatants(campaignId, sessionId)
   const { data: battles } = useBattles(campaignId)
   const { inCombat, round, activeIndex, startCombat, nextTurn, endCombat, reset } = useCombatState()
@@ -38,6 +41,46 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline }: P
   const sorted = combatants
     ? [...combatants].sort((a, b) => b.initiative - a.initiative || a.name.localeCompare(b.name))
     : []
+
+  // Auto-load battle when battleId is provided
+  const loadedBattleRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!battleId || !battles || loadedBattleRef.current === battleId) return
+    const battle = battles.find((b) => b.id === battleId)
+    if (battle) {
+      loadedBattleRef.current = battleId
+      handleLoadBattle(battle)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [battleId, battles])
+
+  // Call onSnapshotUpdate when combatants or combat state changes
+  const prevSnapshotRef = useRef<string>('')
+  const buildSnapshot = useCallback((): Record<string, unknown> => ({
+    combatants: sorted.map((c) => ({
+      name: c.name,
+      initiative: c.initiative,
+      hp_current: c.hp_current,
+      hp_max: c.hp_max,
+      armor_class: c.armor_class,
+      is_player: c.is_player,
+      conditions: c.conditions,
+    })),
+    combatant_count: sorted.length,
+    round,
+    active_index: activeIndex,
+    in_combat: inCombat,
+  }), [sorted, round, activeIndex, inCombat])
+
+  useEffect(() => {
+    if (!onSnapshotUpdate || sorted.length === 0) return
+    const snapshot = buildSnapshot()
+    const key = JSON.stringify(snapshot)
+    if (key !== prevSnapshotRef.current) {
+      prevSnapshotRef.current = key
+      onSnapshotUpdate(snapshot)
+    }
+  }, [onSnapshotUpdate, sorted, buildSnapshot])
 
   const handleClear = () => {
     if (window.confirm('Remove all combatants? This cannot be undone.')) {
@@ -116,9 +159,11 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline }: P
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl flex items-center gap-2"><GameIcon icon={GiCrossedSwords} size="xl" /> Initiative</h3>
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className={`flex items-center justify-between ${inline ? 'mb-2' : 'mb-4'}`}>
+        {!inline && (
+          <h3 className="text-xl flex items-center gap-2"><GameIcon icon={GiCrossedSwords} size="xl" /> Initiative</h3>
+        )}
+        <div className={`flex items-center gap-2 flex-wrap ${inline ? 'w-full justify-between' : ''}`}>
           {sorted.length > 0 && !inCombat && (
             <Button size="sm" onClick={startCombat}>
               Start Combat
@@ -184,14 +229,16 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline }: P
         <Button size="sm" variant="secondary" onClick={() => { setShowAddForm(!showAddForm); setShowQuickAdd(false); setShowSave(false); setShowLoad(false) }}>
           {showAddForm ? 'Hide' : '+ Manual'}
         </Button>
-        {sorted.length > 0 && (
+        {!inline && sorted.length > 0 && (
           <Button size="sm" variant="secondary" onClick={() => { setShowSave(!showSave); setShowQuickAdd(false); setShowAddForm(false); setShowLoad(false) }}>
             {showSave ? 'Hide' : <><GameIcon icon={GiSaveArrow} size="sm" /> Save</>}
           </Button>
         )}
-        <Button size="sm" variant="secondary" onClick={() => { setShowLoad(!showLoad); setShowQuickAdd(false); setShowAddForm(false); setShowSave(false) }}>
-          {showLoad ? 'Hide' : <><GameIcon icon={GiOpenFolder} size="sm" /> Load</>}
-        </Button>
+        {!inline && (
+          <Button size="sm" variant="secondary" onClick={() => { setShowLoad(!showLoad); setShowQuickAdd(false); setShowAddForm(false); setShowSave(false) }}>
+            {showLoad ? 'Hide' : <><GameIcon icon={GiOpenFolder} size="sm" /> Load</>}
+          </Button>
+        )}
         {sorted.length > 0 && (
           <Button size="sm" variant="ghost" onClick={handleClear}>
             Clear All
@@ -219,7 +266,7 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline }: P
       )}
 
       {/* Save Battle */}
-      {showSave && (
+      {!inline && showSave && (
         <div className="mt-4 bg-bg-base rounded-[--radius-lg] border border-border p-4 space-y-3">
           <h4 className="text-sm text-text-heading font-medium">Save Encounter</h4>
           <Input
@@ -260,7 +307,7 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline }: P
       )}
 
       {/* Load Battle */}
-      {showLoad && (
+      {!inline && showLoad && (
         <div className="mt-4 bg-bg-base rounded-[--radius-lg] border border-border p-4">
           <h4 className="text-sm text-text-heading font-medium mb-3">Load Battle</h4>
           {(!battles || battles.length === 0) ? (

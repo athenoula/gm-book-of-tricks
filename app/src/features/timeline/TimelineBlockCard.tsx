@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
@@ -6,9 +7,10 @@ import {
   GiSparkles, GiPositionMarker, GiCrossedSwords,
 } from '@/components/ui/icons'
 import { MarkdownPreview } from './MarkdownPreview'
-import { useUpdateTimelineBlock, useRemoveTimelineBlock } from './useTimelineBlocks'
+import { useUpdateTimelineBlock, useRemoveTimelineBlock, useUpdateTimelineBlockSnapshot } from './useTimelineBlocks'
 import type { TimelineBlock } from './useTimelineBlocks'
 import { InlineBattle } from './InlineBattle'
+import { InitiativeTracker } from '@/features/initiative/InitiativeTracker'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { Open5eMonster, Open5eSpell } from '@/lib/open5e'
 
@@ -31,6 +33,8 @@ interface Props {
 export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
   const updateBlock = useUpdateTimelineBlock()
   const removeBlock = useRemoveTimelineBlock()
+  const updateSnapshot = useUpdateTimelineBlockSnapshot()
+  const [editingBattle, setEditingBattle] = useState(false)
   const style = BLOCK_STYLES[block.block_type] ?? BLOCK_STYLES.note
   const snapshot = block.content_snapshot
 
@@ -66,6 +70,11 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
           <span className="text-xs text-text-muted">{block.is_collapsed ? '▸' : '▾'}</span>
         </button>
 
+        {block.block_type === 'battle' && isPrep && (
+          <Button size="sm" variant="secondary" onClick={() => setEditingBattle(!editingBattle)}>
+            {editingBattle ? 'Close' : 'Edit Battle'}
+          </Button>
+        )}
         {isPrep && (
           <Button size="sm" variant="ghost" onClick={handleRemove} className="text-danger hover:text-danger">
             ✕
@@ -81,7 +90,22 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
           {block.block_type === 'spell' && <SpellSnapshot data={snapshot} />}
           {block.block_type === 'location' && <LocationSnapshot data={snapshot} />}
           {block.block_type === 'note' && <MarkdownPreview content={(snapshot.content as string) || ''} />}
-          {block.block_type === 'battle' && <InlineBattle block={block} />}
+          {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
+        </div>
+      )}
+
+      {/* Inline Initiative Tracker for editing battles */}
+      {editingBattle && block.block_type === 'battle' && (
+        <div className="px-4 py-3 border-t border-border">
+          <InitiativeTracker
+            campaignId={block.campaign_id}
+            sessionId={block.session_id}
+            inline
+            battleId={block.source_id || undefined}
+            onSnapshotUpdate={(snapshot) => {
+              updateSnapshot.mutate({ blockId: block.id, snapshot })
+            }}
+          />
         </div>
       )}
     </div>

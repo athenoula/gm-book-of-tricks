@@ -103,6 +103,22 @@ export function useRemoveTimelineBlock() {
   })
 }
 
+export function useUpdateTimelineBlockSnapshot() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ blockId, snapshot }: { blockId: string; snapshot: Record<string, unknown> }) => {
+      const { error } = await supabase
+        .from('timeline_blocks')
+        .update({ content_snapshot: snapshot })
+        .eq('id', blockId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeline-blocks'] })
+    },
+  })
+}
+
 export function useReorderTimelineBlocks() {
   const queryClient = useQueryClient()
 
