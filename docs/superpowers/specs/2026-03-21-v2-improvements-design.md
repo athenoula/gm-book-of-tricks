@@ -74,14 +74,14 @@ The rolled results assemble into a readable summary card at the top of the gener
 
 ### Campaign setting
 
-Refine the existing `game_system` field on campaigns to store the specific edition: `'5e-2014'` or `'5e-2024'`. Set during campaign creation, editable in campaign settings.
+Use the existing `game_system` field on campaigns which already stores `'dnd5e-2014'` or `'dnd5e-2024'` (see `GAME_SYSTEMS` in `types.ts`). No schema change needed — just wire it into API queries. Set during campaign creation, editable in campaign settings.
 
 ### API filtering
 
 Open5e's `document__slug` parameter handles edition filtering:
 
-- 5e 2014 → `document__slug=wotc-srd`
-- 5.5e 2024 → `document__slug=wotc-srd52`
+- `dnd5e-2014` → `document__slug=wotc-srd`
+- `dnd5e-2024` → `document__slug=wotc-srd52`
 
 The `searchSpells()` and `searchMonsters()` functions in `lib/open5e.ts` receive a new `edition` parameter. The campaign's edition is passed through automatically from the campaign context.
 
@@ -140,7 +140,7 @@ Saves to the existing `monsters` table with `source: 'homebrew'`, `source_book: 
 
 ### Entry point
 
-A "Create Monster" button on the Bestiary page, either as its own tab or a prominent button on the Library tab.
+A "Create Monster" button on the Bestiary page's Library tab, alongside the existing monster list. Clicking it opens the creation form as a full-page view or large modal.
 
 ### Editing
 
@@ -187,7 +187,7 @@ A "Make NPC" button on monster cards (both SRD and homebrew).
 
 ### Data model
 
-NPCs can optionally have a linked stat block. Regular NPCs stay lightweight (name, race, quirk, etc.). Monster-based NPCs carry the full stat block for combat use. The `npcs` table gets an optional `stat_block` JSONB field (or `monster_id` foreign key — stat block copy is preferred to avoid data drift).
+NPCs can optionally have a full monster stat block in addition to their existing lightweight `stats` field (hp, ac, ability scores). The existing `stats` field remains unchanged for simple NPCs. A new optional `stat_block` JSONB field is added to the `npcs` table for monster-converted NPCs, using the same structure as the `monsters` table's `stat_block`. When both exist, `stat_block` takes precedence for combat display; `stats` is ignored if `stat_block` is present. This avoids migration of existing NPC data.
 
 ---
 
@@ -274,4 +274,4 @@ Same dropdowns, but class is optional (many NPCs don't have a class).
 - `spells` table: add `source_book` text column
 - `monsters` table: add `source_book` text column
 - `npcs` table: add optional `stat_block` JSONB column
-- `campaigns` table: `game_system` values refined to `'5e-2014' | '5e-2024' | 'pathfinder-2e' | 'pathfinder-1e' | 'other'`
+- `campaigns` table: no change needed — `game_system` already uses `'dnd5e-2014' | 'dnd5e-2024' | 'pf2e' | 'pf1e' | 'other'`
