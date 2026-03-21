@@ -1,0 +1,27 @@
+# Dependencies
+app/node_modules/
+
+# Build output
+app/dist/
+
+# Environment
+app/.env
+app/.env.local
+app/.env.*.local
+
+# Supabase
+app/.supabase/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Superpowers brainstorm sessions
+.superpowers/
+
+# Logs
+*.log
+npm-debug.log*

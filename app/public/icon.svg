@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#141210"/>
+  <!-- D20 die shape -->
+  <polygon points="256,72 420,180 388,380 124,380 92,180" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linejoin="round"/>
+  <!-- Inner triangle -->
+  <polygon points="256,120 380,340 132,340" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linejoin="round" opacity="0.5"/>
+  <!-- Number 20 -->
+  <text x="256" y="275" text-anchor="middle" font-family="sans-serif" font-size="96" font-weight="bold" fill="#f59e0b">20</text>
+</svg>

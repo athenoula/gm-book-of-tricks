@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book of Tricks — Phase II Compendium</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Spectral+SC:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   CSS CUSTOM PROPERTIES — THE WARM CRAFT PALETTE
+   ═══════════════════════════════════════════ */
+:root {
+  --charcoal-deep: #0f0d0b;
+  --charcoal: #1a1714;
+  --charcoal-warm: #231f1a;
+  --charcoal-light: #2e2821;
+  --surface: #352e26;
+  --surface-raised: #3d352c;
+  --amber: #d4a24e;
+  --amber-bright: #f0c060;
+  --amber-dim: #a67c28;
+  --amber-glow: rgba(212, 162, 78, 0.15);
+  --gold-light: #f5d78e;
+  --cream: #f5ecd7;
+  --cream-dark: #e8dcc8;
+  --parchment: #f0e6d0;
+  --ink: #e8dcc8;
+  --ink-dim: #9a8e7a;
+  --ink-faint: #6b6054;
+  --red-accent: #c0392b;
+  --red-dim: #8b2920;
+  --emerald: #2d6b4f;
+  --emerald-dim: #1e4a36;
+  --sky: #4a7fb5;
+  --sky-dim: #2d5a8a;
+  --purple: #7b5ea7;
+
+  --font-display: 'Cinzel Decorative', serif;
+  --font-heading: 'Cinzel', serif;
+  --font-body: 'Crimson Pro', serif;
+  --font-label: 'Spectral SC', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--charcoal-deep);
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--charcoal-deep);
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   NOISE TEXTURE OVERLAY
+   ═══════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: overlay;
+}
+
+/* ═══════════════════════════════════════════
+   VIGNETTE
+   ═══════════════════════════════════════════ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ═══════════════════════════════════════════
+   AMBIENT EMBERS (CSS-only particles)
+   ═══════════════════════════════════════════ */
+@keyframes ember-rise {
+  0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+  8% { opacity: 0.7; transform: translateY(90vh) scale(1); }
+  50% { opacity: 0.4; transform: translateY(50vh) translateX(var(--drift, 20px)); }
+  100% { transform: translateY(-5vh) translateX(var(--drift-end, -10px)) scale(0.3); opacity: 0; }
+}
+
+.ember {
+  position: fixed;
+  width: var(--size, 3px);
+  height: var(--size, 3px);
+  background: radial-gradient(circle, var(--amber-bright), var(--amber));
+  border-radius: 50%;
+  animation: ember-rise var(--duration, 12s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  left: var(--x, 50%);
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(0.5px);
+}
+
+/* ═══════════════════════════════════════════
+   SCROLL CONTAINER
+   ═══════════════════════════════════════════ */
+.scroll-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════
+   HERO / TITLE PAGE
+   ═══════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  position: relative;
+}
+
+.hero-ornament-top, .hero-ornament-bottom {
+  width: 200px;
+  height: 20px;
+  opacity: 0.4;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, var(--amber-dim) 0%, var(--gold-light) 40%, var(--amber) 60%, var(--amber-dim) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 24px 0 12px;
+  line-height: 1.3;
+  filter: drop-shadow(0 2px 8px rgba(212, 162, 78, 0.3));
+}
+
+.hero .subtitle {
+  font-family: var(--font-label);
+  font-size: 0.85rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 32px;
+}
+
+.hero .edition {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink-faint);
+  font-style: italic;
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.hero .scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ═══════════════════════════════════════════
+   SECTION STYLES
+   ═══════════════════════════════════════════ */
+section {
+  padding: 80px 0;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+}
+
+section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════
+   ORNAMENTAL DIVIDER
+   ═══════════════════════════════════════════ */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 60px 0;
+  opacity: 0.4;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+}
+
+.divider-diamond {
+  width: 8px;
+  height: 8px;
+  background: var(--amber-dim);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.divider-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--amber-dim);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   HEADINGS
+   ═══════════════════════════════════════════ */
+h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--amber);
+  margin-bottom: 8px;
+}
+
+h3 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--gold-light);
+  letter-spacing: 0.04em;
+  margin-top: 40px;
+  margin-bottom: 12px;
+}
+
+h4 {
+  font-family: var(--font-label);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.section-tagline {
+  font-style: italic;
+  color: var(--ink-dim);
+  margin-bottom: 32px;
+  font-size: 1.05rem;
+}
+
+p {
+  margin-bottom: 16px;
+}
+
+strong {
+  color: var(--cream);
+  font-weight: 600;
+}
+
+a {
+  color: var(--amber);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(212, 162, 78, 0.3);
+  transition: border-color 0.2s;
+}
+a:hover { border-color: var(--amber); }
+
+/* ═══════════════════════════════════════════
+   FEATURE CARDS
+   ═══════════════════════════════════════════ */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+@media (min-width: 640px) {
+  .card-grid.two-col { grid-template-columns: 1fr 1fr; }
+}
+
+.card {
+  position: relative;
+  background: var(--charcoal-warm);
+  border: 1px solid rgba(212, 162, 78, 0.12);
+  border-radius: 6px;
+  padding: 28px 24px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  border-color: rgba(212, 162, 78, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 0 30px rgba(212, 162, 78, 0.03);
+}
+
+/* Ornamental corners */
+.card::before, .card::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: rgba(212, 162, 78, 0.25);
+  border-style: solid;
+  transition: border-color 0.3s;
+}
+.card::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; border-radius: 6px 0 0 0; }
+.card::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; border-radius: 0 0 6px 0; }
+.card:hover::before, .card:hover::after { border-color: rgba(212, 162, 78, 0.5); }
+
+.card-icon {
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.card h3 {
+  margin-top: 0;
+  font-size: 1.05rem;
+}
+
+.card p {
+  font-size: 0.95rem;
+  color: var(--ink-dim);
+  margin-bottom: 0;
+}
+
+/* ═══════════════════════════════════════════
+   FEATURE SPOTLIGHT (large card with visual)
+   ═══════════════════════════════════════════ */
+.spotlight {
+  position: relative;
+  background: var(--charcoal-warm);
+  border: 1px solid rgba(212, 162, 78, 0.15);
+  border-radius: 8px;
+  padding: 36px 32px;
+  margin: 32px 0;
+  overflow: hidden;
+}
+
+.spotlight::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--amber-dim), var(--amber), var(--amber-dim), transparent);
+}
+
+.spotlight-label {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  margin-bottom: 12px;
+}
+
+.spotlight h3 {
+  margin-top: 0;
+  font-size: 1.3rem;
+  color: var(--amber-bright);
+}
+
+/* ═══════════════════════════════════════════
+   COST TABLE
+   ═══════════════════════════════════════════ */
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 0.92rem;
+}
+
+.cost-table thead {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.cost-table th {
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(212, 162, 78, 0.2);
+}
+
+.cost-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(212, 162, 78, 0.06);
+  vertical-align: top;
+}
+
+.cost-table tr:hover td {
+  background: rgba(212, 162, 78, 0.03);
+}
+
+.cost-table .cost-free {
+  color: var(--emerald);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.cost-table .cost-paid {
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.cost-total {
+  background: rgba(212, 162, 78, 0.06);
+  border-top: 2px solid rgba(212, 162, 78, 0.25) !important;
+}
+
+.cost-total td {
+  font-weight: 600;
+  color: var(--cream);
+  border-bottom: none !important;
+}
+
+/* ═══════════════════════════════════════════
+   PRIORITY BADGE
+   ═══════════════════════════════════════════ */
+.badge {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 3px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.badge-high { background: var(--red-dim); color: #f5c6c0; }
+.badge-medium { background: rgba(212, 162, 78, 0.2); color: var(--amber); }
+.badge-low { background: rgba(75, 85, 99, 0.3); color: var(--ink-dim); }
+.badge-free { background: var(--emerald-dim); color: #a7f3d0; }
+
+/* ═══════════════════════════════════════════
+   VISUAL DEMO PANELS
+   ═══════════════════════════════════════════ */
+.demo-panel {
+  background: var(--charcoal);
+  border: 1px solid rgba(212, 162, 78, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 24px 0;
+}
+
+.demo-header {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(212, 162, 78, 0.08);
+}
+
+.demo-body {
+  padding: 32px 24px;
+}
+
+/* ═══════════════════════════════════════════
+   PARCHMENT CARD DEMO
+   ═══════════════════════════════════════════ */
+.parchment-card-demo {
+  background: linear-gradient(170deg, #f5ecd7 0%, #e8dcc8 100%);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  padding: 28px 24px;
+  color: #2c1810;
+  max-width: 360px;
+  margin: 0 auto;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 0 20px rgba(139, 90, 43, 0.1),
+    0 4px 16px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.parchment-card-demo::before {
+  content: '';
+  position: absolute;
+  top: 5px; left: 5px; right: 5px; bottom: 5px;
+  border: 1px solid rgba(139, 105, 20, 0.25);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.parchment-card-demo .spell-name {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: #2c1810;
+  margin-bottom: 2px;
+}
+
+.parchment-card-demo .spell-level {
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6b4226;
+  margin-bottom: 12px;
+}
+
+.parchment-card-demo .spell-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c0392b, #c0392b, transparent);
+  margin: 12px 0;
+  opacity: 0.6;
+}
+
+.parchment-card-demo .spell-text {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: #3d2b1f;
+  line-height: 1.6;
+}
+
+.parchment-card-demo .spell-stat {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: #6b4226;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   GOLD FOIL TEXT DEMO
+   ═══════════════════════════════════════════ */
+.gold-foil-demo {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.gold-foil-text {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 400;
+  background: linear-gradient(135deg, #a67c28 0%, #f5d78e 35%, #d4a24e 50%, #f5d78e 65%, #a67c28 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 4px rgba(166, 124, 40, 0.3));
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════════
+   INITIATIVE TRACKER DEMO
+   ═══════════════════════════════════════════ */
+.init-demo {
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.init-round {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.init-token {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(212, 162, 78, 0.08);
+  background: var(--charcoal-warm);
+  transition: all 0.3s;
+}
+
+.init-token.active {
+  border-color: var(--amber);
+  box-shadow: 0 0 20px rgba(212, 162, 78, 0.15), inset 0 0 20px rgba(212, 162, 78, 0.05);
+  animation: active-pulse 3s ease-in-out infinite;
+}
+
+@keyframes active-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(212, 162, 78, 0.15), inset 0 0 20px rgba(212, 162, 78, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(212, 162, 78, 0.25), inset 0 0 30px rgba(212, 162, 78, 0.08); }
+}
+
+.init-token.defeated {
+  opacity: 0.4;
+  filter: grayscale(0.8);
+}
+
+.init-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 2px solid rgba(212, 162, 78, 0.2);
+}
+
+.init-token.active .init-avatar { border-color: var(--amber); }
+
+.init-info { flex: 1; }
+
+.init-name {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  color: var(--cream);
+  letter-spacing: 0.03em;
+}
+
+.init-meta {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.init-hp {
+  width: 80px;
+  height: 6px;
+  background: var(--charcoal);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.init-hp-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s;
+}
+
+.hp-high { background: linear-gradient(90deg, #2d6b4f, #4ade80); }
+.hp-mid { background: linear-gradient(90deg, #a67c28, #f0c060); }
+.hp-low { background: linear-gradient(90deg, #8b2920, #ef4444); }
+.hp-dead { background: #4a3530; width: 100% !important; }
+
+.init-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(212, 162, 78, 0.15);
+  color: var(--amber);
+  margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   TIMELINE SCROLL DEMO
+   ═══════════════════════════════════════════ */
+.timeline-demo {
+  position: relative;
+  padding-left: 28px;
+}
+
+.timeline-demo::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--amber-dim) 10%, var(--amber-dim) 90%, transparent);
+}
+
+.timeline-node {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--charcoal-warm);
+  border-radius: 6px;
+  border: 1px solid rgba(212, 162, 78, 0.08);
+}
+
+.timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 22px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--amber-dim);
+  background: var(--charcoal-deep);
+}
+
+.timeline-node.active::before {
+  background: var(--amber);
+  box-shadow: 0 0 8px rgba(212, 162, 78, 0.5);
+}
+
+.timeline-node .scene-label {
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+
+.timeline-node .scene-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  color: var(--cream);
+}
+
+.timeline-node.active .scene-title { color: var(--amber-bright); }
+
+.timeline-node .scene-desc {
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  margin-top: 6px;
+}
+
+/* ═══════════════════════════════════════════
+   CHARACTER PORTRAIT FRAME
+   ═══════════════════════════════════════════ */
+.portrait-demo {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.portrait-frame {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid var(--amber-dim);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 0 20px rgba(212, 162, 78, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  background: var(--charcoal-warm);
+  position: relative;
+  transition: all 0.3s;
+}
+
+.portrait-frame:hover {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 0 30px rgba(212, 162, 78, 0.3);
+  transform: scale(1.05);
+}
+
+.portrait-frame::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 162, 78, 0.15);
+}
+
+.portrait-label {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  margin-top: 8px;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════
+   HANDOUT/LETTER DEMO
+   ═══════════════════════════════════════════ */
+.letter-demo {
+  background: linear-gradient(175deg, #f5ecd7 0%, #e8dcc8 40%, #ddd0b8 100%);
+  border-radius: 4px;
+  padding: 32px 28px;
+  max-width: 400px;
+  margin: 0 auto;
+  color: #2c1810;
+  box-shadow:
+    inset 0 0 40px rgba(139, 90, 43, 0.08),
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    2px 2px 0 rgba(139, 90, 43, 0.1);
+  transform: rotate(-0.5deg);
+  position: relative;
+}
+
+.letter-demo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.letter-demo .drop-cap {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  line-height: 0.8;
+  padding-right: 8px;
+  padding-top: 4px;
+  color: #8b2920;
+}
+
+.letter-demo p {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #3d2b1f;
+  margin-bottom: 0;
+}
+
+.letter-demo .signature {
+  text-align: right;
+  font-style: italic;
+  margin-top: 16px;
+  color: #6b4226;
+  font-size: 0.9rem;
+}
+
+.wax-seal {
+  position: absolute;
+  bottom: -12px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle at 40% 40%, #c0392b, #8b2920, #5a1a14);
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ═══════════════════════════════════════════
+   MAP CONCEPT DEMO
+   ═══════════════════════════════════════════ */
+.map-demo {
+  position: relative;
+  height: 280px;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(45, 107, 79, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(74, 127, 181, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, var(--charcoal-warm) 0%, var(--charcoal) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(212, 162, 78, 0.1);
+  overflow: hidden;
+}
+
+.map-pin {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--amber);
+  background: rgba(212, 162, 78, 0.2);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.map-pin:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 15px rgba(212, 162, 78, 0.5);
+  background: rgba(212, 162, 78, 0.4);
+}
+
+.map-pin::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  color: var(--cream);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.map-pin:hover::after { opacity: 1; }
+
+@keyframes map-pin-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 162, 78, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(212, 162, 78, 0); }
+}
+
+.map-pin.quest { animation: map-pin-pulse 2s ease-in-out infinite; }
+
+.map-path {
+  position: absolute;
+  pointer-events: none;
+}
+
+.map-compass {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.15em;
+}
+
+/* ═══════════════════════════════════════════
+   PHASE ROADMAP
+   ═══════════════════════════════════════════ */
+.roadmap-phase {
+  position: relative;
+  padding: 24px;
+  background: var(--charcoal-warm);
+  border-radius: 8px;
+  border-left: 3px solid var(--amber-dim);
+  margin-bottom: 20px;
+}
+
+.roadmap-phase.current {
+  border-left-color: var(--amber);
+  box-shadow: inset 4px 0 12px rgba(212, 162, 78, 0.08);
+}
+
+.roadmap-number {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: rgba(212, 162, 78, 0.1);
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  line-height: 1;
+}
+
+.roadmap-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+
+.roadmap-desc {
+  font-size: 0.9rem;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+
+.roadmap-items {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.roadmap-items li {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  background: rgba(212, 162, 78, 0.08);
+  border-radius: 3px;
+  color: var(--ink-dim);
+}
+
+/* ═══════════════════════════════════════════
+   COMPETITOR COMPARISON
+   ═══════════════════════════════════════════ */
+.versus-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  align-items: start;
+  margin: 24px 0;
+}
+
+.versus-them, .versus-us {
+  padding: 20px;
+  border-radius: 6px;
+}
+
+.versus-them {
+  background: rgba(75, 85, 99, 0.1);
+  border: 1px solid rgba(75, 85, 99, 0.2);
+}
+
+.versus-us {
+  background: rgba(212, 162, 78, 0.05);
+  border: 1px solid rgba(212, 162, 78, 0.15);
+}
+
+.versus-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 12px;
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--ink-faint);
+  writing-mode: vertical-rl;
+}
+
+.versus-label {
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.versus-them .versus-label { color: var(--ink-faint); }
+.versus-us .versus-label { color: var(--amber-dim); }
+
+.versus-list {
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.versus-list li {
+  padding: 4px 0;
+  color: var(--ink-dim);
+}
+
+.versus-list li::before {
+  content: '—';
+  margin-right: 8px;
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════
+   TORCH GLOW EFFECT
+   ═══════════════════════════════════════════ */
+@keyframes flicker {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  5% { opacity: 0.96; filter: brightness(0.98); }
+  10% { opacity: 1; filter: brightness(1.01); }
+  15% { opacity: 0.97; }
+  50% { opacity: 1; filter: brightness(1.01); }
+  55% { opacity: 0.98; filter: brightness(0.97); }
+  80% { opacity: 1; }
+}
+
+.torch-icon {
+  font-size: 1.5rem;
+  animation: flicker 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 147, 41, 0.6));
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════
+   EMAIL PREVIEW DEMO
+   ═══════════════════════════════════════════ */
+.email-preview {
+  background: #1e1b18;
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 440px;
+  margin: 0 auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.email-chrome {
+  background: #131110;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.email-dot.r { background: #c0392b; }
+.email-dot.y { background: #d4a24e; }
+.email-dot.g { background: #2d6b4f; }
+
+.email-subject {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  margin-left: auto;
+  font-family: var(--font-mono);
+}
+
+.email-body {
+  padding: 24px 20px;
+}
+
+.email-header-img {
+  background: linear-gradient(135deg, var(--charcoal-warm), var(--charcoal-light));
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  border: 1px solid rgba(212, 162, 78, 0.1);
+}
+
+.email-body h5 {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  color: var(--cream);
+  margin-bottom: 8px;
+}
+
+.email-body p {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.email-button {
+  display: inline-block;
+  background: var(--amber);
+  color: var(--charcoal-deep);
+  font-family: var(--font-label);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 8px 20px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   DISCORD EMBED DEMO
+   ═══════════════════════════════════════════ */
+.discord-embed {
+  background: #2b2d31;
+  border-left: 4px solid var(--amber);
+  border-radius: 4px;
+  padding: 12px 16px;
+  max-width: 400px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.discord-embed .embed-author {
+  font-size: 0.75rem;
+  color: #b5bac1;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.discord-embed .embed-title {
+  font-size: 0.85rem;
+  color: #00a8fc;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.discord-embed .embed-desc {
+  font-size: 0.8rem;
+  color: #dbdee1;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.discord-embed .embed-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+
+.discord-embed .field-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #b5bac1;
+}
+
+.discord-embed .field-value {
+  font-size: 0.8rem;
+  color: #dbdee1;
+}
+
+.discord-embed .embed-footer {
+  font-size: 0.65rem;
+  color: #8b9098;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ═══════════════════════════════════════════
+   WHATSAPP MESSAGE DEMO
+   ═══════════════════════════════════════════ */
+.whatsapp-demo {
+  background: #0b141a;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.wa-bubble {
+  background: #005c4b;
+  border-radius: 8px 8px 0 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  max-width: 85%;
+  margin-left: auto;
+}
+
+.wa-bubble p {
+  font-family: -apple-system, sans-serif;
+  font-size: 0.8rem;
+  color: #e9edef;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.wa-time {
+  font-size: 0.55rem;
+  color: rgba(233, 237, 239, 0.5);
+  text-align: right;
+  margin-top: 2px;
+}
+
+.wa-img-bubble {
+  background: #005c4b;
+  border-radius: 8px;
+  padding: 4px;
+  max-width: 200px;
+  margin-left: auto;
+  margin-bottom: 6px;
+}
+
+.wa-img-placeholder {
+  background: linear-gradient(135deg, #1a3a2a, #0d2818);
+  border-radius: 6px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION DOTS
+   ═══════════════════════════════════════════ */
+.nav-dots {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(212, 162, 78, 0.15);
+  border: 1px solid rgba(212, 162, 78, 0.2);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-dot:hover, .nav-dot.active {
+  background: var(--amber);
+  box-shadow: 0 0 8px rgba(212, 162, 78, 0.4);
+}
+
+@media (max-width: 768px) {
+  .nav-dots { display: none; }
+  .versus-grid { grid-template-columns: 1fr; }
+  .versus-divider { writing-mode: horizontal-tb; padding: 8px; }
+}
+
+/* ═══════════════════════════════════════════
+   FOG OF WAR DEMO
+   ═══════════════════════════════════════════ */
+.fog-demo {
+  position: relative;
+  height: 200px;
+  background:
+    radial-gradient(circle at 40% 50%, rgba(45, 107, 79, 0.2) 0%, transparent 30%),
+    radial-gradient(circle at 65% 35%, rgba(139, 90, 43, 0.15) 0%, transparent 25%),
+    var(--charcoal-warm);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fog-layer {
+  position: absolute;
+  inset: 0;
+  background: var(--charcoal-deep);
+  mask-image:
+    radial-gradient(circle 60px at 38% 48%, transparent 50%, black 70%),
+    radial-gradient(circle 40px at 63% 33%, transparent 50%, black 70%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    radial-gradient(circle 60px at 38% 48%, transparent 50%, black 70%),
+    radial-gradient(circle 40px at 63% 33%, transparent 50%, black 70%);
+  -webkit-mask-composite: source-in;
+}
+
+.fog-label {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-family: var(--font-label);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ═══════════════════════════════════════════
+   QUOTE CALLOUT
+   ═══════════════════════════════════════════ */
+.callout {
+  border-left: 3px solid var(--amber-dim);
+  padding: 16px 20px;
+  margin: 24px 0;
+  background: rgba(212, 162, 78, 0.03);
+  border-radius: 0 6px 6px 0;
+}
+
+.callout p {
+  font-style: italic;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+.callout .callout-source {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  font-style: normal;
+  margin-top: 6px;
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+footer {
+  text-align: center;
+  padding: 80px 20px 60px;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+}
+
+footer .footer-ornament {
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+</style>
+</head>
+
+<body>
+
+<!-- AMBIENT EMBERS -->
+<div class="ember" style="--x: 8%; --duration: 14s; --delay: 0s; --drift: 30px; --drift-end: -15px; --size: 2px;"></div>
+<div class="ember" style="--x: 15%; --duration: 11s; --delay: 3s; --drift: -20px; --drift-end: 25px; --size: 3px;"></div>
+<div class="ember" style="--x: 25%; --duration: 16s; --delay: 1s; --drift: 15px; --drift-end: -30px; --size: 2px;"></div>
+<div class="ember" style="--x: 38%; --duration: 13s; --delay: 5s; --drift: -25px; --drift-end: 10px; --size: 3px;"></div>
+<div class="ember" style="--x: 50%; --duration: 15s; --delay: 2s; --drift: 20px; --drift-end: -20px; --size: 2px;"></div>
+<div class="ember" style="--x: 62%; --duration: 12s; --delay: 7s; --drift: -10px; --drift-end: 30px; --size: 3px;"></div>
+<div class="ember" style="--x: 72%; --duration: 17s; --delay: 4s; --drift: 25px; --drift-end: -5px; --size: 2px;"></div>
+<div class="ember" style="--x: 82%; --duration: 10s; --delay: 6s; --drift: -15px; --drift-end: 20px; --size: 3px;"></div>
+<div class="ember" style="--x: 90%; --duration: 14s; --delay: 1s; --drift: 10px; --drift-end: -25px; --size: 2px;"></div>
+<div class="ember" style="--x: 45%; --duration: 18s; --delay: 8s; --drift: -30px; --drift-end: 15px; --size: 2px;"></div>
+<div class="ember" style="--x: 55%; --duration: 11s; --delay: 9s; --drift: 15px; --drift-end: -10px; --size: 3px;"></div>
+<div class="ember" style="--x: 30%; --duration: 13s; --delay: 0.5s; --drift: -8px; --drift-end: 18px; --size: 2px;"></div>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots">
+  <div class="nav-dot active" data-section="hero" title="Title"></div>
+  <div class="nav-dot" data-section="vision" title="Vision"></div>
+  <div class="nav-dot" data-section="features" title="Features"></div>
+  <div class="nav-dot" data-section="comms" title="Communications"></div>
+  <div class="nav-dot" data-section="visuals" title="Visuals"></div>
+  <div class="nav-dot" data-section="maps" title="Maps & Handouts"></div>
+  <div class="nav-dot" data-section="costs" title="Costs"></div>
+  <div class="nav-dot" data-section="roadmap" title="Roadmap"></div>
+</nav>
+
+<div class="scroll-wrapper">
+
+  <!-- ═══════════════════════════════════════
+       HERO / TITLE
+       ═══════════════════════════════════════ -->
+  <header class="hero" id="hero">
+    <svg class="hero-ornament-top" viewBox="0 0 200 20" fill="none">
+      <line x1="0" y1="10" x2="75" y2="10" stroke="currentColor" stroke-width="0.5" style="color: var(--amber-dim)"/>
+      <circle cx="85" cy="10" r="2" fill="var(--amber-dim)"/>
+      <path d="M 93 10 L 100 4 L 107 10 L 100 16 Z" fill="var(--amber-dim)"/>
+      <circle cx="115" cy="10" r="2" fill="var(--amber-dim)"/>
+      <line x1="125" y1="10" x2="200" y2="10" stroke="currentColor" stroke-width="0.5" style="color: var(--amber-dim)"/>
+    </svg>
+
+    <h1>The Book of Tricks<br>Phase II Compendium</h1>
+
+    <p class="subtitle">A Research & Vision Report</p>
+
+    <p class="edition">
+      Wherein we chart the features, integrations, visuals, and costs
+      that shall transform a Game Master's toolkit into something
+      that feels less like software and more like an artefact.
+    </p>
+
+    <span class="scroll-hint">scroll to begin</span>
+  </header>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 1: THE VISION
+       ═══════════════════════════════════════ -->
+  <section id="vision">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>I. The Vision</h2>
+    <p class="section-tagline">Where we sit in the landscape — and where nobody else is standing.</p>
+
+    <p>After researching every major GM tool — Roll20, Foundry VTT, D&D Beyond, World Anvil, Kanka, LegendKeeper, Owlbear Rodeo, Improved Initiative, and dozens more — one gap screams louder than all others:</p>
+
+    <div class="callout">
+      <p>No single tool connects session prep, live play, and post-session communication in one flow. DMs currently juggle 3-5 tools per session.</p>
+      <div class="callout-source">— The Research</div>
+    </div>
+
+    <p>Phase 1 gave us the timeline-first architecture that no one else has. Phase 2 turns it into a <strong>complete session lifecycle</strong>: prep the session, run the session, then share the session — without ever leaving the Book of Tricks.</p>
+
+    <h3>Where We Win</h3>
+    <div class="card-grid two-col">
+      <div class="card">
+        <span class="card-icon"><span class="torch-icon">🔥</span></span>
+        <h3>Session Lifecycle</h3>
+        <p>Timeline-first architecture that flows from prep → play → recap → share. Nobody else does this.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">✉️</span>
+        <h3>Built-in Comms</h3>
+        <p>Send handouts via WhatsApp, recaps via email, reminders via Discord — from inside the tool.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎨</span>
+        <h3>Craft Aesthetic</h3>
+        <p>A warm, illustrated feel that makes the tool feel like an artefact, not a SaaS dashboard.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🧠</span>
+        <h3>AI-Assisted Content</h3>
+        <p>NPC generation, scene descriptions, recap drafting — barely present in current tools. Huge differentiator.</p>
+      </div>
+    </div>
+
+    <h3>Where We Don't Compete</h3>
+    <div class="versus-grid">
+      <div class="versus-them">
+        <div class="versus-label">They Own This</div>
+        <ul class="versus-list">
+          <li>Full VTT battle maps (Foundry, Roll20)</li>
+          <li>Official D&D content library (D&D Beyond)</li>
+          <li>Deep worldbuilding wikis (World Anvil, Kanka)</li>
+          <li>3D rendered environments (Talespire)</li>
+        </ul>
+      </div>
+      <div class="versus-divider">VS</div>
+      <div class="versus-us">
+        <div class="versus-label">Our Territory</div>
+        <ul class="versus-list">
+          <li>Session prep + management + communication</li>
+          <li>Beautiful, opinionated warm-craft UX</li>
+          <li>Timeline as the centre of gravity</li>
+          <li>Mobile-friendly (prep on the train)</li>
+          <li>"Send this to my players" built in</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 2: THE FEATURES
+       ═══════════════════════════════════════ -->
+  <section id="features">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>II. The Features</h2>
+    <p class="section-tagline">Everything you asked about — assessed for impact, effort, and cost.</p>
+
+    <!-- PDF UPLOAD -->
+    <div class="spotlight">
+      <div class="spotlight-label">Feature Spotlight</div>
+      <h3>PDF Upload & Viewer <span class="badge badge-high">High Priority</span></h3>
+      <p>Upload rulebooks, modules, and reference PDFs. View them in-browser with search, bookmarks, and annotation overlays. Most GM tools handle PDFs poorly — this is a real gap.</p>
+
+      <h4>Recommended Stack</h4>
+      <p><strong>react-pdf</strong> (by Wojtek Maj) for simple viewing — 1M+ weekly npm downloads, wraps Mozilla's pdf.js. If you want a full toolbar with search and thumbnails, step up to <strong>@react-pdf-viewer/core</strong> with its plugin system.</p>
+      <p>Annotations stored as JSON overlays in Supabase (page number, coordinates, text) — rendered on top of the PDF canvas. No need for expensive commercial SDKs like PSPDFKit.</p>
+
+      <h4>Cost</h4>
+      <p><span class="cost-free">$0</span> — react-pdf is open source. Storage via Supabase free tier (1GB). Keep PDFs under 10-20MB for good UX.</p>
+    </div>
+
+    <!-- IMAGE MANAGEMENT -->
+    <div class="spotlight">
+      <div class="spotlight-label">Feature Spotlight</div>
+      <h3>Character Image Upload <span class="badge badge-high">High Priority</span></h3>
+      <p>Upload portraits for PCs, NPCs, monsters, and locations. Display in circular ornamental frames throughout the app. Build a visual library tied to your campaign entities.</p>
+
+      <h4>Implementation</h4>
+      <p>Compress in-browser before upload using <strong>browser-image-compression</strong> (target 1MB max, 1920px max dimension). Store in Supabase Storage. Serve with Supabase's built-in CDN.</p>
+      <p>For the gallery: <strong>react-photo-album</strong> (responsive grid) + <strong>yet-another-react-lightbox</strong> (zoom/navigate). Modern, lightweight, composable.</p>
+
+      <div class="demo-panel">
+        <div class="demo-header">Visual Concept — Character Portrait Frames</div>
+        <div class="demo-body">
+          <div class="portrait-demo">
+            <div>
+              <div class="portrait-frame">⚔️</div>
+              <div class="portrait-label">Thorin</div>
+            </div>
+            <div>
+              <div class="portrait-frame">🧝</div>
+              <div class="portrait-label">Elara</div>
+            </div>
+            <div>
+              <div class="portrait-frame">🧙</div>
+              <div class="portrait-label">Maelis</div>
+            </div>
+            <div>
+              <div class="portrait-frame">🐉</div>
+              <div class="portrait-label">Grimjaw</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4>AI-Generated Portraits <span class="badge badge-free">Free</span></h4>
+      <p><strong>Leonardo.ai</strong> offers 150 tokens/day free (~30 images). Use their DreamShaper or RPG model with prompts like: <em>"Portrait of a half-elf ranger, auburn hair, leather armour, warm lighting, dark background, digital painting."</em></p>
+      <p>Alternatives: <strong>Bing Image Creator</strong> (free DALL-E 3, unlimited slow gen), <strong>PlaygroundAI</strong> (500/day free). For unlimited local gen: <strong>ComfyUI + SDXL</strong> if you have a 6GB+ GPU.</p>
+
+      <h4>Cost</h4>
+      <p><span class="cost-free">$0</span> — browser compression + Supabase free tier storage + free AI portraits.</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 3: COMMUNICATIONS
+       ═══════════════════════════════════════ -->
+  <section id="comms">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>III. The Communications Hub</h2>
+    <p class="section-tagline">Send handouts, recaps, and reminders without leaving your console.</p>
+
+    <p>This is the killer differentiator. Right now every DM manually copies content from their prep tool to Discord/WhatsApp/email. We can automate that entire flow.</p>
+
+    <!-- DISCORD -->
+    <div class="spotlight">
+      <div class="spotlight-label">Integration</div>
+      <h3>Discord <span class="badge badge-free">Free</span> <span class="badge badge-high">Build First</span></h3>
+      <p>The simplest and highest-value integration. Discord webhooks are a single POST request — no bot infrastructure needed.</p>
+
+      <h4>What You Can Send</h4>
+      <p>Rich embeds with images, formatted fields, colours. Session reminders, recaps, handout images, initiative order, NPC introductions — all formatted as beautiful Discord embeds from a Supabase Edge Function.</p>
+
+      <div class="demo-panel">
+        <div class="demo-header">Example — Discord Embed from Your Tool</div>
+        <div class="demo-body">
+          <div class="discord-embed">
+            <div class="embed-author">📖 Book of Tricks</div>
+            <div class="embed-title">Session 12 Recap: The Dragon's Lair</div>
+            <div class="embed-desc">The party descended into Mount Ashfang and confronted Grimjaw the Terrible. Thorin took 47 damage in a single breath attack. Elara's clutch Counterspell saved the party from a cave-in.</div>
+            <div class="embed-fields">
+              <div><div class="field-name">MVP</div><div class="field-value">Elara (Counterspell)</div></div>
+              <div><div class="field-name">Loot</div><div class="field-value">Dragon Hoard (2,400gp)</div></div>
+              <div><div class="field-name">Next Session</div><div class="field-value">Thursday 7pm</div></div>
+              <div><div class="field-name">Status</div><div class="field-value">Level Up! → Lv 9</div></div>
+            </div>
+            <div class="embed-footer">Book of Tricks · Session ended 2 hours ago</div>
+          </div>
+        </div>
+      </div>
+
+      <h4>Implementation</h4>
+      <p>~20 lines of code. Store the webhook URL per campaign. Add a "Send to Discord" button on session recaps, handouts, and timeline blocks. Supabase Edge Function makes the POST.</p>
+
+      <h4>Future: Bot + Slash Commands</h4>
+      <p>Phase 2.5: Add a lightweight Discord bot for slash commands (<code>/recap</code>, <code>/roll</code>, <code>/lookup npc Gandalf</code>). Use Discord's interaction webhook endpoint — runs on Supabase Edge Functions, no persistent server needed.</p>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div class="spotlight">
+      <div class="spotlight-label">Integration</div>
+      <h3>WhatsApp <span class="badge badge-medium">Medium Priority</span></h3>
+      <p>Perfect for groups that live on WhatsApp. Send handouts, session images, and reminders directly to players' phones.</p>
+
+      <div class="demo-panel">
+        <div class="demo-header">Example — Handout via WhatsApp</div>
+        <div class="demo-body">
+          <div class="whatsapp-demo">
+            <div class="wa-img-bubble">
+              <div class="wa-img-placeholder">🗺️</div>
+              <div style="padding: 6px 8px;">
+                <p style="font-family: sans-serif; font-size: 0.75rem; color: #e9edef; margin: 0;">A weathered map found in the dragon's hoard. It appears to show a hidden entrance to the Underdark...</p>
+                <div class="wa-time">19:42 ✓✓</div>
+              </div>
+            </div>
+            <div class="wa-bubble">
+              <p>📍 <strong>Next session:</strong> Thursday 7pm at Dave's. We're picking up from the dragon's lair. Don't forget to level up!</p>
+              <div class="wa-time">19:43 ✓✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4>The Three Tiers</h4>
+      <table class="cost-table">
+        <thead><tr><th>Approach</th><th>Cost</th><th>What You Get</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>wa.me links</strong> (start here)</td>
+            <td class="cost-free">$0</td>
+            <td>Pre-filled message opens WhatsApp on device. User taps send. No images via link.</td>
+          </tr>
+          <tr>
+            <td><strong>WhatsApp Cloud API</strong> (Meta direct)</td>
+            <td class="cost-free">$0 for first 1,000 conversations/mo</td>
+            <td>Automated sending. Images, PDFs, interactive buttons. Requires Meta Business verification + pre-approved templates.</td>
+          </tr>
+          <tr>
+            <td><strong>Twilio WhatsApp</strong></td>
+            <td class="cost-paid">~$0.005/msg + Meta fees</td>
+            <td>Same as above but easier setup. Unified with SMS. Better docs.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p><strong>Recommendation:</strong> Start with wa.me links (instant, free). Graduate to WhatsApp Cloud API when you want automated handout sending. 1,000 free conversations/month is way more than a D&D group needs.</p>
+    </div>
+
+    <!-- EMAIL -->
+    <div class="spotlight">
+      <div class="spotlight-label">Integration</div>
+      <h3>Email <span class="badge badge-high">High Priority</span></h3>
+      <p>Styled session recaps, pre-session reminders, and "between session" narrative emails. React Email means your templates are React components — same tooling as the app.</p>
+
+      <div class="demo-panel">
+        <div class="demo-header">Example — Session Recap Email</div>
+        <div class="demo-body">
+          <div class="email-preview">
+            <div class="email-chrome">
+              <div class="email-dot r"></div>
+              <div class="email-dot y"></div>
+              <div class="email-dot g"></div>
+              <span class="email-subject">Session 12 Recap</span>
+            </div>
+            <div class="email-body">
+              <div class="email-header-img">
+                <span style="font-size: 2rem;">🐉</span>
+                <h5 style="margin-top: 8px;">The Dragon's Lair</h5>
+                <p style="font-size: 0.7rem; color: var(--ink-faint); margin: 0;">Campaign: Shadows of Ashfang — Session 12</p>
+              </div>
+              <p>The party descended beneath Mount Ashfang, fought through a gauntlet of kobold traps, and faced Grimjaw the Terrible in his volcanic chamber.</p>
+              <p style="color: var(--amber);"><strong>Key moments:</strong></p>
+              <p>→ Thorin's reckless attack triggered the lava trap<br>→ Elara's Counterspell saved the party from collapse<br>→ Maelis negotiated with the dragon's wyrmling</p>
+              <div class="email-button">View Full Recap</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4>Recommended Stack</h4>
+      <p><strong>Resend</strong> (free tier: 100 emails/day, 3,000/month) + <strong>React Email</strong> for templates + <strong>Supabase Edge Functions</strong> to send. Total setup time: ~30 minutes.</p>
+
+      <h4>Use Cases</h4>
+      <p>Session recaps with embedded scene art. Pre-session reminders with "last time..." context. Player-specific secret handouts. Between-session narrative hooks ("A letter arrives at the tavern...").</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 4: THE VISUALS
+       ═══════════════════════════════════════ -->
+  <section id="visuals">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>IV. The Visual Elevation</h2>
+    <p class="section-tagline">Making it feel like a fantasy game — not a SaaS dashboard. Everything you see on this page is achievable.</p>
+
+    <p>The Warm Craft aesthetic from Phase 1 (dark charcoal + amber + serif headings) is the foundation. Phase 2 layers on <strong>illustrated, physical, tangible</strong> elements that make the tool feel like an artefact you'd find in a wizard's study.</p>
+
+    <p><strong>This very report is the demo.</strong> Every visual technique used here — the ornamental dividers, gold foil text, parchment cards, floating embers, vignette, noise texture, flickering torch glow — is CSS-only, zero dependencies, zero cost.</p>
+
+    <h3>Technique 1: Gold Foil Headings <span class="badge badge-free">CSS Only</span></h3>
+    <div class="demo-panel">
+      <div class="demo-header">Live Demo — background-clip: text + gradient</div>
+      <div class="demo-body">
+        <div class="gold-foil-demo">
+          <div class="gold-foil-text">Shadows of Ashfang</div>
+        </div>
+      </div>
+    </div>
+    <p>One CSS rule transforms every heading. The gradient simulates metallic reflection. Combine with Cinzel Decorative for instant fantasy gravitas. <strong>Bundle cost: 0 bytes.</strong></p>
+
+    <h3>Technique 2: Parchment Spell Cards <span class="badge badge-free">CSS Only</span></h3>
+    <div class="demo-panel">
+      <div class="demo-header">Live Demo — Layered gradients + inner border + shadow stacking</div>
+      <div class="demo-body">
+        <div class="parchment-card-demo">
+          <div class="spell-name">Fireball</div>
+          <div class="spell-level">3rd Level Evocation</div>
+          <div class="spell-divider"></div>
+          <div class="spell-text">A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame.</div>
+          <div class="spell-divider"></div>
+          <div class="spell-stat">Casting Time: 1 action · Range: 150 feet · Components: V, S, M</div>
+          <div class="spell-stat">Damage: 8d6 fire · Save: DEX half</div>
+        </div>
+      </div>
+    </div>
+    <p>Parchment gradient + inner border via <code>::before</code> + stacked shadows = physical card feeling. No images needed. Apply to spell cards, item cards, NPC stat blocks.</p>
+
+    <h3>Technique 3: Handout Letters <span class="badge badge-free">CSS Only</span></h3>
+    <div class="demo-panel">
+      <div class="demo-header">Live Demo — Player handout as parchment letter with wax seal</div>
+      <div class="demo-body">
+        <div class="letter-demo">
+          <span class="drop-cap">D</span>
+          <p>ear adventurers, I write to you from the besieged city of Thornwick. The dragon has razed the eastern quarter, and we are running low on supplies. If you can reach us by the next full moon, there may yet be hope. Follow the old trade road through Ashfang Pass — but beware the goblin scouts who now patrol the ridgeline.</p>
+          <p class="signature">— Lord Aldric of Thornwick</p>
+          <div class="wax-seal">A</div>
+        </div>
+      </div>
+    </div>
+    <p>Imagine sending this as a handout via WhatsApp or embedding it in a session timeline. The drop cap, wax seal, and slight rotation all use CSS. Noise texture is an inline SVG — zero HTTP requests.</p>
+
+    <h3>Technique 4: Initiative Tracker as Battle Board <span class="badge badge-free">CSS + Framer Motion</span></h3>
+    <div class="demo-panel">
+      <div class="demo-header">Live Demo — Animated combat tokens with HP bars and status</div>
+      <div class="demo-body">
+        <div class="init-demo">
+          <div class="init-round">Round III</div>
+
+          <div class="init-token active">
+            <div class="init-avatar">⚔️</div>
+            <div class="init-info">
+              <div class="init-name">Thorin Ironforge <span class="init-badge">19</span></div>
+              <div class="init-meta">Fighter 8 · AC 18</div>
+            </div>
+            <div class="init-hp"><div class="init-hp-fill hp-high" style="width: 84%"></div></div>
+          </div>
+
+          <div class="init-token">
+            <div class="init-avatar">🧝</div>
+            <div class="init-info">
+              <div class="init-name">Elara Moonwhisper <span class="init-badge">17</span></div>
+              <div class="init-meta">Wizard 8 · AC 14</div>
+            </div>
+            <div class="init-hp"><div class="init-hp-fill hp-mid" style="width: 45%"></div></div>
+          </div>
+
+          <div class="init-token">
+            <div class="init-avatar">🐉</div>
+            <div class="init-info">
+              <div class="init-name">Grimjaw <span class="init-badge">15</span></div>
+              <div class="init-meta">Adult Red Dragon · AC 19</div>
+            </div>
+            <div class="init-hp"><div class="init-hp-fill hp-mid" style="width: 62%"></div></div>
+          </div>
+
+          <div class="init-token">
+            <div class="init-avatar">🧙</div>
+            <div class="init-info">
+              <div class="init-name">Maelis Dawnbringer <span class="init-badge">12</span></div>
+              <div class="init-meta">Cleric 8 · AC 16</div>
+            </div>
+            <div class="init-hp"><div class="init-hp-fill hp-high" style="width: 91%"></div></div>
+          </div>
+
+          <div class="init-token defeated">
+            <div class="init-avatar">👹</div>
+            <div class="init-info">
+              <div class="init-name">Kobold Sapper <span class="init-badge">8</span></div>
+              <div class="init-meta">HP 0 · Defeated</div>
+            </div>
+            <div class="init-hp"><div class="init-hp-fill hp-dead" style="width: 100%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p>The active token pulses with amber glow. Defeated combatants go grayscale. In the real app, Framer Motion's <code>layout</code> animation makes reordering silky smooth. Round counter as a Roman numeral on a shield shape (stretch goal).</p>
+
+    <h3>Technique 5: Session Timeline as Scroll <span class="badge badge-free">CSS + Framer Motion</span></h3>
+    <div class="demo-panel">
+      <div class="demo-header">Live Demo — Timeline nodes with ornamental connectors</div>
+      <div class="demo-body">
+        <div class="timeline-demo">
+          <div class="timeline-node">
+            <div class="scene-label">Scene I</div>
+            <div class="scene-title">Arrival at Mount Ashfang</div>
+            <div class="scene-desc">The party reaches the volcanic peak. Smoke rises from crevices in the rock.</div>
+          </div>
+          <div class="timeline-node active">
+            <div class="scene-label">Scene II — Active</div>
+            <div class="scene-title">The Kobold Gauntlet</div>
+            <div class="scene-desc">A trapped corridor full of tripwires, dart launchers, and one very clever kobold engineer.</div>
+          </div>
+          <div class="timeline-node">
+            <div class="scene-label">Encounter</div>
+            <div class="scene-title">Grimjaw's Chamber</div>
+            <div class="scene-desc">The final confrontation. Lava pools illuminate the massive cavern.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Technique 6: Ambient CSS Particles</h3>
+    <p>The floating embers you see on this page are <strong>pure CSS</strong> — 12 tiny <code>&lt;div&gt;</code> elements with randomised animation variables. No JavaScript, no particle library, <strong>zero bundle cost</strong>. Apply to the login page and dashboard for atmosphere.</p>
+
+    <h3>More Visual Techniques (All Free)</h3>
+    <div class="card-grid two-col">
+      <div class="card">
+        <h3>Vignette Overlay</h3>
+        <p>One <code>::after</code> pseudo-element with a radial gradient. You're looking through it right now. Instant depth.</p>
+      </div>
+      <div class="card">
+        <h3>Paper Grain Noise</h3>
+        <p>Inline SVG <code>&lt;feTurbulence&gt;</code> as a background-image at 2-3% opacity. Adds tactile quality to every surface.</p>
+      </div>
+      <div class="card">
+        <h3>Ornamental Dividers</h3>
+        <p>Inline SVG components — diamond, dot, line. 5 reusable components transform the feel of every page.</p>
+      </div>
+      <div class="card">
+        <h3>Torch Flicker Animation</h3>
+        <p>CSS <code>@keyframes</code> varying opacity and brightness. <span class="torch-icon">🔥</span> Apply to key UI icons for that candlelit vibe.</p>
+      </div>
+      <div class="card">
+        <h3>Aged Image Filter</h3>
+        <p><code>filter: sepia(0.3) contrast(1.1) brightness(0.95)</code> on uploaded images. Instant warmth.</p>
+      </div>
+      <div class="card">
+        <h3>Ornamental Card Corners</h3>
+        <p><code>::before</code> and <code>::after</code> with gold borders. Hover to see them brighten on the cards above.</p>
+      </div>
+    </div>
+
+    <h3>Typography Stack</h3>
+    <table class="cost-table">
+      <thead><tr><th>Role</th><th>Font</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Display / Hero</td><td><strong>Cinzel Decorative</strong></td><td>Engraved capitals with fantasy weight</td></tr>
+        <tr><td>Headings</td><td><strong>Cinzel</strong></td><td>Clean serif, pairs with Decorative variant</td></tr>
+        <tr><td>Body</td><td><strong>Crimson Pro</strong></td><td>Old-style serif, superb readability at small sizes</td></tr>
+        <tr><td>Labels</td><td><strong>Spectral SC</strong></td><td>Small caps for stat labels (ARMOR CLASS, HIT POINTS)</td></tr>
+        <tr><td>Stats / Mono</td><td><strong>JetBrains Mono</strong></td><td>Dice notation, HP values, code-like contrast</td></tr>
+      </tbody>
+    </table>
+    <p>Total font weight: ~120KB with <code>font-display: swap</code>. All free via Google Fonts.</p>
+
+    <h3>Libraries Worth Adding</h3>
+    <table class="cost-table">
+      <thead><tr><th>Library</th><th>Size</th><th>Purpose</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Framer Motion</strong></td><td>~32KB</td><td>Layout animations, page transitions, gesture support</td><td class="cost-free">Free</td></tr>
+        <tr><td><strong>Leaflet.js</strong></td><td>~40KB</td><td>Interactive maps with custom tiles, pins, and layers</td><td class="cost-free">Free</td></tr>
+        <tr><td><strong>canvas-confetti</strong></td><td>~5KB</td><td>Celebration bursts on critical hits, level-ups</td><td class="cost-free">Free</td></tr>
+        <tr><td><strong>Rough.js</strong></td><td>~10KB</td><td>Hand-drawn style for sketched map elements</td><td class="cost-free">Free</td></tr>
+        <tr><td><strong>game-icons.net SVGs</strong></td><td>Per icon</td><td>4,000+ RPG icons (swords, potions, scrolls, creatures)</td><td class="cost-free">Free (CC BY)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 5: MAPS & HANDOUTS
+       ═══════════════════════════════════════ -->
+  <section id="maps">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>V. Maps & Handouts</h2>
+    <p class="section-tagline">Interactive world maps, shareable handouts, and fog of war.</p>
+
+    <h3>Interactive Campaign Map <span class="badge badge-medium">Medium Effort</span></h3>
+    <p>Inspired by <strong>LegendKeeper's Atlas</strong> — the most praised feature in the worldbuilding tool space. Upload a world/region map, place clickable pins that link to locations in your campaign. Nested maps (click a city → zoom into city map).</p>
+    <p>Built with <strong>Leaflet.js</strong> (40KB, free) using custom image tiles. Pins link to your existing location entities. SVG paths connect locations (dotted = unexplored, solid = travelled).</p>
+
+    <div class="demo-panel">
+      <div class="demo-header">Concept — Interactive Campaign Map</div>
+      <div class="demo-body">
+        <div class="map-demo">
+          <span class="map-compass">N ↑</span>
+          <svg class="map-path" viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%">
+            <path d="M 30 45 Q 40 35 55 38" stroke="rgba(212,162,78,0.3)" stroke-width="0.5" fill="none" stroke-dasharray="2,2"/>
+            <path d="M 55 38 Q 65 50 72 62" stroke="rgba(212,162,78,0.2)" stroke-width="0.5" fill="none" stroke-dasharray="2,2"/>
+          </svg>
+          <div class="map-pin quest" style="left: 27%; top: 40%;" data-label="Thornwick"></div>
+          <div class="map-pin" style="left: 52%; top: 33%;" data-label="Ashfang Pass"></div>
+          <div class="map-pin" style="left: 70%; top: 58%;" data-label="Dragon's Lair"></div>
+          <div class="map-pin" style="left: 15%; top: 65%;" data-label="Eldergrove"></div>
+          <div class="map-pin" style="left: 80%; top: 25%;" data-label="Frostpeak"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Fog of War <span class="badge badge-low">Stretch Goal</span></h3>
+    <p>A simplified version — click map regions to toggle visibility for players. Not freeform painting (that's VTT territory), but region-based reveal. CSS mask-image with soft edges.</p>
+
+    <div class="demo-panel">
+      <div class="demo-header">Concept — CSS Fog of War (mask-image)</div>
+      <div class="demo-body">
+        <div class="fog-demo">
+          <div class="fog-layer"></div>
+          <span class="fog-label">Revealed areas</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Shareable Handout Content</h3>
+    <p>Any timeline block, NPC card, location entry, or image can be packaged as a shareable handout. One click sends it to Discord (embed), WhatsApp (image + text), or email (styled HTML). This is the "send this to my players" flow — the thing no other tool does well.</p>
+
+    <div class="callout">
+      <p>The handout system is the glue. PDF pages become handouts. Map regions become handouts. Session notes become recaps. The communications hub sends them. One unified flow.</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 6: COSTS
+       ═══════════════════════════════════════ -->
+  <section id="costs">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>VI. The Ledger</h2>
+    <p class="section-tagline">What it costs to run Phase 2 — spoiler: you can start for free.</p>
+
+    <h3>The $0/month Stack</h3>
+    <p>Every Phase 2 feature can launch on free tiers:</p>
+
+    <table class="cost-table">
+      <thead><tr><th>Feature</th><th>Service</th><th>Monthly</th></tr></thead>
+      <tbody>
+        <tr><td>PDF viewing</td><td>react-pdf (open source)</td><td class="cost-free">$0</td></tr>
+        <tr><td>Image storage (1GB)</td><td>Supabase Free</td><td class="cost-free">$0</td></tr>
+        <tr><td>Image compression</td><td>browser-image-compression</td><td class="cost-free">$0</td></tr>
+        <tr><td>Discord integration</td><td>Webhooks</td><td class="cost-free">$0</td></tr>
+        <tr><td>WhatsApp (basic)</td><td>wa.me links</td><td class="cost-free">$0</td></tr>
+        <tr><td>Email (100/day)</td><td>Resend Free</td><td class="cost-free">$0</td></tr>
+        <tr><td>All visual effects</td><td>CSS + SVG + Google Fonts</td><td class="cost-free">$0</td></tr>
+        <tr><td>Interactive maps</td><td>Leaflet.js</td><td class="cost-free">$0</td></tr>
+        <tr><td>RPG icons</td><td>game-icons.net (CC BY)</td><td class="cost-free">$0</td></tr>
+        <tr><td>Character portraits</td><td>Leonardo.ai free tier</td><td class="cost-free">$0</td></tr>
+        <tr class="cost-total"><td colspan="2"><strong>TOTAL (Launch)</strong></td><td class="cost-free"><strong>$0/month</strong></td></tr>
+      </tbody>
+    </table>
+
+    <h3>The First Paid Jump: $25/month</h3>
+    <p>When you outgrow the free tier (100+ uploads, need image transforms), Supabase Pro is the single biggest unlock:</p>
+
+    <table class="cost-table">
+      <thead><tr><th>What You Get</th><th>Free Tier</th><th>Pro ($25/mo)</th></tr></thead>
+      <tbody>
+        <tr><td>Storage</td><td>1 GB</td><td class="cost-paid">100 GB</td></tr>
+        <tr><td>Bandwidth</td><td>2 GB/mo</td><td class="cost-paid">250 GB/mo</td></tr>
+        <tr><td>Max file size</td><td>50 MB</td><td class="cost-paid">5 GB</td></tr>
+        <tr><td>Image transforms</td><td>None</td><td class="cost-paid">Included</td></tr>
+        <tr><td>Edge Functions</td><td>500K/mo</td><td class="cost-paid">2M/mo</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Full Communication Stack (if you go all in)</h3>
+    <table class="cost-table">
+      <thead><tr><th>Service</th><th>Free Tier</th><th>First Paid Tier</th></tr></thead>
+      <tbody>
+        <tr><td>Discord webhooks</td><td class="cost-free">Free forever</td><td>—</td></tr>
+        <tr><td>Resend (email)</td><td class="cost-free">100/day, 3K/mo</td><td class="cost-paid">$20/mo (50K emails)</td></tr>
+        <tr><td>WhatsApp Cloud API</td><td class="cost-free">1,000 conversations/mo</td><td class="cost-paid">~$0.015/conversation</td></tr>
+        <tr><td>Discord bot</td><td class="cost-free">Free (API is free)</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <p>For a personal GM toolkit used by one DM and 4-6 players, you may never need to leave the free tiers. The $0/month stack handles everything.</p>
+    </div>
+
+    <h3>One-Time Costs (Optional)</h3>
+    <table class="cost-table">
+      <thead><tr><th>Item</th><th>Cost</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Custom domain</td><td class="cost-paid">~$12/year</td><td>For email sending (from: dm@yourdomain.com)</td></tr>
+        <tr><td>Midjourney (1 month)</td><td class="cost-paid">$10</td><td>Batch-generate 200 high-quality character portraits</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       SECTION 7: THE ROADMAP
+       ═══════════════════════════════════════ -->
+  <section id="roadmap">
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-diamond"></span>
+      <span class="divider-dot"></span>
+      <span class="divider-line"></span>
+    </div>
+
+    <h2>VII. The Roadmap</h2>
+    <p class="section-tagline">A suggested build order — highest impact first, lowest cost first.</p>
+
+    <div class="roadmap-phase current">
+      <span class="roadmap-number">I</span>
+      <div class="roadmap-title">Visual Elevation</div>
+      <div class="roadmap-desc">Layer the illustrated aesthetic onto the existing Phase 1 UI. All CSS/SVG, zero dependencies.</div>
+      <ul class="roadmap-items">
+        <li>Gold foil headings</li>
+        <li>Ornamental SVG dividers</li>
+        <li>Card corner ornaments</li>
+        <li>Vignette overlay</li>
+        <li>Paper grain noise</li>
+        <li>Font stack upgrade</li>
+        <li>CSS ember particles</li>
+        <li>Torch flicker on icons</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-phase">
+      <span class="roadmap-number">II</span>
+      <div class="roadmap-title">Image & PDF System</div>
+      <div class="roadmap-desc">Upload, store, and display images and PDFs. Character portraits, handout images, rulebook reference.</div>
+      <ul class="roadmap-items">
+        <li>Supabase Storage setup</li>
+        <li>Image upload + compression</li>
+        <li>Portrait frames for characters</li>
+        <li>react-pdf viewer</li>
+        <li>PDF annotation overlays</li>
+        <li>Gallery lightbox</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-phase">
+      <span class="roadmap-number">III</span>
+      <div class="roadmap-title">Communications Hub</div>
+      <div class="roadmap-desc">Send handouts, recaps, and reminders from inside the tool. Discord first (easiest), then email, then WhatsApp.</div>
+      <ul class="roadmap-items">
+        <li>Discord webhook integration</li>
+        <li>Send-to-Discord on timeline blocks</li>
+        <li>Resend + React Email setup</li>
+        <li>Session recap email templates</li>
+        <li>wa.me link generation</li>
+        <li>WhatsApp Cloud API (later)</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-phase">
+      <span class="roadmap-number">IV</span>
+      <div class="roadmap-title">Maps & Handout System</div>
+      <div class="roadmap-desc">Interactive campaign maps with Leaflet.js. Universal handout system — any content becomes shareable.</div>
+      <ul class="roadmap-items">
+        <li>Leaflet.js map viewer</li>
+        <li>Upload map images</li>
+        <li>Clickable location pins</li>
+        <li>Link pins to locations</li>
+        <li>Handout packaging system</li>
+        <li>Region-based fog of war</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-phase">
+      <span class="roadmap-number">V</span>
+      <div class="roadmap-title">Polish & Stretch Goals</div>
+      <div class="roadmap-desc">Discord bot with slash commands, AI-generated content, advanced visual effects, page transitions.</div>
+      <ul class="roadmap-items">
+        <li>Discord bot (slash commands)</li>
+        <li>AI NPC portrait generation</li>
+        <li>AI recap drafting</li>
+        <li>Page transition animations</li>
+        <li>canvas-confetti on crits</li>
+        <li>Parchment spell cards</li>
+        <li>Letter-style handouts</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="margin-top: 40px;">
+      <p>The entire Phase 2 can be built incrementally. Start with the visual elevation (pure CSS, instant impact) while building the storage and communication infrastructure behind the scenes.</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════ -->
+  <footer>
+    <div class="footer-ornament">
+      <svg viewBox="0 0 200 20" width="150" fill="none">
+        <line x1="0" y1="10" x2="75" y2="10" stroke="currentColor" stroke-width="0.5" style="color: var(--amber-dim)"/>
+        <circle cx="85" cy="10" r="2" fill="var(--amber-dim)"/>
+        <path d="M 93 10 L 100 4 L 107 10 L 100 16 Z" fill="var(--amber-dim)"/>
+        <circle cx="115" cy="10" r="2" fill="var(--amber-dim)"/>
+        <line x1="125" y1="10" x2="200" y2="10" stroke="currentColor" stroke-width="0.5" style="color: var(--amber-dim)"/>
+      </svg>
+    </div>
+    <p>The Book of Tricks — Phase II Compendium</p>
+    <p style="font-size: 0.75rem; margin-top: 8px; color: var(--ink-faint);">
+      Compiled March 2026 · Pricing should be verified against current vendor pages
+    </p>
+  </footer>
+
+</div><!-- end scroll-wrapper -->
+
+<!-- ═══════════════════════════════════════════
+     SCROLL ANIMATION SCRIPT
+     ═══════════════════════════════════════════ -->
+<script>
+// Intersection Observer for scroll-reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('section').forEach(s => observer.observe(s));
+
+// Nav dots
+const sections = ['hero', 'vision', 'features', 'comms', 'visuals', 'maps', 'costs', 'roadmap'];
+const dots = document.querySelectorAll('.nav-dot');
+
+dots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    const id = dot.dataset.section;
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      dots.forEach(d => d.classList.toggle('active', d.dataset.section === id));
+    }
+  });
+}, { threshold: 0.3 });
+
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
+});
+</script>
+
+</body>
+</html>
