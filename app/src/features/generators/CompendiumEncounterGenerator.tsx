@@ -167,15 +167,15 @@ export function CompendiumEncounterGenerator({ campaignId }: { campaignId: strin
         acc[key] = selections[key] !== null ? tables[key][selections[key]!] : ''
         return acc
       }, {} as Record<string, string>),
-      text: buildEncounterText(),
+      content: buildEncounterText(),
     }
     addTimelineBlock.mutate({
       session_id: sessionId,
       campaign_id: campaignId,
-      block_type: 'note',
+      block_type: 'note' as const,
       title: buildEncounterTitle(),
       content_snapshot: snapshot,
-      sort_order: Date.now(),
+      sort_order: 9999,
     })
     setShowSessionPicker(false)
   }
