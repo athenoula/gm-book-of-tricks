@@ -5,6 +5,7 @@ import { GameIcon } from '@/components/ui/GameIcon'
 import { GiSpikedDragonHead } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaignMonsters, useSearchSrdMonsters, useSaveMonster, useDeleteMonster } from './useMonsters'
+import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { Monster } from '@/lib/types'
 import type { Open5eMonster } from '@/lib/open5e'
@@ -43,19 +44,38 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   const deleteMonster = useDeleteMonster()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
+  const [sourceBookFilter, setSourceBookFilter] = useState('')
+
+  const sourceBooks = [...new Set(monsters?.map(m => m.source_book).filter(Boolean) ?? [])].sort()
 
   const filtered = monsters?.filter((m) =>
     m.name.toLowerCase().includes(filter.toLowerCase())
+  ).filter((m) =>
+    !sourceBookFilter || m.source_book === sourceBookFilter
   )
 
   return (
     <div>
-      <Input
-        placeholder="Filter monsters..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="mb-4"
-      />
+      <div className="flex gap-2 mb-4">
+        <Input
+          placeholder="Filter monsters..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="flex-1"
+        />
+        <select
+          value={sourceBookFilter}
+          onChange={(e) => setSourceBookFilter(e.target.value)}
+          className="px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body text-sm"
+        >
+          <option value="">All Sources</option>
+          {sourceBooks.map((sb) => (
+            <option key={sb} value={sb!}>
+              {sb === 'Systems Reference Document' ? 'SRD' : sb}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {isLoading && <p className="text-text-muted text-sm py-4">Loading monsters...</p>}
 
@@ -96,6 +116,11 @@ function MonsterCard({ monster, expanded, onToggle, onDelete }: {
         className="w-full flex items-center gap-3 p-3 text-left hover:bg-bg-raised transition-colors cursor-pointer"
       >
         <span className="text-text-heading font-medium flex-1">{monster.name}</span>
+        {monster.source_book && (
+          <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
+            {monster.source_book === 'Systems Reference Document' ? 'SRD' : monster.source_book}
+          </span>
+        )}
         <span className="text-xs text-text-muted">{monster.size} {monster.type}</span>
         <span className="text-xs text-text-secondary">CR {monster.challenge_rating}</span>
         <div className="flex gap-2 text-xs text-text-muted">
@@ -177,8 +202,15 @@ function MonsterCard({ monster, expanded, onToggle, onDelete }: {
 
 function SrdMonsterSearch({ campaignId }: { campaignId: string }) {
   const [search, setSearch] = useState('')
-  const { data, isLoading } = useSearchSrdMonsters(search)
+  const [includeOtherEdition, setIncludeOtherEdition] = useState(false)
   const saveMonster = useSaveMonster()
+  const { data: campaign } = useCampaign(campaignId)
+
+  const { data, isLoading } = useSearchSrdMonsters({
+    search,
+    edition: campaign?.game_system,
+    includeOtherEdition,
+  })
 
   return (
     <div>
@@ -188,6 +220,15 @@ function SrdMonsterSearch({ campaignId }: { campaignId: string }) {
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4"
       />
+      <label className="flex items-center gap-2 text-sm text-stone-400 mb-4">
+        <input
+          type="checkbox"
+          checked={includeOtherEdition}
+          onChange={e => setIncludeOtherEdition(e.target.checked)}
+          className="rounded border-stone-600"
+        />
+        Include other edition results
+      </label>
 
       {isLoading && <p className="text-text-muted text-sm py-4">Searching...</p>}
 

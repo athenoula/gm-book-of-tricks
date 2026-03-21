@@ -20,10 +20,15 @@ export function useCampaignMonsters(campaignId: string) {
   })
 }
 
-export function useSearchSrdMonsters(search: string) {
+export function useSearchSrdMonsters(params: {
+  search: string
+  edition?: string
+  includeOtherEdition?: boolean
+}) {
+  const { search, edition, includeOtherEdition } = params
   return useQuery({
-    queryKey: ['srd-monsters', search],
-    queryFn: () => searchMonsters({ search }),
+    queryKey: ['srd-monsters', search, edition, includeOtherEdition],
+    queryFn: () => searchMonsters({ search, edition, includeOtherEdition }),
     enabled: search.length >= 2,
     staleTime: 1000 * 60 * 5,
   })
@@ -50,6 +55,7 @@ export function useSaveMonster() {
           hit_points: srdMonster.hit_points,
           hit_dice: srdMonster.hit_dice,
           speed: srdMonster.speed,
+          source_book: srdMonster.document__title || null,
           stat_block: srdMonster,
         })
         .select()
