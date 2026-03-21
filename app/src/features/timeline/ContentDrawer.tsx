@@ -5,12 +5,14 @@ import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
 import {
   GiThreeFriends, GiSpikedDragonHead, GiSparkles, GiPositionMarker,
-  GiCrossedSwords, GiHoodedFigure,
+  GiCrossedSwords, GiHoodedFigure, GiNotebook,
+  GiQuillInk, GiLinkedRings, GiWoodFrame, GiTreasureMap,
 } from '@/components/ui/icons'
 import { usePCs, useNPCs } from '@/features/characters/useCharacters'
 import { useCampaignMonsters } from '@/features/bestiary/useMonsters'
 import { useCampaignSpells } from '@/features/spellbook/useSpells'
 import { useLocations } from '@/features/locations/useLocations'
+import { useCampaignInspiration } from '@/features/scratchpad/useInspiration'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { PlayerCharacter, NPC, Monster, Spell, AbilityScores } from '@/lib/types'
 import type { Open5eMonster, Open5eSpell } from '@/lib/open5e'
@@ -23,7 +25,7 @@ interface Props {
   onClose: () => void
 }
 
-type Tab = 'characters' | 'monsters' | 'spells' | 'locations'
+type Tab = 'characters' | 'monsters' | 'spells' | 'locations' | 'inspiration'
 
 export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('characters')
@@ -42,6 +44,7 @@ export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
           { key: 'monsters' as Tab, label: 'Monsters', icon: GiSpikedDragonHead },
           { key: 'spells' as Tab, label: 'Spells', icon: GiSparkles },
           { key: 'locations' as Tab, label: 'Locations', icon: GiPositionMarker },
+          { key: 'inspiration' as Tab, label: 'Inspiration', icon: GiNotebook },
         ]).map((t) => (
           <button
             key={t.key}
@@ -68,6 +71,7 @@ export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
           {tab === 'monsters' && <MonsterItems campaignId={campaignId} filter={filter} onAdd={onAddToTimeline} />}
           {tab === 'spells' && <SpellItems campaignId={campaignId} filter={filter} onAdd={onAddToTimeline} />}
           {tab === 'locations' && <LocationItems campaignId={campaignId} filter={filter} onAdd={onAddToTimeline} />}
+          {tab === 'inspiration' && <InspirationItems campaignId={campaignId} onAdd={onAddToTimeline} />}
         </div>
 
         {/* Quick add battle block */}
@@ -236,6 +240,49 @@ function LocationItems({ campaignId, filter, onAdd }: {
       ))}
       {!filtered?.length && <Empty />}
     </>
+  )
+}
+
+function InspirationItems({ campaignId, onAdd }: {
+  campaignId: string
+  onAdd: (block: { block_type: string; source_id?: string; title: string; content_snapshot: Record<string, unknown> }) => void
+}) {
+  const { data: items } = useCampaignInspiration(campaignId)
+
+  if (!items?.length) return <p className="text-stone-500 text-sm p-4">No inspiration items for this campaign.</p>
+
+  const typeIcon = (type: string) => {
+    switch (type) {
+      case 'image': return GiWoodFrame
+      case 'link':  return GiLinkedRings
+      case 'map':   return GiTreasureMap
+      default:      return GiQuillInk
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      {items.map(item => (
+        <ItemRow
+          key={item.id}
+          icon={typeIcon(item.type)}
+          name={item.title}
+          subtitle={item.type}
+          onAdd={() => onAdd({
+            block_type: 'note',
+            source_id: item.id,
+            title: item.title,
+            content_snapshot: {
+              title: item.title,
+              content: item.content,
+              type: item.type,
+              tags: item.tags,
+              media_url: item.media_url,
+            },
+          })}
+        />
+      ))}
+    </div>
   )
 }
 
