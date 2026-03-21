@@ -197,11 +197,16 @@ async function saveClip() {
     let mediaUrl = clipData.url || null
     if (clipData.type === 'image') mediaUrl = clipData.mediaUrl || null
 
+    // For image clips, store source page URL in content so the app can link back
+    const content = clipData.type === 'image'
+      ? clipData.url || clipData.content || null
+      : clipData.content || null
+
     const { error } = await supabase.from('inspiration_items').insert({
       user_id: currentUser.id,
       campaign_id: clipCampaign.value || null,
       title: clipTitle.value || clipData.title || 'Untitled clip',
-      content: clipData.content || null,
+      content,
       type: clipData.type,
       tags,
       media_url: mediaUrl,

@@ -182,7 +182,13 @@ function InspirationCard({ item, isGlobal, campaigns, onDelete, onSendToCampaign
         <>
           <div className="flex items-start gap-2 mb-1">
             <GameIcon icon={TYPE_ICONS[item.type] ?? GiQuillInk} size="xs" />
-            <h4 className="text-sm text-text-heading font-medium flex-1">{item.title}</h4>
+            {item.media_url && item.type !== 'image' ? (
+              <a href={item.media_url} target="_blank" rel="noopener noreferrer" className="text-sm text-text-heading font-medium flex-1 hover:text-primary-light transition-colors">
+                {item.title}
+              </a>
+            ) : (
+              <h4 className="text-sm text-text-heading font-medium flex-1">{item.title}</h4>
+            )}
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => { setEditing(true); setEditTitle(item.title); setEditContent(item.content ?? '') }} className="text-text-muted hover:text-text-body text-xs cursor-pointer">✎</button>
               <button onClick={onDelete} className="text-text-muted hover:text-danger text-xs cursor-pointer">✕</button>
@@ -194,13 +200,19 @@ function InspirationCard({ item, isGlobal, campaigns, onDelete, onSendToCampaign
           )}
 
           {item.media_url && item.type === 'image' && (
-            <img src={item.media_url} alt={item.title} className="mt-2 rounded-[--radius-sm] max-w-full" />
+            item.content && item.content.startsWith('http') ? (
+              <a href={item.content} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                <img src={item.media_url} alt={item.title} className="rounded-[--radius-sm] max-w-full hover:opacity-90 transition-opacity" />
+              </a>
+            ) : (
+              <img src={item.media_url} alt={item.title} className="mt-2 rounded-[--radius-sm] max-w-full" />
+            )
           )}
 
-          {item.media_url && item.type === 'link' && (
-            <a href={item.media_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-light hover:underline mt-1 block truncate">
-              {item.media_url}
-            </a>
+          {item.media_url && (
+            <p className="text-[10px] text-text-muted mt-1 truncate">
+              {(() => { try { return new URL(item.media_url).hostname } catch { return item.media_url } })()}
+            </p>
           )}
 
           {item.tags.length > 0 && (
