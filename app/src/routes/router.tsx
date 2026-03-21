@@ -20,7 +20,7 @@ import { SessionPage } from '@/features/sessions/SessionPage'
 import { SessionsPage } from '@/features/sessions/SessionsPage'
 import { LocationsPage } from '@/features/locations/LocationsPage'
 import { InspirationBoard } from '@/features/scratchpad/InspirationBoard'
-import { useAuth } from '@/lib/auth'
+import { useAuth, waitForAuth } from '@/lib/auth'
 
 // Root layout — wraps children in page transition
 function RootComponent() {
@@ -41,9 +41,10 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: LoginPage,
-  beforeLoad: () => {
-    const { user, loading } = useAuth.getState()
-    if (!loading && user) {
+  beforeLoad: async () => {
+    await waitForAuth()
+    const { user } = useAuth.getState()
+    if (user) {
       throw redirect({ to: '/home' })
     }
   },
@@ -54,9 +55,10 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/home',
   component: HomePage,
-  beforeLoad: () => {
-    const { user, loading } = useAuth.getState()
-    if (!loading && !user) {
+  beforeLoad: async () => {
+    await waitForAuth()
+    const { user } = useAuth.getState()
+    if (!user) {
       throw redirect({ to: '/' })
     }
   },
@@ -74,9 +76,10 @@ const campaignRoute = createRoute({
       </CampaignLayout>
     )
   },
-  beforeLoad: () => {
-    const { user, loading } = useAuth.getState()
-    if (!loading && !user) {
+  beforeLoad: async () => {
+    await waitForAuth()
+    const { user } = useAuth.getState()
+    if (!user) {
       throw redirect({ to: '/' })
     }
   },

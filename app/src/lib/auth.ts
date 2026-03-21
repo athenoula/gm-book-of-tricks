@@ -12,6 +12,16 @@ interface AuthState {
   signOut: () => Promise<void>
 }
 
+// Resolves when auth state is known (loading → false)
+let authReady: Promise<void>
+let resolveAuthReady: () => void
+authReady = new Promise((resolve) => { resolveAuthReady = resolve })
+
+/** Wait for auth to finish initialising. Safe to call multiple times. */
+export function waitForAuth(): Promise<void> {
+  return authReady
+}
+
 export const useAuth = create<AuthState>((set) => ({
   user: null,
   session: null,
@@ -24,6 +34,7 @@ export const useAuth = create<AuthState>((set) => ({
       session,
       loading: false,
     })
+    resolveAuthReady()
 
     supabase.auth.onAuthStateChange((_event, session) => {
       set({
