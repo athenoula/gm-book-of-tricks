@@ -53,6 +53,7 @@ label {
   margin-bottom: 4px;
 }
 
+textarea,
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -69,8 +70,15 @@ select {
   transition: border-color 0.15s;
 }
 
+textarea {
+  resize: vertical;
+  min-height: 40px;
+  font-family: inherit;
+}
+
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: rgba(245, 158, 11, 0.3);
 }
 

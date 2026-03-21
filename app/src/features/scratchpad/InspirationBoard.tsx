@@ -195,21 +195,37 @@ function InspirationCard({ item, isGlobal, campaigns, onDelete, onSendToCampaign
             </div>
           </div>
 
-          {item.content && (
+          {item.type === 'image' && item.media_url && (() => {
+            // For image clips: first line of content may be source URL, rest is notes
+            const sourceUrl = item.content?.split('\n')[0]?.startsWith('http') ? item.content.split('\n')[0].trim() : null
+            const notes = sourceUrl
+              ? item.content?.split('\n').slice(1).join('\n').trim() || null
+              : item.content
+
+            return (
+              <>
+                {sourceUrl ? (
+                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 group/img">
+                    <img src={item.media_url} alt={item.title} className="rounded-[--radius-sm] max-w-full group-hover/img:opacity-90 transition-opacity" />
+                    <p className="text-[10px] text-text-muted mt-1 truncate">
+                      {(() => { try { return new URL(sourceUrl).hostname } catch { return '' } })()}
+                    </p>
+                  </a>
+                ) : (
+                  <img src={item.media_url} alt={item.title} className="mt-2 rounded-[--radius-sm] max-w-full" />
+                )}
+                {notes && (
+                  <p className="text-xs text-text-secondary mt-1 whitespace-pre-line">{notes}</p>
+                )}
+              </>
+            )
+          })()}
+
+          {item.type !== 'image' && item.content && (
             <p className="text-xs text-text-secondary mt-1 whitespace-pre-line">{item.content}</p>
           )}
 
-          {item.media_url && item.type === 'image' && (
-            item.content && item.content.startsWith('http') ? (
-              <a href={item.content} target="_blank" rel="noopener noreferrer" className="block mt-2">
-                <img src={item.media_url} alt={item.title} className="rounded-[--radius-sm] max-w-full hover:opacity-90 transition-opacity" />
-              </a>
-            ) : (
-              <img src={item.media_url} alt={item.title} className="mt-2 rounded-[--radius-sm] max-w-full" />
-            )
-          )}
-
-          {item.media_url && (
+          {item.type !== 'image' && item.media_url && (
             <p className="text-[10px] text-text-muted mt-1 truncate">
               {(() => { try { return new URL(item.media_url).hostname } catch { return item.media_url } })()}
             </p>

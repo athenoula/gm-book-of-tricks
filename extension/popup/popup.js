@@ -17,6 +17,7 @@ const clipTitle = document.getElementById('clip-title')
 const clipUrl = document.getElementById('clip-url')
 const clipUrlGroup = document.getElementById('clip-url-group')
 const clipCampaign = document.getElementById('clip-campaign')
+const clipNotes = document.getElementById('clip-notes')
 const clipTags = document.getElementById('clip-tags')
 const saveBtn = document.getElementById('save-btn')
 const saveError = document.getElementById('save-error')
@@ -193,14 +194,16 @@ async function saveClip() {
       : []
 
     // media_url: image clips get the image URL,
-    // text and link clips get the source page URL (displayed as clickable link in the app)
+    // text and link clips get the source page URL
     let mediaUrl = clipData.url || null
     if (clipData.type === 'image') mediaUrl = clipData.mediaUrl || null
 
-    // For image clips, store source page URL in content so the app can link back
-    const content = clipData.type === 'image'
-      ? clipData.url || clipData.content || null
-      : clipData.content || null
+    // Build content: source URL (for image clips) + selected text + user notes
+    const parts = []
+    if (clipData.type === 'image' && clipData.url) parts.push(clipData.url)
+    if (clipData.content) parts.push(clipData.content)
+    if (clipNotes.value.trim()) parts.push(clipNotes.value.trim())
+    const content = parts.join('\n\n') || null
 
     const { error } = await supabase.from('inspiration_items').insert({
       user_id: currentUser.id,
