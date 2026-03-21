@@ -195,41 +195,7 @@ function InspirationCard({ item, isGlobal, campaigns, onDelete, onSendToCampaign
             </div>
           </div>
 
-          {item.type === 'image' && item.media_url && (() => {
-            // For image clips: first line of content may be source URL, rest is notes
-            const sourceUrl = item.content?.split('\n')[0]?.startsWith('http') ? item.content.split('\n')[0].trim() : null
-            const notes = sourceUrl
-              ? item.content?.split('\n').slice(1).join('\n').trim() || null
-              : item.content
-
-            return (
-              <>
-                {sourceUrl ? (
-                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 group/img">
-                    <img src={item.media_url} alt={item.title} className="rounded-[--radius-sm] max-w-full group-hover/img:opacity-90 transition-opacity" />
-                    <p className="text-[10px] text-text-muted mt-1 truncate">
-                      {(() => { try { return new URL(sourceUrl).hostname } catch { return '' } })()}
-                    </p>
-                  </a>
-                ) : (
-                  <img src={item.media_url} alt={item.title} className="mt-2 rounded-[--radius-sm] max-w-full" />
-                )}
-                {notes && (
-                  <p className="text-xs text-text-secondary mt-1 whitespace-pre-line">{notes}</p>
-                )}
-              </>
-            )
-          })()}
-
-          {item.type !== 'image' && item.content && (
-            <p className="text-xs text-text-secondary mt-1 whitespace-pre-line">{item.content}</p>
-          )}
-
-          {item.type !== 'image' && item.media_url && (
-            <p className="text-[10px] text-text-muted mt-1 truncate">
-              {(() => { try { return new URL(item.media_url).hostname } catch { return item.media_url } })()}
-            </p>
-          )}
+          <ClipContent item={item} />
 
           {item.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -269,5 +235,52 @@ function InspirationCard({ item, isGlobal, campaigns, onDelete, onSendToCampaign
         </>
       )}
     </div>
+  )
+}
+
+function getHostname(url: string): string {
+  try { return new URL(url).hostname } catch { return url }
+}
+
+function ClipContent({ item }: { item: InspirationItem }) {
+  if (item.type === 'image' && item.media_url) {
+    // For image clips: first line of content may be source page URL, rest is notes
+    const lines = item.content?.split('\n') ?? []
+    const firstLine = lines[0]?.trim() ?? ''
+    const sourceUrl = firstLine.startsWith('http') ? firstLine : null
+    const notes = sourceUrl
+      ? lines.slice(1).join('\n').replace(/^\n+/, '').trim()
+      : item.content?.trim() ?? null
+
+    return (
+      <>
+        {sourceUrl ? (
+          <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="block mt-2">
+            <img
+              src={item.media_url}
+              alt={item.title}
+              className="rounded-[--radius-sm] max-w-full hover:opacity-80 transition-opacity cursor-pointer"
+            />
+            <p className="text-[10px] text-text-muted mt-1 truncate hover:text-primary-light">
+              {getHostname(sourceUrl)}
+            </p>
+          </a>
+        ) : (
+          <img src={item.media_url} alt={item.title} className="mt-2 rounded-[--radius-sm] max-w-full" />
+        )}
+        {notes && <p className="text-xs text-text-secondary mt-1 whitespace-pre-line">{notes}</p>}
+      </>
+    )
+  }
+
+  return (
+    <>
+      {item.content && (
+        <p className="text-xs text-text-secondary mt-1 whitespace-pre-line">{item.content}</p>
+      )}
+      {item.media_url && (
+        <p className="text-[10px] text-text-muted mt-1 truncate">{getHostname(item.media_url)}</p>
+      )}
+    </>
   )
 }
