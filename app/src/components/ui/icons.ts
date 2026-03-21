@@ -14,6 +14,7 @@ export { GiSparkles } from 'react-icons/gi'           // ✦ spellbook/spells
 export { GiPositionMarker } from 'react-icons/gi'    // 📍 locations
 export { GiRollingDices } from 'react-icons/gi'       // 🎲 generators/dice/loading
 export { GiNotebook } from 'react-icons/gi'            // 📌 scratchpad
+export { GiBookmark } from 'react-icons/gi'            // 🔖 add to session
 export { GiScrollUnfurled } from 'react-icons/gi'    // 📜 sessions/scenes
 export { GiCastle } from 'react-icons/gi'             // 🏠 all campaigns
 

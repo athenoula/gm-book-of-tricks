@@ -9,11 +9,16 @@ import {
   GiTrail,
   GiWaveCrest,
   GiMountainRoad,
+  GiNotebook,
+  GiBookmark,
 } from '@/components/ui/icons'
 import type { IconComponent } from '@/components/ui/icons'
 import { FadeIn, SlideUp } from '@/components/motion'
 import { rollD20 } from '@/lib/dnd'
 import encounterData from '@/lib/data/encounter-tables.json'
+import { useCreateInspiration } from '@/features/scratchpad/useInspiration'
+import { useSessions } from '@/features/sessions/useSessions'
+import { useAddTimelineBlock } from '@/features/timeline/useTimelineBlocks'
 
 const TABLE_KEYS = ['whoWhat', 'disposition', 'complication', 'reward', 'consequence'] as const
 type TableKey = (typeof TABLE_KEYS)[number]
@@ -39,13 +44,19 @@ function emptySelections(): Record<TableKey, number | null> {
   return { whoWhat: null, disposition: null, complication: null, reward: null, consequence: null }
 }
 
-export function CompendiumEncounterGenerator({ campaignId: _campaignId }: { campaignId: string }) {
+export function CompendiumEncounterGenerator({ campaignId }: { campaignId: string }) {
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null)
   const [selections, setSelections] = useState<Record<TableKey, number | null>>(emptySelections())
   const [rollingColumn, setRollingColumn] = useState<string | null>(null)
   const [rollDisplay, setRollDisplay] = useState(0)
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({})
+  const [showSessionPicker, setShowSessionPicker] = useState(false)
+  const [savedToScratchpad, setSavedToScratchpad] = useState(false)
   const rollingRef = useRef(false)
+
+  const createInspiration = useCreateInspiration()
+  const { data: sessions } = useSessions(campaignId)
+  const addTimelineBlock = useAddTimelineBlock()
 
   const locationData = selectedLocation !== null ? encounterData[selectedLocation] : null
   const isComplete = TABLE_KEYS.every((key) => selections[key] !== null)
@@ -122,11 +133,60 @@ export function CompendiumEncounterGenerator({ campaignId: _campaignId }: { camp
     }
   }
 
+  const buildEncounterText = () => {
+    if (!locationData) return ''
+    const tables = locationData.tables as Record<string, string[]>
+    return TABLE_KEYS.map((key) => {
+      const value = selections[key] !== null ? tables[key][selections[key]!] : ''
+      return `**${TABLE_LABELS[key]}:** ${value}`
+    }).join('\n')
+  }
+
+  const buildEncounterTitle = () => {
+    if (!locationData || selections.whoWhat === null) return 'Random Encounter'
+    const tables = locationData.tables as Record<string, string[]>
+    return `${locationData.location}: ${tables.whoWhat[selections.whoWhat!]}`
+  }
+
+  const handleSaveToScratchpad = () => {
+    createInspiration.mutate({
+      title: buildEncounterTitle(),
+      content: buildEncounterText(),
+      type: 'text',
+      tags: ['encounter', locationData?.location.toLowerCase() ?? ''],
+      campaign_id: campaignId,
+    })
+    setSavedToScratchpad(true)
+  }
+
+  const handleAddToSession = async (sessionId: string) => {
+    const snapshot = {
+      location: locationData?.location,
+      entries: TABLE_KEYS.reduce((acc, key) => {
+        const tables = locationData!.tables as Record<string, string[]>
+        acc[key] = selections[key] !== null ? tables[key][selections[key]!] : ''
+        return acc
+      }, {} as Record<string, string>),
+      text: buildEncounterText(),
+    }
+    addTimelineBlock.mutate({
+      session_id: sessionId,
+      campaign_id: campaignId,
+      block_type: 'note',
+      title: buildEncounterTitle(),
+      content_snapshot: snapshot,
+      sort_order: Date.now(),
+    })
+    setShowSessionPicker(false)
+  }
+
   const handleReset = () => {
     setSelections(emptySelections())
     setRollingColumn(null)
     setRollDisplay(0)
     setExpandedTables({})
+    setSavedToScratchpad(false)
+    setShowSessionPicker(false)
   }
 
   const handleBackToLocations = () => {
@@ -213,14 +273,55 @@ export function CompendiumEncounterGenerator({ campaignId: _campaignId }: { camp
                 )
               })}
             </dl>
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex flex-wrap items-center gap-2 mt-4">
               <Button size="sm" variant="secondary" onClick={handleReset}>
                 New Encounter
               </Button>
               <Button size="sm" variant="ghost" onClick={handleBackToLocations}>
                 Change Location
               </Button>
+              <div className="w-px h-5 bg-border mx-1" />
+              <Button
+                size="sm"
+                onClick={handleSaveToScratchpad}
+                disabled={savedToScratchpad || createInspiration.isPending}
+              >
+                <GameIcon icon={GiNotebook} size="sm" />
+                {savedToScratchpad ? 'Saved!' : 'Save to Scratchpad'}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setShowSessionPicker(!showSessionPicker)}
+              >
+                <GameIcon icon={GiBookmark} size="sm" />
+                Add to Session
+              </Button>
             </div>
+
+            {/* Session picker */}
+            {showSessionPicker && (
+              <div className="mt-3 border border-border rounded-[--radius-md] bg-bg-raised p-3">
+                <p className="text-xs text-text-muted mb-2">Pick a session:</p>
+                {sessions && sessions.length > 0 ? (
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {sessions.map((session) => (
+                      <button
+                        key={session.id}
+                        onClick={() => handleAddToSession(session.id)}
+                        className="w-full text-left text-sm px-3 py-2 rounded-[--radius-sm] hover:bg-bg-base transition-colors text-text-body cursor-pointer"
+                      >
+                        <span className="font-medium">#{session.session_number}</span>{' '}
+                        {session.name}
+                        <span className="text-xs text-text-muted ml-2">{session.status}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-text-muted">No sessions found for this campaign.</p>
+                )}
+              </div>
+            )}
           </div>
         </SlideUp>
       )}
