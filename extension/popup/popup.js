@@ -192,11 +192,10 @@ async function saveClip() {
       ? clipTags.value.split(',').map(t => t.trim()).filter(Boolean)
       : []
 
-    // media_url: image clips get the image URL, text clips get the source page URL,
-    // link clips get null (the URL is stored as content context, not as media)
-    let mediaUrl = null
+    // media_url: image clips get the image URL,
+    // text and link clips get the source page URL (displayed as clickable link in the app)
+    let mediaUrl = clipData.url || null
     if (clipData.type === 'image') mediaUrl = clipData.mediaUrl || null
-    else if (clipData.type === 'text') mediaUrl = clipData.url || null
 
     const { error } = await supabase.from('inspiration_items').insert({
       user_id: currentUser.id,
