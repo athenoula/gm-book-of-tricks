@@ -31,6 +31,23 @@ What's been done, what's next, and what we said we'd come back to.
 - Campaign files section: PDF upload, list with open (signed URL) and delete
 - Storage helpers in `src/lib/storage.ts`
 
+### Web Clipper Chrome Extension
+- Chrome Manifest V3 extension in `extension/` folder (standalone, no build step)
+- Clip page URLs, selected text, or right-click images from any website
+- Clips save directly to the Inspiration Board via Supabase
+- Campaign picker dropdown (or Global Inbox)
+- Tags and notes fields
+- Supabase auth with session persistence via `chrome.storage.local`
+- Clipped images are clickable back to source page
+- Warm Craft themed popup
+
+### Production Deployment
+- GitHub repo: `github.com/athenoula/gm-book-of-tricks` (public)
+- GitHub Pages: `athenoula.github.io/gm-book-of-tricks`
+- Hash routing (`createHashHistory`) for static hosting compatibility
+- Fixed `AnimatePresence mode="popLayout"` + `pointerEvents: none` on exit for production builds
+- Inspiration items from clipper link back to source pages (title clickable for links, image clickable for images)
+
 ---
 
 ## Up Next — Remaining Phase 2 Roadmap
@@ -106,5 +123,7 @@ All specs and plans are in `docs/superpowers/`:
 - `plans/2026-03-20-visual-elevation.md`
 - `specs/2026-03-20-image-pdf-system-design.md`
 - `plans/2026-03-21-image-pdf-system.md`
+- `specs/2026-03-21-web-clipper-design.md`
+- `plans/2026-03-21-web-clipper.md`
 
 The Phase 2 research report with visual demos: `phase-2-report.html` (open in browser)

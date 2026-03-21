@@ -112,6 +112,24 @@ src/
 - Data model is architected for players (campaign_members table, RLS-ready)
 - No player UI built yet — GM-only tool for now
 
+### Web Clipper Chrome Extension
+- Lives in `extension/` at project root (sibling to `app/`)
+- Chrome Manifest V3, vanilla JS, no build step
+- Clips web content (pages, text, images) directly into the `inspiration_items` table
+- Authenticates with Supabase via `chrome.storage.local` session persistence
+- `autoRefreshToken: false`, `persistSession: false` — session managed manually in `lib/auth.js`
+- Supabase JS client bundled as UMD in `lib/supabase-client.js`
+- Script load order in popup.html is critical: supabase-client → supabase → auth → popup
+- Uses `var supabase` (not `const`) so the client is accessible across script files via `window`
+- For image clips: source page URL stored as first line of `content`, image URL in `media_url`
+
+### Deployment
+- **GitHub**: `github.com/athenoula/gm-book-of-tricks` (public)
+- **GitHub Pages**: `athenoula.github.io/gm-book-of-tricks`
+- Uses `createHashHistory` for routing — works on any static host without server config
+- Build for GitHub Pages: `npx vite build --base=/gm-book-of-tricks/` then deploy `dist/` to `gh-pages` branch
+- `PageTransition` uses `AnimatePresence mode="popLayout"` with `pointerEvents: none` on exit — required for production builds (mode="wait" causes hangs)
+
 ## Key Patterns
 
 ### Mutations
