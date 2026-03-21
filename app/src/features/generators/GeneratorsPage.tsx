@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { GameIcon } from '@/components/ui/GameIcon'
 import { GiRollingDices } from '@/components/ui/icons'
-import { NPCGenerator } from './NPCGenerator'
-import { EncounterGenerator } from './EncounterGenerator'
+import { CompendiumNPCGenerator } from './CompendiumNPCGenerator'
+import { CompendiumEncounterGenerator } from './CompendiumEncounterGenerator'
 import { LootTableManager } from './LootTableManager'
 
 export function GeneratorsPage({ campaignId }: { campaignId: string }) {
@@ -34,8 +34,8 @@ export function GeneratorsPage({ campaignId }: { campaignId: string }) {
         </div>
       </div>
 
-      {tab === 'npc' && <NPCGenerator campaignId={campaignId} />}
-      {tab === 'encounter' && <EncounterGenerator campaignId={campaignId} />}
+      {tab === 'npc' && <CompendiumNPCGenerator campaignId={campaignId} />}
+      {tab === 'encounter' && <CompendiumEncounterGenerator campaignId={campaignId} />}
       {tab === 'loot' && <LootTableManager campaignId={campaignId} />}
     </div>
   )
