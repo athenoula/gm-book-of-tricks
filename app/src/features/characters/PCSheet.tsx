@@ -5,6 +5,8 @@ import { PortraitFrame } from '@/components/ui/PortraitFrame'
 import { getClassIcon } from '@/components/ui/class-icons'
 import { uploadImage } from '@/lib/storage'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
+import { getRacesForEdition, CLASSES } from '@/lib/data/editions'
+import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { useUpdatePC, useDeletePC, useUpdatePortrait } from './useCharacters'
 import { SpellPicker } from './SpellPicker'
 import type { PlayerCharacter, AbilityScores } from '@/lib/types'
@@ -42,6 +44,7 @@ export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: s
     return (
       <PCEditForm
         pc={pc}
+        campaignId={campaignId}
         onSave={() => setEditing(false)}
         onCancel={() => setEditing(false)}
       />
@@ -154,17 +157,26 @@ export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: s
   )
 }
 
-function PCEditForm({ pc, onSave, onCancel }: {
+function PCEditForm({ pc, campaignId, onSave, onCancel }: {
   pc: PlayerCharacter
+  campaignId: string
   onSave: () => void
   onCancel: () => void
 }) {
   const updatePC = useUpdatePC()
+  const { data: campaign } = useCampaign(campaignId)
+  const races = getRacesForEdition(campaign?.game_system || '')
   const scores = pc.ability_scores as AbilityScores
 
+  // Determine if existing value is a known race/class or custom
+  const knownRace = races.includes(pc.race ?? '') ? (pc.race ?? '') : (pc.race ? 'other' : '')
+  const knownClass = CLASSES.includes(pc.class as typeof CLASSES[number]) ? (pc.class ?? '') : (pc.class ? 'other' : '')
+
   const [name, setName] = useState(pc.name)
-  const [race, setRace] = useState(pc.race ?? '')
-  const [pcClass, setPcClass] = useState(pc.class ?? '')
+  const [race, setRace] = useState(knownRace)
+  const [customRace, setCustomRace] = useState(knownRace === 'other' ? (pc.race ?? '') : '')
+  const [pcClass, setPcClass] = useState(knownClass)
+  const [customClass, setCustomClass] = useState(knownClass === 'other' ? (pc.class ?? '') : '')
   const [subclass, setSubclass] = useState(pc.subclass ?? '')
   const [level, setLevel] = useState(String(pc.level))
   const [background, setBackground] = useState(pc.background ?? '')
@@ -198,11 +210,13 @@ function PCEditForm({ pc, onSave, onCancel }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const finalRace = race === 'other' ? customRace : race
+    const finalClass = pcClass === 'other' ? customClass : pcClass
     await updatePC.mutateAsync({
       id: pc.id,
       name,
-      race: race || null,
-      class: pcClass || null,
+      race: finalRace || null,
+      class: finalClass || null,
       subclass: subclass || null,
       level: parseInt(level, 10) || 1,
       background: background || null,
@@ -245,10 +259,54 @@ function PCEditForm({ pc, onSave, onCancel }: {
         <legend className="text-xs text-text-muted uppercase tracking-wider mb-2">Identity</legend>
         <div className="grid grid-cols-2 gap-3">
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-          <Input label="Race" value={race} onChange={(e) => setRace(e.target.value)} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-text-secondary font-medium">Race</label>
+            <select
+              value={race}
+              onChange={e => setRace(e.target.value)}
+              className="w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors"
+            >
+              <option value="">Select race...</option>
+              {races.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+              <option value="other">Other (custom)</option>
+            </select>
+            {race === 'other' && (
+              <input
+                type="text"
+                value={customRace}
+                onChange={e => setCustomRace(e.target.value)}
+                placeholder="Enter custom race..."
+                className="w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body placeholder:text-text-muted text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors mt-1.5"
+              />
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-4 gap-3">
-          <Input label="Class" value={pcClass} onChange={(e) => setPcClass(e.target.value)} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-text-secondary font-medium">Class</label>
+            <select
+              value={pcClass}
+              onChange={e => setPcClass(e.target.value)}
+              className="w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors"
+            >
+              <option value="">Select class...</option>
+              {CLASSES.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+              <option value="other">Other (custom)</option>
+            </select>
+            {pcClass === 'other' && (
+              <input
+                type="text"
+                value={customClass}
+                onChange={e => setCustomClass(e.target.value)}
+                placeholder="Enter custom class..."
+                className="w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body placeholder:text-text-muted text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors mt-1.5"
+              />
+            )}
+          </div>
           <Input label="Subclass" value={subclass} onChange={(e) => setSubclass(e.target.value)} />
           <Input label="Level" type="number" value={level} onChange={(e) => setLevel(e.target.value)} min={1} max={20} />
           <Input label="Background" value={background} onChange={(e) => setBackground(e.target.value)} />

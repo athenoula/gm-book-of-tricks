@@ -5,6 +5,8 @@ import { GameIcon } from '@/components/ui/GameIcon'
 import { PortraitFrame } from '@/components/ui/PortraitFrame'
 import { GiThreeFriends, GiHoodedFigure } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
+import { getRacesForEdition, CLASSES } from '@/lib/data/editions'
+import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { usePCs, useCreatePC, useNPCs, useCreateNPC, useDeleteNPC } from './useCharacters'
 import { PCSheet } from './PCSheet'
 import type { PlayerCharacter, NPC } from '@/lib/types'
@@ -86,9 +88,14 @@ function PCCreateForm({ campaignId, onSave, isPending }: {
   onSave: (data: Partial<PlayerCharacter> & { campaign_id: string; name: string }) => void
   isPending: boolean
 }) {
+  const { data: campaign } = useCampaign(campaignId)
+  const races = getRacesForEdition(campaign?.game_system || '')
+
   const [name, setName] = useState('')
   const [race, setRace] = useState('')
+  const [customRace, setCustomRace] = useState('')
   const [pcClass, setPcClass] = useState('')
+  const [customClass, setCustomClass] = useState('')
   const [level, setLevel] = useState('1')
   const [hpMax, setHpMax] = useState('10')
   const [ac, setAc] = useState('10')
@@ -97,11 +104,13 @@ function PCCreateForm({ campaignId, onSave, isPending }: {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const hp = parseInt(hpMax, 10) || 10
+    const finalRace = race === 'other' ? customRace : race
+    const finalClass = pcClass === 'other' ? customClass : pcClass
     onSave({
       campaign_id: campaignId,
       name,
-      race: race || null,
-      class: pcClass || null,
+      race: finalRace || null,
+      class: finalClass || null,
       level: parseInt(level, 10) || 1,
       hp_max: hp,
       hp_current: hp,
@@ -110,6 +119,9 @@ function PCCreateForm({ campaignId, onSave, isPending }: {
     })
   }
 
+  const selectClassName = "w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors"
+  const customInputClassName = "w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body placeholder:text-text-muted text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors mt-1.5"
+
   return (
     <form onSubmit={handleSubmit} className="bg-bg-base rounded-[--radius-lg] border border-border p-4 mb-4 space-y-3">
       <div className="grid grid-cols-2 gap-3">
@@ -117,8 +129,44 @@ function PCCreateForm({ campaignId, onSave, isPending }: {
         <Input label="Player Name" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Optional" />
       </div>
       <div className="grid grid-cols-5 gap-3">
-        <Input label="Race" value={race} onChange={(e) => setRace(e.target.value)} placeholder="Elf" />
-        <Input label="Class" value={pcClass} onChange={(e) => setPcClass(e.target.value)} placeholder="Wizard" />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-text-secondary font-medium">Race</label>
+          <select value={race} onChange={e => setRace(e.target.value)} className={selectClassName}>
+            <option value="">Select race...</option>
+            {races.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+            <option value="other">Other (custom)</option>
+          </select>
+          {race === 'other' && (
+            <input
+              type="text"
+              value={customRace}
+              onChange={e => setCustomRace(e.target.value)}
+              placeholder="Enter custom race..."
+              className={customInputClassName}
+            />
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-text-secondary font-medium">Class</label>
+          <select value={pcClass} onChange={e => setPcClass(e.target.value)} className={selectClassName}>
+            <option value="">Select class...</option>
+            {CLASSES.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+            <option value="other">Other (custom)</option>
+          </select>
+          {pcClass === 'other' && (
+            <input
+              type="text"
+              value={customClass}
+              onChange={e => setCustomClass(e.target.value)}
+              placeholder="Enter custom class..."
+              className={customInputClassName}
+            />
+          )}
+        </div>
         <Input label="Level" type="number" value={level} onChange={(e) => setLevel(e.target.value)} min={1} max={20} />
         <Input label="HP" type="number" value={hpMax} onChange={(e) => setHpMax(e.target.value)} />
         <Input label="AC" type="number" value={ac} onChange={(e) => setAc(e.target.value)} />
@@ -218,29 +266,55 @@ function NPCForm({ campaignId, onSave, isPending }: {
   onSave: (data: Partial<NPC> & { campaign_id: string; name: string }) => void
   isPending: boolean
 }) {
+  const { data: campaign } = useCampaign(campaignId)
+  const races = getRacesForEdition(campaign?.game_system || '')
+
   const [name, setName] = useState('')
   const [race, setRace] = useState('')
+  const [customRace, setCustomRace] = useState('')
   const [occupation, setOccupation] = useState('')
   const [personality, setPersonality] = useState('')
   const [appearance, setAppearance] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const finalRace = race === 'other' ? customRace : race
     onSave({
       campaign_id: campaignId,
       name,
-      race: race || null,
+      race: finalRace || null,
       occupation: occupation || null,
       personality: personality || null,
       appearance: appearance || null,
     })
   }
 
+  const selectClassName = "w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors"
+  const customInputClassName = "w-full px-3 py-2 rounded-[--radius-md] bg-bg-raised border border-border text-text-body placeholder:text-text-muted text-sm focus:outline-none focus:border-border-active focus:ring-1 focus:ring-primary/30 transition-colors mt-1.5"
+
   return (
     <form onSubmit={handleSubmit} className="bg-bg-base rounded-[--radius-lg] border border-border p-4 mb-4 space-y-3">
       <div className="grid grid-cols-3 gap-3">
         <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <Input label="Race" value={race} onChange={(e) => setRace(e.target.value)} placeholder="Dwarf" />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm text-text-secondary font-medium">Race</label>
+          <select value={race} onChange={e => setRace(e.target.value)} className={selectClassName}>
+            <option value="">Select race...</option>
+            {races.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+            <option value="other">Other (custom)</option>
+          </select>
+          {race === 'other' && (
+            <input
+              type="text"
+              value={customRace}
+              onChange={e => setCustomRace(e.target.value)}
+              placeholder="Enter custom race..."
+              className={customInputClassName}
+            />
+          )}
+        </div>
         <Input label="Occupation" value={occupation} onChange={(e) => setOccupation(e.target.value)} placeholder="Blacksmith" />
       </div>
       <Input label="Personality" value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder="Gruff but kind-hearted" />
