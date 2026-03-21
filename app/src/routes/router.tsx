@@ -2,6 +2,7 @@ import {
   createRouter,
   createRoute,
   createRootRoute,
+  createHashHistory,
   redirect,
   Outlet,
   useRouterState,
@@ -195,10 +196,9 @@ const routeTree = rootRoute.addChildren([
   ]),
 ])
 
-export const router = createRouter({
-  routeTree,
-  basepath: import.meta.env.BASE_URL,
-})
+const hashHistory = createHashHistory()
+
+export const router = createRouter({ routeTree, history: hashHistory })
 
 // Type safety for TanStack Router
 declare module '@tanstack/react-router' {
