@@ -51,3 +51,10 @@ export { GiBroadDagger } from 'react-icons/gi'       // Rogue
 export { GiMagicPalm } from 'react-icons/gi'         // Sorcerer
 export { GiWarlockEye } from 'react-icons/gi'        // Warlock
 export { GiCog } from 'react-icons/gi'               // Artificer
+
+// Location/encounter icons
+export { GiForestCamp } from 'react-icons/gi'        // Forest encounter
+export { GiDungeonGate } from 'react-icons/gi'       // Dungeon entrance
+export { GiTrail } from 'react-icons/gi'             // Road/wilderness trail
+export { GiWaveCrest } from 'react-icons/gi'         // Coastal/sea waves
+export { GiMountainRoad } from 'react-icons/gi'      // Mountain path
