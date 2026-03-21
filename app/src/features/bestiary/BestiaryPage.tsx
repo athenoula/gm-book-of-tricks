@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiSpikedDragonHead } from '@/components/ui/icons'
+import { GiSpikedDragonHead, GiHoodedFigure } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaignMonsters, useSearchSrdMonsters, useSaveMonster, useDeleteMonster } from './useMonsters'
 import { MonsterCreateForm } from './MonsterCreateForm'
+import { MonsterToNPCDialog } from './MonsterToNPCDialog'
 import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { Monster } from '@/lib/types'
@@ -48,6 +49,7 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   const [sourceBookFilter, setSourceBookFilter] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingMonster, setEditingMonster] = useState<Monster | null>(null)
+  const [makeNPCMonster, setMakeNPCMonster] = useState<Monster | null>(null)
 
   const sourceBooks = [...new Set(monsters?.map(m => m.source_book).filter(Boolean) ?? [])].sort()
 
@@ -110,20 +112,30 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
               onToggle={() => setExpandedId(expandedId === monster.id ? null : monster.id)}
               onDelete={() => deleteMonster.mutate({ id: monster.id, campaignId })}
               onEdit={() => setEditingMonster(monster)}
+              onMakeNPC={() => setMakeNPCMonster(monster)}
             />
           </StaggerItem>
         ))}
       </StaggerList>
+
+      {makeNPCMonster && (
+        <MonsterToNPCDialog
+          monster={makeNPCMonster}
+          campaignId={campaignId}
+          onClose={() => setMakeNPCMonster(null)}
+        />
+      )}
     </div>
   )
 }
 
-function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit }: {
+function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit, onMakeNPC }: {
   monster: Monster
   expanded: boolean
   onToggle: () => void
   onDelete: () => void
   onEdit: () => void
+  onMakeNPC: () => void
 }) {
   const sb = monster.stat_block as Open5eMonster | null
 
@@ -208,6 +220,9 @@ function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit }: {
           )}
 
           <div className="flex justify-end gap-2 pt-1">
+            <Button size="sm" variant="ghost" onClick={onMakeNPC}>
+              <GameIcon icon={GiHoodedFigure} size="sm" /> Make NPC
+            </Button>
             {monster.source === 'homebrew' && (
               <Button size="sm" variant="ghost" onClick={onEdit}>
                 Edit

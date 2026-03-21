@@ -235,7 +235,14 @@ function NPCCard({ npc, onDelete }: { npc: NPC; onDelete: () => void }) {
             size="sm"
           />
           <div>
-            <h4 className="text-text-heading font-medium">{npc.name}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-text-heading font-medium">{npc.name}</h4>
+              {npc.stat_block && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-red-900/30 text-red-400 border border-red-800/30">
+                  Has Stat Block
+                </span>
+              )}
+            </div>
             <p className="text-xs text-text-secondary">
               {[npc.race, npc.occupation].filter(Boolean).join(' · ')}
             </p>

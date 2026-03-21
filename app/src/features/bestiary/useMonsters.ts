@@ -172,6 +172,35 @@ export function useUpdateMonster() {
   })
 }
 
+export function useMonsterToNPC() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      campaign_id: string
+      name: string
+      race: string | null
+      personality: string | null
+      notes: string | null
+      stat_block: Record<string, unknown>
+    }) => {
+      const { data, error } = await supabase
+        .from('npcs')
+        .insert(input)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['npcs', data.campaign_id] })
+      useToastStore.getState().addToast('success', `${data.name} added as NPC`)
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Failed to create NPC')
+    },
+  })
+}
+
 export function useDeleteMonster() {
   const queryClient = useQueryClient()
 
