@@ -205,7 +205,7 @@ async function saveClip() {
     if (clipNotes.value.trim()) parts.push(clipNotes.value.trim())
     const content = parts.join('\n\n') || null
 
-    const { error } = await supabase.from('inspiration_items').insert({
+    const insertData = {
       user_id: currentUser.id,
       campaign_id: clipCampaign.value || null,
       title: clipTitle.value || clipData.title || 'Untitled clip',
@@ -213,7 +213,8 @@ async function saveClip() {
       type: clipData.type,
       tags,
       media_url: mediaUrl,
-    })
+    }
+    const { error } = await supabase.from('inspiration_items').insert(insertData)
 
     if (error) throw error
 
