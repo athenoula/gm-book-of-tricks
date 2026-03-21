@@ -13,14 +13,41 @@ interface AuthState {
 }
 
 // Resolves when auth state is known (loading → false)
-let authReady: Promise<void>
 let resolveAuthReady: () => void
-authReady = new Promise((resolve) => { resolveAuthReady = resolve })
+const authReady = new Promise<void>((resolve) => { resolveAuthReady = resolve })
 
 /** Wait for auth to finish initialising. Safe to call multiple times. */
 export function waitForAuth(): Promise<void> {
   return authReady
 }
+
+// Eagerly initialise auth — runs at module load time, before React mounts.
+// This ensures waitForAuth() resolves before any route guard runs.
+let initialized = false
+function initAuth() {
+  if (initialized) return
+  initialized = true
+
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    useAuth.setState({
+      user: session?.user ?? null,
+      session,
+      loading: false,
+    })
+    resolveAuthReady()
+  })
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    useAuth.setState({
+      user: session?.user ?? null,
+      session,
+      loading: false,
+    })
+  })
+}
+
+// Kick off immediately
+initAuth()
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
@@ -28,21 +55,9 @@ export const useAuth = create<AuthState>((set) => ({
   loading: true,
 
   initialize: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    set({
-      user: session?.user ?? null,
-      session,
-      loading: false,
-    })
-    resolveAuthReady()
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      set({
-        user: session?.user ?? null,
-        session,
-        loading: false,
-      })
-    })
+    // Auth is already initialised eagerly above.
+    // This is kept for backwards compatibility but is a no-op.
+    await authReady
   },
 
   signIn: async (email, password) => {

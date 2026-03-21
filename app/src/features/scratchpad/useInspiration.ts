@@ -34,6 +34,7 @@ export function useGlobalInspiration() {
 export function useCampaignInspiration(campaignId: string) {
   return useQuery({
     queryKey: ['inspiration', campaignId],
+    enabled: !!campaignId,
     queryFn: async (): Promise<InspirationItem[]> => {
       const { data, error } = await supabase
         .from('inspiration_items')
