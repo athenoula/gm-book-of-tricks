@@ -75,8 +75,8 @@ export function PageTransition({ children, routeKey }: { children: ReactNode; ro
   const reduced = useReducedMotion()
   if (reduced) return <div>{children}</div>
   return (
-    <AnimatePresence mode="wait">
-      <motion.div key={routeKey} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_OUT }}>
+    <AnimatePresence mode="popLayout">
+      <motion.div key={routeKey} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15, ease: EASE_OUT }}>
         {children}
       </motion.div>
     </AnimatePresence>

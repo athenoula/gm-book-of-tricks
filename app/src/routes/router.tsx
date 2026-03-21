@@ -20,7 +20,7 @@ import { SessionPage } from '@/features/sessions/SessionPage'
 import { SessionsPage } from '@/features/sessions/SessionsPage'
 import { LocationsPage } from '@/features/locations/LocationsPage'
 import { InspirationBoard } from '@/features/scratchpad/InspirationBoard'
-import { useAuth, waitForAuth } from '@/lib/auth'
+import { useAuth } from '@/lib/auth'
 
 // Root layout — wraps children in page transition
 function RootComponent() {
@@ -34,6 +34,17 @@ function RootComponent() {
 
 const rootRoute = createRootRoute({
   component: RootComponent,
+  errorComponent: ({ error }) => (
+    <div className="min-h-dvh flex items-center justify-center bg-bg-deep p-8">
+      <div className="text-center max-w-lg">
+        <h1 className="text-2xl text-text-heading mb-4">Something went wrong</h1>
+        <pre className="text-left text-xs text-danger bg-bg-base p-4 rounded-[--radius-md] overflow-auto whitespace-pre-wrap mb-4">
+          {error instanceof Error ? `${error.message}\n\n${error.stack}` : String(error)}
+        </pre>
+        <a href="/" className="text-primary hover:text-primary-light">Reload</a>
+      </div>
+    </div>
+  ),
 })
 
 // Public: Login
@@ -41,10 +52,9 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: LoginPage,
-  beforeLoad: async () => {
-    await waitForAuth()
-    const { user } = useAuth.getState()
-    if (user) {
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && user) {
       throw redirect({ to: '/home' })
     }
   },
@@ -55,10 +65,9 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/home',
   component: HomePage,
-  beforeLoad: async () => {
-    await waitForAuth()
-    const { user } = useAuth.getState()
-    if (!user) {
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && !user) {
       throw redirect({ to: '/' })
     }
   },
@@ -76,10 +85,9 @@ const campaignRoute = createRoute({
       </CampaignLayout>
     )
   },
-  beforeLoad: async () => {
-    await waitForAuth()
-    const { user } = useAuth.getState()
-    if (!user) {
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && !user) {
       throw redirect({ to: '/' })
     }
   },
