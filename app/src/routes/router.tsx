@@ -195,7 +195,10 @@ const routeTree = rootRoute.addChildren([
   ]),
 ])
 
-export const router = createRouter({ routeTree })
+export const router = createRouter({
+  routeTree,
+  basepath: import.meta.env.BASE_URL,
+})
 
 // Type safety for TanStack Router
 declare module '@tanstack/react-router' {
