@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html><body>
+<h2>Click each link to download the icon</h2>
+<script>
+[16, 48, 128].forEach(size => {
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const ctx = c.getContext('2d')
+  ctx.fillStyle = '#1c1917'
+  ctx.fillRect(0, 0, size, size)
+  ctx.fillStyle = '#f59e0b'
+  ctx.beginPath()
+  const s = size / 16
+  ctx.moveTo(9*s, 1*s)
+  ctx.lineTo(4*s, 9*s)
+  ctx.lineTo(7*s, 9*s)
+  ctx.lineTo(6*s, 15*s)
+  ctx.lineTo(12*s, 7*s)
+  ctx.lineTo(9*s, 7*s)
+  ctx.lineTo(11*s, 1*s)
+  ctx.closePath()
+  ctx.fill()
+  const a = document.createElement('a')
+  a.href = c.toDataURL('image/png')
+  a.download = 'icon-' + size + '.png'
+  a.textContent = 'Download icon-' + size + '.png'
+  a.style.display = 'block'
+  a.style.margin = '8px'
+  document.body.appendChild(a)
+  document.body.appendChild(c)
+})
+</script>
+</body></html>

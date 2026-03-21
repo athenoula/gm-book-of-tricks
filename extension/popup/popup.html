@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>Book of Tricks Clipper</title>
+</head>
+<body>
+  <!-- Login state -->
+  <div id="login-view" class="view" style="display: none;">
+    <div class="header">
+      <h1>Book of Tricks</h1>
+      <p class="subtitle">Sign in to clip</p>
+    </div>
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button type="submit" id="login-btn">Sign In</button>
+      <p id="login-error" class="error" style="display: none;"></p>
+    </form>
+  </div>
+
+  <!-- Clip state -->
+  <div id="clip-view" class="view" style="display: none;">
+    <div class="header">
+      <h1>Clip to Tricks</h1>
+      <button id="logout-btn" class="link-btn">Sign out</button>
+    </div>
+
+    <!-- Preview -->
+    <div id="image-preview" class="preview-image" style="display: none;">
+      <img id="preview-img" src="" alt="Preview">
+    </div>
+    <div id="text-preview" class="preview-text" style="display: none;"></div>
+
+    <!-- Form -->
+    <div class="form-group">
+      <label for="clip-title">Title</label>
+      <input type="text" id="clip-title" placeholder="Clip title">
+    </div>
+    <div id="clip-url-group" class="form-group">
+      <label>URL</label>
+      <div id="clip-url" class="url-display"></div>
+    </div>
+    <div class="form-group">
+      <label for="clip-campaign">Campaign</label>
+      <select id="clip-campaign">
+        <option value="">Global Inbox</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="clip-tags">Tags</label>
+      <input type="text" id="clip-tags" placeholder="fantasy, npc, art (comma separated)">
+    </div>
+
+    <button id="save-btn" class="save-btn">Save Clip</button>
+    <div id="error-state" style="display: none;">
+      <p id="save-error" class="error"></p>
+      <button id="retry-btn" class="link-btn" style="margin-top: 4px;">Try again</button>
+    </div>
+  </div>
+
+  <!-- Success state -->
+  <div id="success-view" class="view" style="display: none;">
+    <div class="success-content">
+      <div class="checkmark">✓</div>
+      <p>Clipped!</p>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading-view" class="view" style="display: none;">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+  </div>
+
+  <!-- LOAD ORDER MATTERS: supabase-client exposes window.supabase namespace,
+       supabase.js creates the client, auth.js defines session helpers,
+       popup.js uses all of them. Do not reorder. -->
+  <script src="../lib/supabase-client.js"></script>
+  <script src="../lib/supabase.js"></script>
+  <script src="../lib/auth.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
