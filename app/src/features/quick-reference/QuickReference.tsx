@@ -144,9 +144,9 @@ export function QuickReference() {
               </div>
 
               {/* Split pane */}
-              <div className="grid grid-cols-[240px_1fr] min-h-[380px] max-h-[60vh]">
+              <div className="grid grid-cols-[240px_1fr] min-h-[380px] max-h-[60vh] overflow-hidden">
                 {/* Left: Results */}
-                <div className="border-r border-border overflow-y-auto">
+                <div className="border-r border-border overflow-y-auto min-h-0">
                   {query.length < 2 ? (
                     <div className="px-4 py-8 text-center text-text-muted text-sm">
                       Type to search...
@@ -212,7 +212,7 @@ export function QuickReference() {
                 </div>
 
                 {/* Right: Detail */}
-                <div className="overflow-hidden flex flex-col">
+                <div className="overflow-hidden flex flex-col min-h-0">
                   {selectedItem && campaignId ? (
                     <QuickReferenceDetail
                       type={selectedItem.type}
