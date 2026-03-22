@@ -9,6 +9,7 @@ import type { IconComponent } from '@/components/ui/icons'
 import { useQuickReference } from '@/lib/quick-reference'
 import { useQuickReferenceSearch } from './useQuickReferenceSearch'
 import { QuickReferenceDetail } from './QuickReferenceDetail'
+import { useBulkImportAbilities } from './useAbilities'
 import type { SearchGroup } from './useQuickReferenceSearch'
 
 function getCampaignIdFromUrl(): string | null {
@@ -40,8 +41,25 @@ export function QuickReference() {
   const campaignId = useMemo(() => (isOpen ? getCampaignIdFromUrl() : null), [isOpen])
   const sessionId = useMemo(() => (isOpen ? getSessionIdFromUrl() : null), [isOpen])
   const { data: groups } = useQuickReferenceSearch(query, campaignId)
+  const bulkImport = useBulkImportAbilities()
   const inputRef = useRef<HTMLInputElement>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [importingAbilities, setImportingAbilities] = useState(false)
+
+  const hasAbilityResults = groups?.some((g) => g.type === 'ability') ?? false
+  const hasAnyResults = (groups?.length ?? 0) > 0
+  const showAbilityImportPrompt = query.length >= 2 && !hasAbilityResults && hasAnyResults
+
+  const handleImportAbilities = () => {
+    if (!campaignId || importingAbilities) return
+    setImportingAbilities(true)
+    bulkImport.mutate(
+      { campaignId },
+      {
+        onSettled: () => setImportingAbilities(false),
+      },
+    )
+  }
 
   const flatItems = useMemo(() => {
     if (!groups) return []
@@ -175,6 +193,20 @@ export function QuickReference() {
                           </div>
                         )
                       })}
+                    </div>
+                  )}
+
+                  {/* Ability import prompt */}
+                  {showAbilityImportPrompt && (
+                    <div className="px-3 py-3 border-t border-border">
+                      <p className="text-[11px] text-text-muted mb-1.5">No abilities found in campaign</p>
+                      <button
+                        onClick={handleImportAbilities}
+                        disabled={importingAbilities}
+                        className="text-[11px] text-primary-light hover:text-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {importingAbilities ? 'Importing...' : 'Import SRD abilities?'}
+                      </button>
                     </div>
                   )}
                 </div>
