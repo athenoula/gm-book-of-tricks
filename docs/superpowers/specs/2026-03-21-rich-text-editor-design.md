@@ -52,7 +52,9 @@ Tiptap (built on ProseMirror) was chosen over Slate.js and Novel for:
 | Bullet list | Button | Ctrl+Shift+8 |
 | Numbered list | Button | Ctrl+Shift+7 |
 | Read-aloud blockquote | Button | Ctrl+Shift+B |
-| Horizontal rule | Button | Ctrl+Enter |
+| Horizontal rule | Button | Toolbar only |
+
+> **Note:** All `Ctrl` shortcuts map to `Cmd` on macOS automatically via Tiptap's shortcut system.
 
 ### Data Storage & Migration
 
@@ -81,7 +83,7 @@ Tiptap (built on ProseMirror) was chosen over Slate.js and Novel for:
 - `app/src/features/timeline/useSceneEditor.ts` — Custom hook for Tiptap configuration
   - StarterKit extension (bold, italic, headings, lists, blockquote, horizontal rule)
   - Highlight extension (amber color)
-  - Text size extension (small text)
+  - Text size extension (small text — implemented as a custom `TextStyle` mark with a `fontSize` attribute via `@tiptap/extension-text-style`)
   - Keyboard shortcut mappings
 
 **Modified files:**
