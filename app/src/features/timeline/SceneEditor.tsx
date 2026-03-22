@@ -41,13 +41,16 @@ function Toolbar({ editor }: { editor: Editor }) {
     editor.isActive('heading', { level })
   )
   const isSmallText = editor.isActive('textStyle', { fontSize: '0.85em' })
-  const headingValue = currentLevel ? `h${currentLevel}` : isSmallText ? 'small' : 'normal'
+  const isLargeText = editor.isActive('textStyle', { fontSize: '1.2em' })
+  const headingValue = currentLevel ? `h${currentLevel}` : isLargeText ? 'large' : isSmallText ? 'small' : 'normal'
 
   const handleHeadingChange = (value: string) => {
     if (value === 'normal') {
       editor.chain().focus().setParagraph().unsetAllMarks().run()
     } else if (value === 'small') {
       editor.chain().focus().setParagraph().setMark('textStyle', { fontSize: '0.85em' }).run()
+    } else if (value === 'large') {
+      editor.chain().focus().setParagraph().setMark('textStyle', { fontSize: '1.2em' }).run()
     } else {
       const level = parseInt(value.replace('h', '')) as 1 | 2 | 3
       editor.chain().focus().toggleHeading({ level }).run()
@@ -66,6 +69,7 @@ function Toolbar({ editor }: { editor: Editor }) {
         <option value="h1">Heading 1</option>
         <option value="h2">Heading 2</option>
         <option value="h3">Heading 3</option>
+        <option value="large">Large</option>
         <option value="small">Small</option>
       </select>
 
