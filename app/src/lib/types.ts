@@ -16,6 +16,7 @@ export type Session = {
   scheduled_at: string | null
   status: 'upcoming' | 'in_progress' | 'completed'
   notes: string | null
+  recap: string | null
   created_at: string
   updated_at: string
 }
