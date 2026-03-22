@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useToastStore } from '@/lib/toast'
-import { fetchClassFeatures, fetchRacialTraits } from '@/lib/open5e'
+import { SRD_CLASS_FEATURES } from '@/lib/data/srd-abilities'
 
 export type Ability = {
   id: string
@@ -128,16 +128,7 @@ export function useBulkImportAbilities() {
       campaignId: string
       onProgress?: (loaded: number, total: number, message: string) => void
     }) => {
-      onProgress?.(0, 0, 'Fetching class features...')
-      const classFeatures = await fetchClassFeatures((loaded, total) => {
-        onProgress?.(loaded, total, 'Fetching class features...')
-      })
-
-      onProgress?.(0, 0, 'Fetching racial traits...')
-      const racialTraits = await fetchRacialTraits((loaded, total) => {
-        onProgress?.(loaded, total, 'Fetching racial traits...')
-      })
-
+      // Get existing slugs to avoid duplicates
       const { data: existing } = await supabase
         .from('abilities')
         .select('srd_slug')
@@ -146,31 +137,18 @@ export function useBulkImportAbilities() {
 
       const existingSlugs = new Set((existing ?? []).map((e) => e.srd_slug))
 
-      const fromFeatures = classFeatures
+      // Use curated static SRD data (Open5e doesn't expose individual class features)
+      const newAbilities = SRD_CLASS_FEATURES
         .filter((f) => !existingSlugs.has(f.slug))
         .map((f) => ({
           campaign_id: campaignId,
           name: f.name,
-          description: f.desc,
-          usage_type: 'other' as const,
+          description: f.description,
+          usage_type: f.usage_type,
           source: 'srd' as const,
           srd_slug: f.slug,
-          ability_data: f as unknown as Record<string, unknown>,
+          ability_data: { source_class: f.source_class, level: f.level } as Record<string, unknown>,
         }))
-
-      const fromTraits = racialTraits
-        .filter((t) => !existingSlugs.has(t.slug))
-        .map((t) => ({
-          campaign_id: campaignId,
-          name: t.name,
-          description: t.desc,
-          usage_type: 'passive' as const,
-          source: 'srd' as const,
-          srd_slug: t.slug,
-          ability_data: t as unknown as Record<string, unknown>,
-        }))
-
-      const newAbilities = [...fromFeatures, ...fromTraits]
 
       let inserted = 0
       for (let i = 0; i < newAbilities.length; i += 50) {

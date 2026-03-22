@@ -1,0 +1,94 @@
+/**
+ * Static SRD class features and common abilities.
+ * The Open5e API doesn't expose individual class features,
+ * so we maintain this curated list of the most commonly referenced ones.
+ */
+
+interface SrdAbility {
+  slug: string
+  name: string
+  description: string
+  usage_type: 'action' | 'bonus_action' | 'reaction' | 'passive' | 'other'
+  source_class?: string
+  level?: number
+}
+
+export const SRD_CLASS_FEATURES: SrdAbility[] = [
+  // Barbarian
+  { slug: 'barbarian-rage', name: 'Rage', description: 'In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action. While raging, you gain advantage on Strength checks and Strength saving throws, bonus rage damage on melee weapon attacks using Strength, and resistance to bludgeoning, piercing, and slashing damage. You can\'t cast spells while raging. Your rage lasts for 1 minute, ending early if you are knocked unconscious or if your turn ends and you haven\'t attacked or taken damage.', usage_type: 'bonus_action', source_class: 'Barbarian', level: 1 },
+  { slug: 'barbarian-unarmored-defense', name: 'Unarmored Defense (Barbarian)', description: 'While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.', usage_type: 'passive', source_class: 'Barbarian', level: 1 },
+  { slug: 'barbarian-reckless-attack', name: 'Reckless Attack', description: 'Starting at 2nd level, you can throw aside all concern for defense to attack with fierce desperation. When you make your first attack on your turn, you can decide to attack recklessly. Doing so gives you advantage on melee weapon attack rolls using Strength during this turn, but attack rolls against you have advantage until your next turn.', usage_type: 'other', source_class: 'Barbarian', level: 2 },
+  { slug: 'barbarian-danger-sense', name: 'Danger Sense', description: 'At 2nd level, you gain an uncanny sense of when things nearby aren\'t as they should be. You have advantage on Dexterity saving throws against effects that you can see, such as traps and spells. To gain this benefit, you can\'t be blinded, deafened, or incapacitated.', usage_type: 'passive', source_class: 'Barbarian', level: 2 },
+  { slug: 'barbarian-extra-attack', name: 'Extra Attack (Barbarian)', description: 'Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn.', usage_type: 'passive', source_class: 'Barbarian', level: 5 },
+  { slug: 'barbarian-brutal-critical', name: 'Brutal Critical', description: 'Beginning at 9th level, you can roll one additional weapon damage die when determining the extra damage for a critical hit with a melee attack. This increases to two additional dice at 13th level and three additional dice at 17th level.', usage_type: 'passive', source_class: 'Barbarian', level: 9 },
+
+  // Bard
+  { slug: 'bard-bardic-inspiration', name: 'Bardic Inspiration', description: 'You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6. Once within the next 10 minutes, the creature can roll the die and add the number rolled to one ability check, attack roll, or saving throw it makes.', usage_type: 'bonus_action', source_class: 'Bard', level: 1 },
+  { slug: 'bard-jack-of-all-trades', name: 'Jack of All Trades', description: 'Starting at 2nd level, you can add half your proficiency bonus, rounded down, to any ability check you make that doesn\'t already include your proficiency bonus.', usage_type: 'passive', source_class: 'Bard', level: 2 },
+  { slug: 'bard-song-of-rest', name: 'Song of Rest', description: 'Beginning at 2nd level, you can use soothing music or oration to help revitalize your wounded allies during a short rest. If you or any friendly creatures who can hear your performance regain hit points at the end of the short rest by spending one or more Hit Dice, each of those creatures regains an extra 1d6 hit points.', usage_type: 'other', source_class: 'Bard', level: 2 },
+
+  // Cleric
+  { slug: 'cleric-channel-divinity', name: 'Channel Divinity', description: 'At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. When you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again.', usage_type: 'action', source_class: 'Cleric', level: 2 },
+  { slug: 'cleric-turn-undead', name: 'Turn Undead', description: 'As an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.', usage_type: 'action', source_class: 'Cleric', level: 2 },
+  { slug: 'cleric-divine-intervention', name: 'Divine Intervention', description: 'Beginning at 10th level, you can call on your deity to intervene on your behalf when your need is great. Imploring your deity\'s aid requires you to use your action. You roll a percentile die. If you roll a number equal to or lower than your cleric level, your deity intervenes.', usage_type: 'action', source_class: 'Cleric', level: 10 },
+
+  // Druid
+  { slug: 'druid-wild-shape', name: 'Wild Shape', description: 'Starting at 2nd level, you can use your action to magically assume the shape of a beast that you have seen before. You can use this feature twice. You regain expended uses when you finish a short or long rest. Your druid level determines the beasts you can transform into.', usage_type: 'action', source_class: 'Druid', level: 2 },
+
+  // Fighter
+  { slug: 'fighter-fighting-style', name: 'Fighting Style', description: 'You adopt a particular style of fighting as your specialty. Choose one of the following options: Archery, Defense, Dueling, Great Weapon Fighting, Protection, or Two-Weapon Fighting. You can\'t take a Fighting Style option more than once, even if you later get to choose again.', usage_type: 'passive', source_class: 'Fighter', level: 1 },
+  { slug: 'fighter-second-wind', name: 'Second Wind', description: 'You have a limited well of stamina that you can draw on to protect yourself from harm. On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. Once you use this feature, you must finish a short or long rest before you can use it again.', usage_type: 'bonus_action', source_class: 'Fighter', level: 1 },
+  { slug: 'fighter-action-surge', name: 'Action Surge', description: 'Starting at 2nd level, you can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action. Once you use this feature, you must finish a short or long rest before you can use it again. Starting at 17th level, you can use it twice before a rest.', usage_type: 'other', source_class: 'Fighter', level: 2 },
+  { slug: 'fighter-extra-attack', name: 'Extra Attack (Fighter)', description: 'Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn. The number of attacks increases to three when you reach 11th level and to four when you reach 20th level.', usage_type: 'passive', source_class: 'Fighter', level: 5 },
+
+  // Monk
+  { slug: 'monk-unarmored-defense', name: 'Unarmored Defense (Monk)', description: 'Beginning at 1st level, while you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.', usage_type: 'passive', source_class: 'Monk', level: 1 },
+  { slug: 'monk-martial-arts', name: 'Martial Arts', description: 'At 1st level, your practice of martial arts gives you mastery of combat styles that use unarmed strikes and monk weapons. You gain benefits while unarmed or wielding only monk weapons and not wearing armor or a shield.', usage_type: 'passive', source_class: 'Monk', level: 1 },
+  { slug: 'monk-ki', name: 'Ki', description: 'Starting at 2nd level, your training allows you to harness the mystic energy of ki. Your access to this energy is represented by a number of ki points equal to your monk level. You can spend these points to fuel various ki features: Flurry of Blows, Patient Defense, and Step of the Wind.', usage_type: 'other', source_class: 'Monk', level: 2 },
+  { slug: 'monk-flurry-of-blows', name: 'Flurry of Blows', description: 'Immediately after you take the Attack action on your turn, you can spend 1 ki point to make two unarmed strikes as a bonus action.', usage_type: 'bonus_action', source_class: 'Monk', level: 2 },
+  { slug: 'monk-patient-defense', name: 'Patient Defense', description: 'You can spend 1 ki point to take the Dodge action as a bonus action on your turn.', usage_type: 'bonus_action', source_class: 'Monk', level: 2 },
+  { slug: 'monk-stunning-strike', name: 'Stunning Strike', description: 'Starting at 5th level, you can interfere with the flow of ki in an opponent\'s body. When you hit another creature with a melee weapon attack, you can spend 1 ki point to attempt a stunning strike. The target must succeed on a Constitution saving throw or be stunned until the end of your next turn.', usage_type: 'other', source_class: 'Monk', level: 5 },
+
+  // Paladin
+  { slug: 'paladin-divine-sense', name: 'Divine Sense', description: 'The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can detect the location of any celestial, fiend, or undead within 60 feet of you.', usage_type: 'action', source_class: 'Paladin', level: 1 },
+  { slug: 'paladin-lay-on-hands', name: 'Lay on Hands', description: 'Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With that pool, you can restore a total number of hit points equal to your paladin level × 5.', usage_type: 'action', source_class: 'Paladin', level: 1 },
+  { slug: 'paladin-divine-smite', name: 'Divine Smite', description: 'Starting at 2nd level, when you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon\'s damage. The extra damage is 2d8 for a 1st-level spell slot, plus 1d8 for each spell level higher than 1st, to a maximum of 5d8.', usage_type: 'other', source_class: 'Paladin', level: 2 },
+  { slug: 'paladin-aura-of-protection', name: 'Aura of Protection', description: 'Starting at 6th level, whenever you or a friendly creature within 10 feet of you must make a saving throw, the creature gains a bonus to the saving throw equal to your Charisma modifier (with a minimum bonus of +1). You must be conscious to grant this bonus.', usage_type: 'passive', source_class: 'Paladin', level: 6 },
+
+  // Ranger
+  { slug: 'ranger-favored-enemy', name: 'Favored Enemy', description: 'Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy. You have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.', usage_type: 'passive', source_class: 'Ranger', level: 1 },
+  { slug: 'ranger-natural-explorer', name: 'Natural Explorer', description: 'You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. You have various benefits when traveling in your favored terrain.', usage_type: 'passive', source_class: 'Ranger', level: 1 },
+
+  // Rogue
+  { slug: 'rogue-sneak-attack', name: 'Sneak Attack', description: 'Beginning at 1st level, you know how to strike subtly and exploit a foe\'s distraction. Once per turn, you can deal an extra 1d6 damage to one creature you hit with an attack if you have advantage on the attack roll. The attack must use a finesse or a ranged weapon. The extra damage increases as you gain levels.', usage_type: 'passive', source_class: 'Rogue', level: 1 },
+  { slug: 'rogue-cunning-action', name: 'Cunning Action', description: 'Starting at 2nd level, your quick thinking and agility allow you to move and act quickly. You can take a bonus action on each of your turns in combat. This action can be used only to take the Dash, Disengage, or Hide action.', usage_type: 'bonus_action', source_class: 'Rogue', level: 2 },
+  { slug: 'rogue-uncanny-dodge', name: 'Uncanny Dodge', description: 'Starting at 5th level, when an attacker that you can see hits you with an attack, you can use your reaction to halve the attack\'s damage against you.', usage_type: 'reaction', source_class: 'Rogue', level: 5 },
+  { slug: 'rogue-evasion', name: 'Evasion', description: 'Beginning at 7th level, you can nimbly dodge out of the way of certain area effects, such as a red dragon\'s fiery breath or an ice storm spell. When you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed, and only half damage if you fail.', usage_type: 'passive', source_class: 'Rogue', level: 7 },
+
+  // Sorcerer
+  { slug: 'sorcerer-sorcery-points', name: 'Sorcery Points', description: 'You have 2 sorcery points, and you gain more as you reach higher levels. You can never have more sorcery points than shown on the table for your level. You regain all spent sorcery points when you finish a long rest.', usage_type: 'other', source_class: 'Sorcerer', level: 2 },
+  { slug: 'sorcerer-metamagic', name: 'Metamagic', description: 'At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two Metamagic options of your choice. You can use only one Metamagic option on a spell when you cast it, unless otherwise noted.', usage_type: 'other', source_class: 'Sorcerer', level: 3 },
+
+  // Warlock
+  { slug: 'warlock-eldritch-invocations', name: 'Eldritch Invocations', description: 'In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability. At 2nd level, you gain two eldritch invocations of your choice.', usage_type: 'passive', source_class: 'Warlock', level: 2 },
+  { slug: 'warlock-pact-boon', name: 'Pact Boon', description: 'At 3rd level, your otherworldly patron bestows a gift upon you for your loyal service. You gain one of the following features of your choice: Pact of the Chain, Pact of the Blade, or Pact of the Tome.', usage_type: 'passive', source_class: 'Warlock', level: 3 },
+
+  // Wizard
+  { slug: 'wizard-arcane-recovery', name: 'Arcane Recovery', description: 'You have learned to regain some of your magical energy by studying your spellbook. Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher.', usage_type: 'other', source_class: 'Wizard', level: 1 },
+
+  // Common racial traits
+  { slug: 'racial-darkvision', name: 'Darkvision', description: 'You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can\'t discern color in darkness, only shades of gray.', usage_type: 'passive' },
+  { slug: 'racial-darkvision-superior', name: 'Superior Darkvision', description: 'You can see in dim light within 120 feet of you as if it were bright light, and in darkness as if it were dim light. You can\'t discern color in darkness, only shades of gray.', usage_type: 'passive' },
+  { slug: 'racial-fey-ancestry', name: 'Fey Ancestry', description: 'You have advantage on saving throws against being charmed, and magic can\'t put you to sleep.', usage_type: 'passive' },
+  { slug: 'racial-trance', name: 'Trance', description: 'Elves don\'t need to sleep. Instead, they meditate deeply, remaining semiconscious, for 4 hours a day. After resting in this way, you gain the same benefit that a human does from 8 hours of sleep.', usage_type: 'passive' },
+  { slug: 'racial-brave', name: 'Brave', description: 'You have advantage on saving throws against being frightened.', usage_type: 'passive' },
+  { slug: 'racial-lucky', name: 'Lucky (Halfling)', description: 'When you roll a 1 on the d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll.', usage_type: 'passive' },
+  { slug: 'racial-relentless-endurance', name: 'Relentless Endurance', description: 'When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can\'t use this feature again until you finish a long rest.', usage_type: 'passive' },
+  { slug: 'racial-savage-attacks', name: 'Savage Attacks', description: 'When you score a critical hit with a melee weapon attack, you can roll one of the weapon\'s damage dice one additional time and add it to the extra damage of the critical hit.', usage_type: 'passive' },
+  { slug: 'racial-stonecunning', name: 'Stonecunning', description: 'Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in the History skill and add double your proficiency bonus to the check.', usage_type: 'passive' },
+  { slug: 'racial-dwarven-resilience', name: 'Dwarven Resilience', description: 'You have advantage on saving throws against poison, and you have resistance against poison damage.', usage_type: 'passive' },
+  { slug: 'racial-gnome-cunning', name: 'Gnome Cunning', description: 'You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic.', usage_type: 'passive' },
+  { slug: 'racial-breath-weapon', name: 'Breath Weapon', description: 'You can use your action to exhale destructive energy. Your draconic ancestry determines the size, shape, and damage type of the exhalation. Each creature in the area must make a saving throw, the type of which is determined by your draconic ancestry.', usage_type: 'action' },
+  { slug: 'racial-hellish-rebuke', name: 'Hellish Rebuke (Tiefling)', description: 'Starting at 3rd level, you can cast the Hellish Rebuke spell as a 2nd-level spell once with this trait and regain the ability to do so when you finish a long rest. Charisma is your spellcasting ability for it.', usage_type: 'reaction' },
+  { slug: 'racial-infernal-legacy', name: 'Infernal Legacy', description: 'You know the Thaumaturgy cantrip. When you reach 3rd level, you can cast the Hellish Rebuke spell as a 2nd-level spell once. When you reach 5th level, you can cast the Darkness spell once. Charisma is your spellcasting ability for these spells.', usage_type: 'passive' },
+]
