@@ -6,7 +6,7 @@ import { GiRollingDices } from '@/components/ui/icons'
 import { GAME_SYSTEMS } from '@/lib/types'
 import { SessionList } from '@/features/sessions/SessionList'
 import { CreateSessionDialog } from '@/features/sessions/CreateSessionDialog'
-import { InitiativeTracker } from '@/features/initiative/InitiativeTracker'
+
 import { OrnamentalDivider } from '@/components/ui/OrnamentalDivider'
 import { CampaignFiles } from './CampaignFiles'
 import { PlotThreads } from '@/features/threads/PlotThreads'
@@ -57,13 +57,6 @@ export function CampaignOverview({ campaignId }: { campaignId: string }) {
       {/* Plot threads */}
       <div className="mb-8">
         <PlotThreads campaignId={campaignId} />
-      </div>
-
-      <OrnamentalDivider />
-
-      {/* Initiative tracker */}
-      <div className="mb-8">
-        <InitiativeTracker campaignId={campaignId} />
       </div>
 
       <OrnamentalDivider />
