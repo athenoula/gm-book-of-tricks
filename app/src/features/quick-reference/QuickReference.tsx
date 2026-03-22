@@ -144,7 +144,7 @@ export function QuickReference() {
                           (fi) => fi.groupType === group.type && fi.id === group.items[0]?.id,
                         )
                         return (
-                          <div key={group.type}>
+                          <div key={group.label}>
                             <div className="px-3 py-1.5 text-[10px] font-medium text-text-muted uppercase tracking-wide">
                               <GameIcon icon={GROUP_ICONS[group.icon] ?? GiSparkles} size="xs" /> {group.label}
                             </div>
