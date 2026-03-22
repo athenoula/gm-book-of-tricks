@@ -53,6 +53,9 @@ export { GiMagicPalm } from 'react-icons/gi'         // Sorcerer
 export { GiWarlockEye } from 'react-icons/gi'        // Warlock
 export { GiCog } from 'react-icons/gi'               // Artificer
 
+// Abilities / quick-reference icons
+export { GiBoltShield } from 'react-icons/gi'        // ⚡🛡 abilities
+
 // Location/encounter icons
 export { GiForestCamp } from 'react-icons/gi'        // Forest encounter
 export { GiDungeonGate } from 'react-icons/gi'       // Dungeon entrance
