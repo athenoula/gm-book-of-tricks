@@ -219,3 +219,120 @@
   .ember { display: none; }
   .torch-flicker { animation: none; }
 }
+
+/* ─── Scene Editor (Tiptap) ─── */
+
+.scene-editor-content .tiptap {
+  padding: 12px 16px;
+  min-height: 120px;
+  outline: none;
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--color-text-body);
+}
+
+.scene-editor-content .tiptap:focus {
+  outline: none;
+}
+
+.scene-editor-content .tiptap h1 {
+  font-size: 1.25rem;
+  color: var(--color-text-heading);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  margin-top: 1rem;
+}
+
+.scene-editor-content .tiptap h1:first-child {
+  margin-top: 0;
+}
+
+.scene-editor-content .tiptap h2 {
+  font-size: 1.125rem;
+  color: var(--color-text-heading);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.scene-editor-content .tiptap h3 {
+  font-size: 1rem;
+  color: var(--color-text-heading);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.scene-editor-content .tiptap p {
+  margin-bottom: 0.5rem;
+}
+
+.scene-editor-content .tiptap strong {
+  color: var(--color-text-heading);
+  font-weight: 600;
+}
+
+.scene-editor-content .tiptap ul {
+  list-style-type: disc;
+  list-style-position: inside;
+  margin-bottom: 0.5rem;
+}
+
+.scene-editor-content .tiptap ol {
+  list-style-type: decimal;
+  list-style-position: inside;
+  margin-bottom: 0.5rem;
+}
+
+.scene-editor-content .tiptap li {
+  color: var(--color-text-body);
+}
+
+.scene-editor-content .tiptap li + li {
+  margin-top: 0.25rem;
+}
+
+.scene-editor-content .tiptap blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: var(--color-primary-ghost);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+  color: var(--color-text-heading);
+}
+
+.scene-editor-content .tiptap hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1rem 0;
+}
+
+.scene-editor-content .tiptap mark {
+  background: oklch(0.82 0.12 85 / 0.25);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: inherit;
+}
+
+.scene-editor-content .tiptap code {
+  background: var(--color-bg-raised);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono), monospace;
+  color: var(--color-primary-light);
+}
+
+.scene-editor-content .tiptap p.is-editor-empty:first-child::before {
+  content: 'Write your scene content...';
+  color: var(--color-text-muted);
+  font-style: italic;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
