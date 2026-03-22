@@ -349,7 +349,7 @@ function ActionButtons({
       source_id: item.id as string,
       title: item.name as string,
       content_snapshot: item,
-      sort_order: Date.now(),
+      sort_order: Math.floor(Date.now() / 1000) % 100000,
     })
   }
 
