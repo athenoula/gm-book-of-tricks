@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
 import { GiScrollUnfurled, GiCrossedSwords } from '@/components/ui/icons'
 import { useSession, useUpdateSession } from './useSessions'
+import { SessionRecap } from './SessionRecap'
 import { SessionTimeline } from '@/features/timeline/SessionTimeline'
 import { InitiativeTracker } from '@/features/initiative/InitiativeTracker'
 import { useAddTimelineBlock } from '@/features/timeline/useTimelineBlocks'
@@ -84,6 +85,9 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
           </Button>
         </div>
       </div>
+
+      {/* Recap (only visible on completed sessions) */}
+      <SessionRecap session={session} />
 
       {/* Initiative tracker slide-out */}
       {showInitiative && (
