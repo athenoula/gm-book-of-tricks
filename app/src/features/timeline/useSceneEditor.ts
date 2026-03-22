@@ -2,7 +2,7 @@ import { useEditor } from '@tiptap/react'
 import { useEffect } from 'react'
 import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
-import TextStyle from '@tiptap/extension-text-style'
+import { TextStyle } from '@tiptap/extension-text-style'
 import { Extension } from '@tiptap/core'
 
 // Custom extension for small text (font-size via TextStyle)
