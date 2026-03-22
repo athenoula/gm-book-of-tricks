@@ -119,3 +119,28 @@ export function useDeleteSession() {
     },
   })
 }
+
+export function useUpdateSessionRecap() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, recap }: { id: string; recap: string }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update({ recap })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data as Session
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', data.campaign_id] })
+      queryClient.invalidateQueries({ queryKey: ['session', data.id] })
+      useToastStore.getState().addToast('success', 'Recap saved')
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Something went wrong')
+    },
+  })
+}
