@@ -9,6 +9,7 @@ import { CreateSessionDialog } from '@/features/sessions/CreateSessionDialog'
 import { InitiativeTracker } from '@/features/initiative/InitiativeTracker'
 import { OrnamentalDivider } from '@/components/ui/OrnamentalDivider'
 import { CampaignFiles } from './CampaignFiles'
+import { PlotThreads } from '@/features/threads/PlotThreads'
 
 export function CampaignOverview({ campaignId }: { campaignId: string }) {
   const { data: campaign, isLoading } = useCampaign(campaignId)
@@ -52,6 +53,13 @@ export function CampaignOverview({ campaignId }: { campaignId: string }) {
         </div>
         <SessionList campaignId={campaignId} />
       </div>
+
+      {/* Plot threads */}
+      <div className="mb-8">
+        <PlotThreads campaignId={campaignId} />
+      </div>
+
+      <OrnamentalDivider />
 
       {/* Initiative tracker */}
       <div className="mb-8">
