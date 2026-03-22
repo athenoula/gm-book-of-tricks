@@ -1,4 +1,5 @@
 import { useEditor } from '@tiptap/react'
+import { useEffect } from 'react'
 import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import TextStyle from '@tiptap/extension-text-style'
@@ -61,7 +62,7 @@ function parseContent(content: string | null | undefined): string | Record<strin
 
 /**
  * Convert basic markdown patterns to HTML for Tiptap ingestion.
- * Handles: headings, bold, italic, blockquotes, lists, horizontal rules.
+ * Handles: headings, bold, italic, blockquotes, lists (ul/ol), horizontal rules.
  * This is intentionally simple — it covers the patterns used in existing scenes.
  */
 function markdownToSimpleHtml(md: string): string {
@@ -74,10 +75,25 @@ function markdownToSimpleHtml(md: string): string {
     .replace(/^---$/gm, '<hr>')
     // Blockquotes
     .replace(/^> (.+)$/gm, '<blockquote><p>$1</p></blockquote>')
-    // Bold and italic
+    // Bold and italic (must be before unordered list `* ` handling)
     .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+
+  // Unordered lists: lines starting with `* ` or `- `
+  // Convert each list item line to <li>, then group consecutive <li> lines into <ul>
+  html = html.replace(/^[*-] (.+)$/gm, '<li>$1</li>')
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`)
+
+  // Ordered lists: lines starting with `N. ` (digit(s) followed by period and space)
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
+    // Only wrap bare <li> groups (not already inside a <ul>)
+    if (match.startsWith('<ul>')) return match
+    return `<ol>${match}</ol>`
+  })
+
+  // Inline italic (after bold/list processing so `* ` list markers aren't caught)
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
 
   // Convert remaining plain lines to paragraphs
   // Split by double newlines for paragraphs
@@ -124,6 +140,21 @@ export function useSceneEditor({ content, editable, onUpdate }: UseSceneEditorOp
       }
     },
   })
+
+  // Sync editable state when prop changes
+  useEffect(() => {
+    if (editor && editor.isEditable !== editable) {
+      editor.setEditable(editable)
+    }
+  }, [editor, editable])
+
+  // Sync content when editable mode changes (content source switches between editContent and displayContent).
+  // Intentionally depends on `editable`, not `content`, so we don't reset the editor on every keystroke.
+  useEffect(() => {
+    if (!editor) return
+    const newParsed = parseContent(content)
+    editor.commands.setContent(newParsed)
+  }, [editor, editable]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return editor
 }
