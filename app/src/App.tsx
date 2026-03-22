@@ -7,6 +7,8 @@ import { useAuth } from '@/lib/auth'
 import { Toaster } from '@/components/ui/Toast'
 import { CommandPalette } from '@/components/ui/CommandPalette'
 import { useCommandPalette } from '@/lib/command-palette'
+import { QuickReference } from '@/features/quick-reference/QuickReference'
+import { useQuickReference } from '@/lib/quick-reference'
 import { GameIcon } from '@/components/ui/GameIcon'
 import { GiRollingDices } from '@/components/ui/icons'
 import { AmbientEmbers } from '@/components/ui/AmbientEmbers'
@@ -23,6 +25,10 @@ export default function App() {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
         useCommandPalette.getState().open()
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault()
+        useQuickReference.getState().open()
       }
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -64,6 +70,7 @@ export default function App() {
       <RouterProvider router={router} />
       <Toaster />
       <CommandPalette />
+      <QuickReference />
 
       {/* Visual atmosphere overlays */}
       <AmbientEmbers />
