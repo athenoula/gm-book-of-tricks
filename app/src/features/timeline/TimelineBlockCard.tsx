@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
@@ -7,6 +7,7 @@ import {
   GiSparkles, GiPositionMarker, GiCrossedSwords,
 } from '@/components/ui/icons'
 import { MarkdownPreview } from './MarkdownPreview'
+import { SceneEditor } from './SceneEditor'
 import { useUpdateTimelineBlock, useRemoveTimelineBlock, useUpdateTimelineBlockSnapshot } from './useTimelineBlocks'
 import type { TimelineBlock } from './useTimelineBlocks'
 import { InlineBattle } from './InlineBattle'
@@ -80,19 +81,33 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
           </span>
         )}
 
-        <button
-          onClick={toggleCollapse}
-          className="flex items-center gap-2 flex-1 text-left cursor-pointer min-w-0"
-        >
-          <GameIcon icon={style.icon} size="sm" />
-          <span className="text-sm font-medium text-text-heading truncate flex-1">
-            {block.title}
-          </span>
-          <span className="text-[10px] text-text-muted bg-bg-raised px-1.5 py-0.5 rounded-[--radius-sm]">
-            {style.label}
-          </span>
-          <span className="text-xs text-text-muted">{block.is_collapsed ? '▸' : '▾'}</span>
-        </button>
+        {editingNote ? (
+          <>
+            <GameIcon icon={style.icon} size="sm" />
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="flex-1 bg-transparent text-text-heading font-medium outline-none border-b border-border-hover focus:border-primary text-sm"
+            />
+            <span className="text-[10px] text-text-muted bg-bg-raised px-1.5 py-0.5 rounded-[--radius-sm]">
+              {style.label}
+            </span>
+          </>
+        ) : (
+          <button
+            onClick={toggleCollapse}
+            className="flex items-center gap-2 flex-1 text-left cursor-pointer min-w-0"
+          >
+            <GameIcon icon={style.icon} size="sm" />
+            <span className="text-sm font-medium text-text-heading truncate flex-1">
+              {block.title}
+            </span>
+            <span className="text-[10px] text-text-muted bg-bg-raised px-1.5 py-0.5 rounded-[--radius-sm]">
+              {style.label}
+            </span>
+            <span className="text-xs text-text-muted">{block.is_collapsed ? '▸' : '▾'}</span>
+          </button>
+        )}
 
         {block.block_type === 'battle' && isPrep && (
           <Button size="sm" variant="secondary" onClick={() => setEditingBattle(!editingBattle)}>
@@ -128,30 +143,12 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
           {block.block_type === 'npc' && <NPCSnapshot data={snapshot} />}
           {block.block_type === 'spell' && <SpellSnapshot data={snapshot} />}
           {block.block_type === 'location' && <LocationSnapshot data={snapshot} />}
-          {block.block_type === 'note' && !editingNote && <MarkdownPreview content={(snapshot.content as string) || ''} />}
-          {block.block_type === 'note' && editingNote && (
-            <div className="space-y-3">
-              <div>
-                <label className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Title</label>
-                <input
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full bg-bg-raised rounded-[--radius-sm] border border-border px-3 py-1.5 text-sm text-text-heading outline-none focus:border-border-active"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Content</label>
-                <textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full bg-bg-raised rounded-[--radius-md] border border-border p-3 text-sm text-text-body font-mono leading-relaxed resize-none focus:outline-none focus:border-border-active transition-colors min-h-[150px]"
-                  placeholder="Flesh out the encounter details..."
-                />
-                <p className="text-[10px] text-text-muted mt-1">
-                  Markdown supported. Use <code className="bg-bg-raised px-1 rounded">&gt;</code> for read-aloud text.
-                </p>
-              </div>
-            </div>
+          {block.block_type === 'note' && (
+            <SceneEditor
+              content={editingNote ? editContent : (snapshot.content as string) || ''}
+              editable={editingNote}
+              onChange={(json) => setEditContent(json)}
+            />
           )}
           {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
         </div>
