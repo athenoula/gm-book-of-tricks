@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
@@ -35,6 +35,9 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
   const removeBlock = useRemoveTimelineBlock()
   const updateSnapshot = useUpdateTimelineBlockSnapshot()
   const [editingBattle, setEditingBattle] = useState(false)
+  const [editingNote, setEditingNote] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
   const style = BLOCK_STYLES[block.block_type] ?? BLOCK_STYLES.note
   const snapshot = block.content_snapshot
 
@@ -44,6 +47,27 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
 
   const handleRemove = () => {
     removeBlock.mutate({ id: block.id, sessionId: block.session_id })
+  }
+
+  const handleStartEditNote = () => {
+    setEditTitle(block.title)
+    setEditContent((snapshot.content as string) || '')
+    setEditingNote(true)
+  }
+
+  const handleSaveNote = () => {
+    // Update the title
+    updateBlock.mutate({ id: block.id, title: editTitle })
+    // Update the snapshot content
+    updateSnapshot.mutate({
+      blockId: block.id,
+      snapshot: { ...snapshot, content: editContent },
+    })
+    setEditingNote(false)
+  }
+
+  const handleCancelEditNote = () => {
+    setEditingNote(false)
   }
 
   return (
@@ -75,6 +99,21 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
             {editingBattle ? 'Close' : 'Edit Battle'}
           </Button>
         )}
+        {block.block_type === 'note' && isPrep && !editingNote && (
+          <Button size="sm" variant="ghost" onClick={handleStartEditNote}>
+            Edit
+          </Button>
+        )}
+        {block.block_type === 'note' && isPrep && editingNote && (
+          <>
+            <Button size="sm" variant="ghost" onClick={handleCancelEditNote}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSaveNote}>
+              Save
+            </Button>
+          </>
+        )}
         {isPrep && (
           <Button size="sm" variant="ghost" onClick={handleRemove} className="text-danger hover:text-danger">
             ✕
@@ -82,14 +121,38 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
         )}
       </div>
 
-      {/* Content (collapsible) */}
-      {!block.is_collapsed && (
+      {/* Content (collapsible, but always shown when editing) */}
+      {(!block.is_collapsed || editingNote) && (
         <div className="px-4 py-3">
           {block.block_type === 'monster' && <MonsterSnapshot data={snapshot} />}
           {block.block_type === 'npc' && <NPCSnapshot data={snapshot} />}
           {block.block_type === 'spell' && <SpellSnapshot data={snapshot} />}
           {block.block_type === 'location' && <LocationSnapshot data={snapshot} />}
-          {block.block_type === 'note' && <MarkdownPreview content={(snapshot.content as string) || ''} />}
+          {block.block_type === 'note' && !editingNote && <MarkdownPreview content={(snapshot.content as string) || ''} />}
+          {block.block_type === 'note' && editingNote && (
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Title</label>
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-bg-raised rounded-[--radius-sm] border border-border px-3 py-1.5 text-sm text-text-heading outline-none focus:border-border-active"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Content</label>
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full bg-bg-raised rounded-[--radius-md] border border-border p-3 text-sm text-text-body font-mono leading-relaxed resize-none focus:outline-none focus:border-border-active transition-colors min-h-[150px]"
+                  placeholder="Flesh out the encounter details..."
+                />
+                <p className="text-[10px] text-text-muted mt-1">
+                  Markdown supported. Use <code className="bg-bg-raised px-1 rounded">&gt;</code> for read-aloud text.
+                </p>
+              </div>
+            </div>
+          )}
           {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
         </div>
       )}
