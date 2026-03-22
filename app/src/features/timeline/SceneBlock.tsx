@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { MarkdownPreview } from './MarkdownPreview'
+import { SceneEditor } from './SceneEditor'
 import { useUpdateScene, useDeleteScene } from './useScenes'
 import type { Scene } from './useScenes'
 
@@ -31,7 +31,6 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
   const lastSavedContent = useRef<string | null>(null)
   const updateScene = useUpdateScene()
   const deleteScene = useDeleteScene()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const status = STATUS_STYLES[scene.status]
 
@@ -73,14 +72,6 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
     }
   }, [isPrep]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (editing && textareaRef.current) {
-      textareaRef.current.focus()
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
-    }
-  }, [editing])
-
   // Clear the lastSaved ref once the real data catches up
   useEffect(() => {
     if (scene.content && lastSavedContent.current && scene.content === lastSavedContent.current) {
@@ -96,10 +87,6 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
 
   const handleContentChange = (value: string) => {
     setEditContent(value)
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
-    }
   }
 
   // What to display: editing state > last saved (optimistic) > DB data
@@ -166,22 +153,11 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
 
       {/* Scene content */}
       <div className="px-4 py-3">
-        {editing && isPrep ? (
-          <div className="space-y-2">
-            <textarea
-              ref={textareaRef}
-              value={editContent}
-              onChange={(e) => handleContentChange(e.target.value)}
-              placeholder="Write your scene content in markdown...&#10;&#10;Use > for read-aloud text:&#10;> You enter a dimly lit tavern..."
-              className="w-full bg-bg-raised rounded-[--radius-md] border border-border p-3 text-sm text-text-body font-mono leading-relaxed resize-none focus:outline-none focus:border-border-active transition-colors min-h-[120px]"
-            />
-            <p className="text-[10px] text-text-muted">
-              Markdown supported. Use <code className="bg-bg-raised px-1 rounded">&gt;</code> for read-aloud text.
-            </p>
-          </div>
-        ) : (
-          <MarkdownPreview content={displayContent} />
-        )}
+        <SceneEditor
+          content={editing && isPrep ? editContent : displayContent}
+          editable={editing && isPrep}
+          onChange={handleContentChange}
+        />
       </div>
     </div>
   )
