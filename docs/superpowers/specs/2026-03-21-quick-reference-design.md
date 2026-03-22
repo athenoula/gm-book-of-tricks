@@ -50,6 +50,8 @@ RLS: `campaign_id IN (SELECT id FROM campaigns WHERE gm_id = auth.uid())`
 | campaign_id | uuid | FK to campaigns (for RLS) |
 | notes | text | Optional per-character notes (e.g., "3/day, recharges on long rest") |
 
+Unique constraint on `(ability_id, character_id)` to prevent duplicate assignments.
+
 RLS: Same pattern — `campaign_id IN (SELECT id FROM campaigns WHERE gm_id = auth.uid())`
 
 ### SRD Import
