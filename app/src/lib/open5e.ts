@@ -127,3 +127,100 @@ export async function searchMonsters(params: {
   if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
   return res.json()
 }
+
+// ─── Class Features & Racial Traits ─────────────────────
+
+export interface Open5eClassFeature {
+  slug: string
+  name: string
+  desc: string
+  feature_class: string
+  level: number
+  document__title: string
+  document__slug: string
+}
+
+export interface Open5eRacialTrait {
+  slug: string
+  name: string
+  desc: string
+  document__title: string
+  document__slug: string
+}
+
+export async function fetchClassFeatures(
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<Open5eClassFeature[]> {
+  const all: Open5eClassFeature[] = []
+  let url: string | null = 'https://api.open5e.com/v1/classes/?format=json&limit=50'
+
+  while (url) {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`Open5e API error: ${res.status}`)
+    const data = await res.json()
+
+    for (const cls of data.results) {
+      if (cls.features) {
+        for (const feature of cls.features) {
+          all.push({
+            slug: `${cls.slug}-${feature.slug || feature.name.toLowerCase().replace(/\s+/g, '-')}`,
+            name: feature.name,
+            desc: feature.desc || '',
+            feature_class: cls.name,
+            level: feature.level || 0,
+            document__title: cls.document__title || '',
+            document__slug: cls.document__slug || '',
+          })
+        }
+      }
+    }
+
+    url = data.next
+    onProgress?.(all.length, data.count * 5)
+  }
+
+  return all
+}
+
+export async function fetchRacialTraits(
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<Open5eRacialTrait[]> {
+  const all: Open5eRacialTrait[] = []
+  let url: string | null = 'https://api.open5e.com/v1/races/?format=json&limit=50'
+
+  while (url) {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`Open5e API error: ${res.status}`)
+    const data = await res.json()
+
+    for (const race of data.results) {
+      if (race.traits) {
+        all.push({
+          slug: race.slug,
+          name: `${race.name} Traits`,
+          desc: race.traits,
+          document__title: race.document__title || '',
+          document__slug: race.document__slug || '',
+        })
+      }
+      if (race.subraces) {
+        for (const sub of race.subraces) {
+          if (sub.traits) {
+            all.push({
+              slug: `${race.slug}-${sub.slug || sub.name.toLowerCase().replace(/\s+/g, '-')}`,
+              name: `${sub.name} Traits`,
+              desc: sub.traits,
+              document__title: sub.document__title || race.document__title || '',
+              document__slug: sub.document__slug || race.document__slug || '',
+            })
+          }
+        }
+      }
+    }
+
+    url = data.next
+    onProgress?.(all.length, data.count)
+  }
+
+  return all
+}

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useToastStore } from '@/lib/toast'
+import { fetchClassFeatures, fetchRacialTraits } from '@/lib/open5e'
 
 export type Ability = {
   id: string
@@ -113,5 +114,81 @@ export function useCharacterAbilities(characterId: string) {
       return data
     },
     enabled: !!characterId,
+  })
+}
+
+export function useBulkImportAbilities() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      campaignId,
+      onProgress,
+    }: {
+      campaignId: string
+      onProgress?: (loaded: number, total: number, message: string) => void
+    }) => {
+      onProgress?.(0, 0, 'Fetching class features...')
+      const classFeatures = await fetchClassFeatures((loaded, total) => {
+        onProgress?.(loaded, total, 'Fetching class features...')
+      })
+
+      onProgress?.(0, 0, 'Fetching racial traits...')
+      const racialTraits = await fetchRacialTraits((loaded, total) => {
+        onProgress?.(loaded, total, 'Fetching racial traits...')
+      })
+
+      const { data: existing } = await supabase
+        .from('abilities')
+        .select('srd_slug')
+        .eq('campaign_id', campaignId)
+        .not('srd_slug', 'is', null)
+
+      const existingSlugs = new Set((existing ?? []).map((e) => e.srd_slug))
+
+      const fromFeatures = classFeatures
+        .filter((f) => !existingSlugs.has(f.slug))
+        .map((f) => ({
+          campaign_id: campaignId,
+          name: f.name,
+          description: f.desc,
+          usage_type: 'other' as const,
+          source: 'srd' as const,
+          srd_slug: f.slug,
+          ability_data: f as unknown as Record<string, unknown>,
+        }))
+
+      const fromTraits = racialTraits
+        .filter((t) => !existingSlugs.has(t.slug))
+        .map((t) => ({
+          campaign_id: campaignId,
+          name: t.name,
+          description: t.desc,
+          usage_type: 'passive' as const,
+          source: 'srd' as const,
+          srd_slug: t.slug,
+          ability_data: t as unknown as Record<string, unknown>,
+        }))
+
+      const newAbilities = [...fromFeatures, ...fromTraits]
+
+      let inserted = 0
+      for (let i = 0; i < newAbilities.length; i += 50) {
+        const chunk = newAbilities.slice(i, i + 50)
+        const { error } = await supabase.from('abilities').insert(chunk)
+        if (error) throw error
+        inserted += chunk.length
+        onProgress?.(inserted, newAbilities.length, 'Importing abilities...')
+      }
+
+      return { imported: inserted }
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['abilities', variables.campaignId] })
+      useToastStore.getState().addToast('success', `Imported ${data.imported} abilities`)
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Import failed')
+    },
   })
 }
