@@ -80,6 +80,7 @@ This is purely removing code — no new features.
 
 ### Dependencies
 - New npm package: `@3d-dice/dice-box` — WebGL 3D dice with physics simulation
+- **Setup note:** `@3d-dice/dice-box` requires its WASM and worker files copied into `public/` and the `assetPath` option set at initialization
 
 ### Files
 - `app/src/features/dice/DiceRoller.tsx` — drawer component with dice selection, 3D canvas, results
@@ -131,7 +132,7 @@ RLS: Same campaign ownership pattern.
 | id | uuid | Primary key (default gen_random_uuid()) |
 | item_id | uuid | FK to items (nullable — gold/currency entries may not reference an item) |
 | campaign_id | uuid | FK to campaigns |
-| name | text | Item name or "Gold Pieces" |
+| name | text | Item name or "Gold Pieces" (always user-supplied, even when item_id is linked — allows renaming) |
 | quantity | integer | Default 1 |
 | notes | text | Nullable |
 | created_at | timestamptz | Default now() |
