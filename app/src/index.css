@@ -341,3 +341,18 @@
   float: left;
   height: 0;
 }
+
+/* ─── Active Combatant Glow ─── */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4), 0 0 24px rgba(245, 158, 11, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2), 0 0 16px rgba(245, 158, 11, 0.08);
+  }
+}
+
+.combatant-active-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

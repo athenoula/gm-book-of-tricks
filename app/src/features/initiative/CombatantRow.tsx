@@ -47,7 +47,7 @@ export function CombatantRow({ combatant, isActive, inCombat }: Props) {
       className={`
         rounded-[--radius-md] border p-3 transition-colors
         ${isActive && inCombat
-          ? 'border-primary bg-primary-ghost'
+          ? 'border-primary bg-primary-ghost combatant-active-glow'
           : 'border-border bg-bg-base'
         }
         ${isDowned ? 'opacity-50' : ''}
