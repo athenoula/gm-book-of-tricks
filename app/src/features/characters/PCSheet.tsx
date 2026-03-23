@@ -6,6 +6,7 @@ import { getClassIcon } from '@/components/ui/class-icons'
 import { uploadImage } from '@/lib/storage'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import { getRacesForEdition, CLASSES } from '@/lib/data/editions'
+import { getNextLevelXP, getXPProgress } from '@/lib/data/xp-thresholds'
 import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { useUpdatePC, useDeletePC, useUpdatePortrait } from './useCharacters'
 import { SpellPicker } from './SpellPicker'
@@ -16,6 +17,8 @@ const ABILITY_NAMES = ['strength', 'dexterity', 'constitution', 'intelligence', 
 export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: string }) {
   const [editing, setEditing] = useState(false)
   const [showSpells, setShowSpells] = useState(false)
+  const [addingXP, setAddingXP] = useState(false)
+  const [xpAmount, setXpAmount] = useState('')
   const updatePC = useUpdatePC()
   const deletePC = useDeletePC()
   const scores = pc.ability_scores as AbilityScores
@@ -115,6 +118,63 @@ export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: s
               </div>
             )
           })}
+        </div>
+      </div>
+
+      {/* XP Tracking */}
+      <div className="px-4 pb-4">
+        <div className="bg-bg-raised rounded-[--radius-md] p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] text-text-muted uppercase tracking-wider font-label">Experience</span>
+            <Button size="sm" variant="ghost" onClick={() => setAddingXP(!addingXP)}>
+              {addingXP ? 'Cancel' : '+ Add XP'}
+            </Button>
+          </div>
+
+          {addingXP && (
+            <div className="flex gap-2 mb-2">
+              <input
+                type="number"
+                value={xpAmount}
+                onChange={(e) => setXpAmount(e.target.value)}
+                placeholder="XP amount"
+                className="flex-1 bg-bg-base rounded-[--radius-sm] border border-border px-2 py-1 text-sm text-text-heading outline-none focus:border-border-active"
+              />
+              <Button size="sm" onClick={() => {
+                const amount = parseInt(xpAmount)
+                if (!isNaN(amount) && amount > 0) {
+                  updatePC.mutate({ id: pc.id, xp: (pc.xp || 0) + amount })
+                  setXpAmount('')
+                  setAddingXP(false)
+                }
+              }}>
+                Add
+              </Button>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-text-body font-mono">{(pc.xp || 0).toLocaleString()} XP</span>
+            <span className="text-text-muted">
+              {getNextLevelXP(pc.level) ? `/ ${getNextLevelXP(pc.level)!.toLocaleString()}` : 'Max Level'}
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-2 bg-bg-base rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                getXPProgress(pc.xp || 0, pc.level) >= 100
+                  ? 'bg-primary animate-pulse'
+                  : 'bg-primary/70'
+              }`}
+              style={{ width: `${getXPProgress(pc.xp || 0, pc.level)}%` }}
+            />
+          </div>
+
+          {getXPProgress(pc.xp || 0, pc.level) >= 100 && (
+            <p className="text-xs text-primary-light mt-1 font-medium">Ready to level up!</p>
+          )}
         </div>
       </div>
 
