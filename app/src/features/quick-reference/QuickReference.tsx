@@ -123,7 +123,7 @@ export function QuickReference() {
             transition={{ duration: 0.15 }}
             onClick={close}
           />
-          <ScaleIn className="relative max-w-[800px] w-full">
+          <ScaleIn className="relative max-w-[800px] w-full mx-4 max-md:mx-2">
             <div className="bg-bg-base rounded-xl border border-border shadow-lg overflow-hidden">
               {/* Search bar */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
@@ -144,9 +144,9 @@ export function QuickReference() {
               </div>
 
               {/* Split pane */}
-              <div className="flex h-[60vh]">
+              <div className="flex max-md:flex-col h-[60vh] max-md:h-[70vh]">
                 {/* Left: Results */}
-                <div className="w-[240px] shrink-0 border-r border-border overflow-y-auto">
+                <div className="w-[240px] max-md:w-full shrink-0 border-r max-md:border-r-0 max-md:border-b border-border overflow-y-auto max-md:max-h-[35vh]">
                   {query.length < 2 ? (
                     <div className="px-4 py-8 text-center text-text-muted text-sm">
                       Type to search...

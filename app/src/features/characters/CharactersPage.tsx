@@ -41,7 +41,7 @@ export function CharactersPage({ campaignId }: { campaignId: string }) {
 }
 
 function PCList({ campaignId }: { campaignId: string }) {
-  const { data: pcs, isLoading } = usePCs(campaignId)
+  const { data: pcs, isLoading, error } = usePCs(campaignId)
   const createPC = useCreatePC()
   const [showForm, setShowForm] = useState(false)
 
@@ -65,6 +65,13 @@ function PCList({ campaignId }: { campaignId: string }) {
       )}
 
       {isLoading && <p className="text-text-muted text-sm py-4">Loading...</p>}
+
+      {error && (
+        <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+          <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+          <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+        </div>
+      )}
 
       {pcs && pcs.length === 0 && !showForm && (
         <div className="bg-bg-base rounded-[--radius-lg] border border-border p-8 text-center">
@@ -181,7 +188,7 @@ function PCCreateForm({ campaignId, onSave, isPending }: {
 }
 
 function NPCList({ campaignId }: { campaignId: string }) {
-  const { data: npcs, isLoading } = useNPCs(campaignId)
+  const { data: npcs, isLoading, error } = useNPCs(campaignId)
   const createNPC = useCreateNPC()
   const deleteNPC = useDeleteNPC()
   const [showForm, setShowForm] = useState(false)
@@ -206,6 +213,13 @@ function NPCList({ campaignId }: { campaignId: string }) {
       )}
 
       {isLoading && <p className="text-text-muted text-sm py-4">Loading...</p>}
+
+      {error && (
+        <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+          <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+          <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+        </div>
+      )}
 
       {npcs && npcs.length === 0 && !showForm && (
         <div className="bg-bg-base rounded-[--radius-lg] border border-border p-8 text-center">

@@ -40,7 +40,7 @@ export function SpellbookPage({ campaignId }: { campaignId: string }) {
 }
 
 function SpellLibrary({ campaignId }: { campaignId: string }) {
-  const { data: spells, isLoading } = useCampaignSpells(campaignId)
+  const { data: spells, isLoading, error } = useCampaignSpells(campaignId)
   const deleteSpell = useDeleteSpell()
   const bulkImport = useBulkImportSpells()
   const [filter, setFilter] = useState('')
@@ -104,6 +104,13 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
       </div>
 
       {isLoading && <p className="text-text-muted text-sm py-4">Loading spells...</p>}
+
+      {error && (
+        <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+          <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+          <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+        </div>
+      )}
 
       {filtered && filtered.length === 0 && (
         <div className="bg-bg-base rounded-[--radius-lg] border border-border p-8 text-center">

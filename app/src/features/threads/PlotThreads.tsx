@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function PlotThreads({ campaignId }: Props) {
-  const { data: threads, isLoading } = useThreads(campaignId)
+  const { data: threads, isLoading, error } = useThreads(campaignId)
   const createThread = useCreateThread()
   const updateThread = useUpdateThread()
   const deleteThread = useDeleteThread()
@@ -60,7 +60,23 @@ export function PlotThreads({ campaignId }: Props) {
     }
   }
 
-  if (isLoading) return null
+  if (isLoading) {
+    return (
+      <div>
+        <h3 className="text-xl mb-4">Plot Threads</h3>
+        <p className="text-text-muted text-sm py-4 text-center">Loading threads...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+        <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+        <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+      </div>
+    )
+  }
 
   return (
     <div>

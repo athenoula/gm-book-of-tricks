@@ -28,13 +28,22 @@ function formatDate(dateStr: string | null) {
 }
 
 export function SessionList({ campaignId }: { campaignId: string }) {
-  const { data: sessions, isLoading } = useSessions(campaignId)
+  const { data: sessions, isLoading, error } = useSessions(campaignId)
   const updateSession = useUpdateSession()
   const deleteSession = useDeleteSession()
   const [showCompleted, setShowCompleted] = useState(false)
 
   if (isLoading) {
     return <p className="text-text-muted text-sm py-4">Loading sessions...</p>
+  }
+
+  if (error) {
+    return (
+      <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+        <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+        <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+      </div>
+    )
   }
 
   if (!sessions || sessions.length === 0) {

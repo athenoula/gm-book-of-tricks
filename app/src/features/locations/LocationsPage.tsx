@@ -12,7 +12,7 @@ import type { Location } from './useLocations'
 const LOCATION_TYPES = ['City', 'Town', 'Village', 'Dungeon', 'Wilderness', 'Building', 'Region', 'Landmark', 'Other'] as const
 
 export function LocationsPage({ campaignId }: { campaignId: string }) {
-  const { data: locations, isLoading } = useLocations(campaignId)
+  const { data: locations, isLoading, error } = useLocations(campaignId)
   const createLocation = useCreateLocation()
   const [showCreate, setShowCreate] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -43,6 +43,15 @@ export function LocationsPage({ campaignId }: { campaignId: string }) {
   const children = (parentId: string) => locations?.filter((l) => l.parent_location_id === parentId) ?? []
 
   if (isLoading) return <p className="text-text-muted text-sm py-4">Loading...</p>
+
+  if (error) {
+    return (
+      <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+        <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+        <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+      </div>
+    )
+  }
 
   return (
     <div>

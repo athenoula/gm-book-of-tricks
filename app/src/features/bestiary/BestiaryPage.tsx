@@ -42,7 +42,7 @@ export function BestiaryPage({ campaignId }: { campaignId: string }) {
 }
 
 function MonsterLibrary({ campaignId }: { campaignId: string }) {
-  const { data: monsters, isLoading } = useCampaignMonsters(campaignId)
+  const { data: monsters, isLoading, error } = useCampaignMonsters(campaignId)
   const deleteMonster = useDeleteMonster()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
@@ -96,6 +96,13 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
       </div>
 
       {isLoading && <p className="text-text-muted text-sm py-4">Loading monsters...</p>}
+
+      {error && (
+        <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+          <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+          <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+        </div>
+      )}
 
       {filtered && filtered.length === 0 && (
         <div className="bg-bg-base rounded-[--radius-lg] border border-border p-8 text-center">

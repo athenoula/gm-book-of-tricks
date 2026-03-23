@@ -33,6 +33,7 @@ export function InspirationBoard({ campaignId, isGlobal }: Props) {
 
   const items = isGlobal ? globalQuery.data : campaignQuery.data
   const isLoading = isGlobal ? globalQuery.isLoading : campaignQuery.isLoading
+  const error = isGlobal ? globalQuery.error : campaignQuery.error
 
   const [newTitle, setNewTitle] = useState('')
   const [newContent, setNewContent] = useState('')
@@ -59,6 +60,15 @@ export function InspirationBoard({ campaignId, isGlobal }: Props) {
   }
 
   if (isLoading) return <p className="text-text-muted text-sm py-4">Loading...</p>
+
+  if (error) {
+    return (
+      <div className="bg-danger/10 border border-danger/20 rounded-[--radius-md] p-4 text-center">
+        <p className="text-danger text-sm">{error.message || 'Something went wrong'}</p>
+        <p className="text-text-muted text-xs mt-1">Try refreshing the page</p>
+      </div>
+    )
+  }
 
   return (
     <div>
