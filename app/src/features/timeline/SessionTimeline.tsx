@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiQuillInk, GiPlayButton, GiBookshelf, GiScrollUnfurled } from '@/components/ui/icons'
+import { GiBookshelf, GiScrollUnfurled } from '@/components/ui/icons'
 import { useScenes, useCreateScene, useReorderScenes } from './useScenes'
 import { useTimelineBlocks, useAddTimelineBlock, useReorderTimelineBlocks } from './useTimelineBlocks'
 import { SceneBlock } from './SceneBlock'
@@ -27,7 +27,6 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
   const reorderScenes = useReorderScenes()
   const addBlock = useAddTimelineBlock()
   const reorderBlocks = useReorderTimelineBlocks()
-  const [isPrep, setIsPrep] = useState(true)
   const [showLibrary, setShowLibrary] = useState(false)
 
   // Merge scenes and blocks into a unified sorted list
@@ -111,27 +110,8 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
 
   return (
     <div>
-      {/* Mode toggle + actions */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1 bg-bg-raised rounded-[--radius-md] p-0.5 max-md:w-full">
-          <button
-            onClick={() => setIsPrep(true)}
-            className={`px-3 py-1.5 text-sm rounded-[--radius-sm] transition-colors cursor-pointer flex-1 ${
-              isPrep ? 'bg-primary/15 text-primary-light' : 'text-text-muted hover:text-text-body'
-            }`}
-          >
-            <GameIcon icon={GiQuillInk} size="sm" /> Prep
-          </button>
-          <button
-            onClick={() => setIsPrep(false)}
-            className={`px-3 py-1.5 text-sm rounded-[--radius-sm] transition-colors cursor-pointer flex-1 ${
-              !isPrep ? 'bg-success/15 text-success' : 'text-text-muted hover:text-text-body'
-            }`}
-          >
-            <GameIcon icon={GiPlayButton} size="sm" /> Play
-          </button>
-        </div>
-
+      {/* Actions */}
+      <div className="flex items-center justify-end mb-4">
         <div className="flex gap-2 max-md:hidden">
           <Button
             size="sm"
@@ -140,25 +120,21 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
           >
             <GameIcon icon={GiBookshelf} size="sm" /> {showLibrary ? 'Hide' : 'Library'}
           </Button>
-          {isPrep && (
-            <Button size="sm" onClick={handleAddScene} disabled={createScene.isPending}>
-              + Scene
-            </Button>
-          )}
+          <Button size="sm" onClick={handleAddScene} disabled={createScene.isPending}>
+            + Scene
+          </Button>
         </div>
       </div>
 
       {/* Mobile action buttons */}
-      {isPrep && (
-        <div className="flex gap-2 mb-4 md:hidden">
-          <Button size="sm" variant="secondary" onClick={() => setShowLibrary(!showLibrary)} className="flex-1">
-            <GameIcon icon={GiBookshelf} size="sm" /> Library
-          </Button>
-          <Button size="sm" onClick={handleAddScene} disabled={createScene.isPending} className="flex-1">
-            + Scene
-          </Button>
-        </div>
-      )}
+      <div className="flex gap-2 mb-4 md:hidden">
+        <Button size="sm" variant="secondary" onClick={() => setShowLibrary(!showLibrary)} className="flex-1">
+          <GameIcon icon={GiBookshelf} size="sm" /> Library
+        </Button>
+        <Button size="sm" onClick={handleAddScene} disabled={createScene.isPending} className="flex-1">
+          + Scene
+        </Button>
+      </div>
 
       {/* Layout: timeline + optional library sidebar */}
       <div className={showLibrary ? 'grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4' : ''}>
@@ -178,7 +154,7 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
             </div>
           ) : (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="timeline" isDropDisabled={!isPrep}>
+              <Droppable droppableId="timeline">
                 {(provided) => (
                   <div
                     ref={provided.innerRef}
@@ -190,7 +166,6 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                         key={item.id}
                         draggableId={item.id}
                         index={index}
-                        isDragDisabled={!isPrep}
                       >
                         {(provided) => (
                           <div
@@ -200,13 +175,11 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                             {item.kind === 'scene' ? (
                               <SceneBlock
                                 scene={item.data}
-                                isPrep={isPrep}
                                 dragHandleProps={provided.dragHandleProps ?? undefined}
                               />
                             ) : (
                               <TimelineBlockCard
                                 block={item.data}
-                                isPrep={isPrep}
                                 dragHandleProps={provided.dragHandleProps ?? undefined}
                               />
                             )}

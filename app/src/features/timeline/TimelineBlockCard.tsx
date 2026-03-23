@@ -27,11 +27,10 @@ const BLOCK_STYLES: Record<string, { icon: IconComponent; borderColor: string; l
 
 interface Props {
   block: TimelineBlock
-  isPrep: boolean
   dragHandleProps?: Record<string, unknown>
 }
 
-export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
+export function TimelineBlockCard({ block, dragHandleProps }: Props) {
   const updateBlock = useUpdateTimelineBlock()
   const removeBlock = useRemoveTimelineBlock()
   const updateSnapshot = useUpdateTimelineBlockSnapshot()
@@ -75,11 +74,9 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
     <div className={`bg-bg-base rounded-[--radius-lg] border border-border border-l-3 ${style.borderColor} ornamental-corners`}>
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-        {isPrep && (
-          <span {...dragHandleProps} className="text-text-muted cursor-grab active:cursor-grabbing select-none">
-            ⠿
-          </span>
-        )}
+        <span {...dragHandleProps} className="text-text-muted cursor-grab active:cursor-grabbing select-none">
+          ⠿
+        </span>
 
         {editingNote ? (
           <>
@@ -109,17 +106,17 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
           </button>
         )}
 
-        {block.block_type === 'battle' && isPrep && (
+        {block.block_type === 'battle' && (
           <Button size="sm" variant="secondary" onClick={() => setEditingBattle(!editingBattle)}>
             {editingBattle ? 'Close' : 'Edit Battle'}
           </Button>
         )}
-        {block.block_type === 'note' && isPrep && !editingNote && (
+        {block.block_type === 'note' && !editingNote && (
           <Button size="sm" variant="ghost" onClick={handleStartEditNote}>
             Edit
           </Button>
         )}
-        {block.block_type === 'note' && isPrep && editingNote && (
+        {block.block_type === 'note' && editingNote && (
           <>
             <Button size="sm" variant="ghost" onClick={handleCancelEditNote}>
               Cancel
@@ -129,11 +126,9 @@ export function TimelineBlockCard({ block, isPrep, dragHandleProps }: Props) {
             </Button>
           </>
         )}
-        {isPrep && (
-          <Button size="sm" variant="ghost" onClick={handleRemove} className="text-danger hover:text-danger">
-            ✕
-          </Button>
-        )}
+        <Button size="sm" variant="ghost" onClick={handleRemove} className="text-danger hover:text-danger">
+          ✕
+        </Button>
       </div>
 
       {/* Content (collapsible, but always shown when editing) */}
@@ -293,14 +288,6 @@ function LocationSnapshot({ data }: { data: Record<string, unknown> }) {
       {data.notes && (
         <p className="text-xs text-text-muted">{data.notes as string}</p>
       )}
-    </div>
-  )
-}
-
-// BattleSnapshot replaced by InlineBattle component
-function _unused() { return (
-    <div className="text-xs text-text-secondary italic">
-      Unused.
     </div>
   )
 }

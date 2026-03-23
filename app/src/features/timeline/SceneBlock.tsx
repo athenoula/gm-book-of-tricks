@@ -18,11 +18,10 @@ const STATUS_STYLES: Record<Scene['status'], { label: string; className: string;
 
 interface Props {
   scene: Scene
-  isPrep: boolean
   dragHandleProps?: Record<string, unknown>
 }
 
-export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
+export function SceneBlock({ scene, dragHandleProps }: Props) {
   const [editing, setEditing] = useState(false)
   // Local edit state — only used while editing
   const [editName, setEditName] = useState('')
@@ -61,17 +60,6 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
     setEditing(false)
   }
 
-  // If we switch to Play while editing, save first
-  useEffect(() => {
-    if (!isPrep && editing) {
-      lastSavedContent.current = editContent
-      updateScene.mutate(
-        { id: scene.id, name: editName, content: editContent },
-        { onSuccess: () => setEditing(false) }
-      )
-    }
-  }, [isPrep]) // eslint-disable-line react-hooks/exhaustive-deps
-
   // Clear the lastSaved ref once the real data catches up
   useEffect(() => {
     if (scene.content && lastSavedContent.current && scene.content === lastSavedContent.current) {
@@ -98,14 +86,12 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
     <div className={`bg-bg-base rounded-[--radius-lg] border border-border overflow-hidden ${scene.status === 'done' ? 'opacity-60' : ''}`}>
       {/* Scene header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-        {isPrep && (
-          <span
-            {...dragHandleProps}
-            className="text-text-muted cursor-grab active:cursor-grabbing select-none"
-          >
-            ⠿
-          </span>
-        )}
+        <span
+          {...dragHandleProps}
+          className="text-text-muted cursor-grab active:cursor-grabbing select-none"
+        >
+          ⠿
+        </span>
 
         <button
           onClick={handleStatusCycle}
@@ -113,7 +99,7 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
           title={`Status: ${status.label} (click to cycle)`}
         />
 
-        {editing && isPrep ? (
+        {editing ? (
           <input
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
@@ -126,36 +112,34 @@ export function SceneBlock({ scene, isPrep, dragHandleProps }: Props) {
           </span>
         )}
 
-        {isPrep && (
-          <div className="flex items-center gap-1">
-            {editing ? (
-              <>
-                <Button size="sm" variant="ghost" onClick={handleCancel}>
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={handleSave} disabled={updateScene.isPending}>
-                  {updateScene.isPending ? 'Saving...' : 'Save'}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button size="sm" variant="ghost" onClick={handleStartEdit}>
-                  Edit
-                </Button>
-                <Button size="sm" variant="ghost" onClick={handleDelete} className="text-danger hover:text-danger">
-                  ✕
-                </Button>
-              </>
-            )}
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          {editing ? (
+            <>
+              <Button size="sm" variant="ghost" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={updateScene.isPending}>
+                {updateScene.isPending ? 'Saving...' : 'Save'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" variant="ghost" onClick={handleStartEdit}>
+                Edit
+              </Button>
+              <Button size="sm" variant="ghost" onClick={handleDelete} className="text-danger hover:text-danger">
+                ✕
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Scene content */}
       <div className="px-4 py-3">
         <SceneEditor
-          content={editing && isPrep ? editContent : displayContent}
-          editable={editing && isPrep}
+          content={editing ? editContent : displayContent}
+          editable={editing}
           onChange={handleContentChange}
         />
       </div>
