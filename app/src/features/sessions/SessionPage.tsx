@@ -83,6 +83,7 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
               size="sm"
               variant={showDice ? 'primary' : 'secondary'}
               onClick={() => setShowDice(!showDice)}
+              data-tutorial="dice-roller"
             >
               <GameIcon icon={GiRollingDices} size="sm" /> Dice
             </Button>
@@ -90,6 +91,7 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
               size="sm"
               variant={showInitiative ? 'primary' : 'secondary'}
               onClick={() => setShowInitiative(!showInitiative)}
+              data-tutorial="initiative-tracker"
             >
               <GameIcon icon={GiCrossedSwords} size="sm" /> {showInitiative ? 'Hide' : 'Initiative'}
             </Button>

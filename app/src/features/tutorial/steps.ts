@@ -116,18 +116,19 @@ export const chapters: TutorialChapter[] = [
         title: 'Session Status',
         content: 'Advance your session from Upcoming to In Progress when game time starts, then mark it Complete when you\'re done.',
         placement: 'bottom',
+        route: '/campaign/$campaignId/session/$sessionId',
       },
       {
         target: '[data-tutorial="initiative-tracker"]',
         title: 'Initiative Tracker',
-        content: 'Run combat encounters with turn order, HP tracking, and conditions.',
-        placement: 'left',
+        content: 'Click this to open the combat tracker — manage turn order, HP, and conditions.',
+        placement: 'bottom',
       },
       {
         target: '[data-tutorial="dice-roller"]',
         title: 'Dice Roller',
-        content: 'Roll any dice expression right here — no need to leave the app.',
-        placement: 'left',
+        content: 'Click to roll any dice expression right here — no need to leave the app.',
+        placement: 'bottom',
       },
       {
         target: '[data-tutorial="nav-scratchpad"]',

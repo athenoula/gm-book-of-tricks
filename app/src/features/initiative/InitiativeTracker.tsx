@@ -157,7 +157,7 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inl
   }
 
   return (
-    <div data-tutorial="initiative-tracker">
+    <div>
       {/* Header */}
       <div className={`flex items-center justify-between ${inline ? 'mb-2' : 'mb-4'}`}>
         {!inline && (
