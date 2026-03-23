@@ -10,6 +10,7 @@ import { CreateSessionDialog } from '@/features/sessions/CreateSessionDialog'
 import { OrnamentalDivider } from '@/components/ui/OrnamentalDivider'
 import { CampaignFiles } from './CampaignFiles'
 import { PlotThreads } from '@/features/threads/PlotThreads'
+import { PartyTreasure } from '@/features/inventory/PartyTreasure'
 
 export function CampaignOverview({ campaignId }: { campaignId: string }) {
   const { data: campaign, isLoading } = useCampaign(campaignId)
@@ -57,6 +58,11 @@ export function CampaignOverview({ campaignId }: { campaignId: string }) {
       {/* Plot threads */}
       <div className="mb-8">
         <PlotThreads campaignId={campaignId} />
+      </div>
+
+      {/* Party treasure */}
+      <div className="mb-8">
+        <PartyTreasure campaignId={campaignId} />
       </div>
 
       <OrnamentalDivider />
