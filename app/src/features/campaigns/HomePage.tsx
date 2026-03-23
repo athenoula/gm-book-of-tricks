@@ -73,13 +73,6 @@ export function HomePage() {
 
         <OrnamentalDivider />
 
-        {/* Global Inspiration Inbox */}
-        <div className="mt-12">
-          <InspirationBoard isGlobal />
-        </div>
-
-        <OrnamentalDivider />
-
         {/* Browser Extension */}
         <div className="mt-12 bg-bg-base rounded-[--radius-lg] border border-border p-6">
           <div className="flex items-start gap-4">
@@ -112,6 +105,13 @@ export function HomePage() {
               </a>
             </div>
           </div>
+        </div>
+
+        <OrnamentalDivider />
+
+        {/* Global Inspiration Inbox */}
+        <div className="mt-12">
+          <InspirationBoard isGlobal />
         </div>
       </main>
 
