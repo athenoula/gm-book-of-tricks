@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate, useRouterState } from '@tanstack/react-router'
+import { router } from '@/routes/router'
 import { useAuth } from '@/lib/auth'
 import { useTutorial } from '@/lib/tutorial'
 import { chapters } from '@/features/tutorial/steps'
@@ -28,10 +28,12 @@ function extractSessionId(): string | null {
   return match?.[1] ?? null
 }
 
+function getCurrentHash(): string {
+  return window.location.hash
+}
+
 export function TutorialProvider() {
   const { user } = useAuth()
-  const navigate = useNavigate()
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   const {
     isActive,
@@ -45,7 +47,7 @@ export function TutorialProvider() {
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isNavigatingRef = useRef(false)
-  const lastPathnameRef = useRef(pathname)
+  const lastHashRef = useRef(getCurrentHash())
 
   // Clean up polling
   const clearPolling = useCallback(() => {
@@ -145,7 +147,8 @@ export function TutorialProvider() {
 
     if (resolvedRoute) {
       isNavigatingRef.current = true
-      void navigate({ to: resolvedRoute }).then(() => {
+      lastHashRef.current = '#' + resolvedRoute
+      void router.navigate({ to: resolvedRoute }).then(() => {
         // Let the DOM settle, then reset the navigating flag
         requestAnimationFrame(() => {
           isNavigatingRef.current = false
@@ -212,21 +215,25 @@ export function TutorialProvider() {
 
   // 8. Route change detection — dismiss if user navigates away unexpectedly
   useEffect(() => {
-    if (!isActive) {
-      lastPathnameRef.current = pathname
-      return
+    if (!isActive) return
+
+    const handleHashChange = () => {
+      // If the tutorial triggered the navigation, don't dismiss
+      if (isNavigatingRef.current) {
+        lastHashRef.current = getCurrentHash()
+        return
+      }
+      // If hash changed and it wasn't us, dismiss
+      const currentHash = getCurrentHash()
+      if (currentHash !== lastHashRef.current) {
+        dismiss()
+      }
+      lastHashRef.current = currentHash
     }
-    // If the tutorial triggered the navigation, don't dismiss
-    if (isNavigatingRef.current) {
-      lastPathnameRef.current = pathname
-      return
-    }
-    // If pathname changed and it wasn't us, dismiss
-    if (pathname !== lastPathnameRef.current) {
-      dismiss()
-    }
-    lastPathnameRef.current = pathname
-  }, [pathname, isActive, dismiss])
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [isActive, dismiss])
 
   // 9. Render
   if (!isActive || !step || !chapter || !readyToShow) return null
