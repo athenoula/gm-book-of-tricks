@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from '@/components/motion'
 import { Button } from '@/components/ui/Button'
+import { useTutorial } from '@/lib/tutorial'
 import type { TutorialStep } from '@/features/tutorial/steps'
+
+function renderAcknowledgment(template: string, name: string): React.ReactNode {
+  const parts = template.split(/\*\*([^*]+)\*\*/)
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <strong key={i} className="text-primary-light">{part.replace('{name}', name)}</strong> : part.replace('{name}', name)
+  )
+}
 
 interface TutorialOverlayProps {
   step: TutorialStep
@@ -140,6 +148,7 @@ export function TutorialOverlay({
   onDismiss,
   onSkipStep,
 }: TutorialOverlayProps) {
+  const { stepMode, acknowledgeName } = useTutorial()
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [targetBorderRadius, setTargetBorderRadius] = useState('0px')
@@ -238,12 +247,77 @@ export function TutorialOverlay({
     }
   }, [step.target, updatePosition])
 
+  // Acknowledge mode: centered overlay, no target positioning
+  if (stepMode === 'acknowledge') {
+    return (
+      <div className="fixed inset-0 z-[65]" style={{ pointerEvents: 'none' }}>
+        {/* Semi-transparent backdrop */}
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            pointerEvents: 'auto',
+          }}
+        />
+
+        {/* Centered tooltip */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`acknowledge-${stepIndex}`}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="bg-bg-base border border-primary-light rounded-[--radius-lg] shadow-lg"
+            style={{
+              position: 'fixed',
+              top: '30%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              maxWidth: 400,
+              minWidth: 280,
+              padding: '24px 28px',
+              pointerEvents: 'auto',
+              zIndex: 65,
+            }}
+          >
+            {/* Chapter name */}
+            <p className="font-label text-primary-light text-xs mb-1">
+              {chapterName}
+            </p>
+
+            {/* Title */}
+            <h3 className="font-heading text-text-heading text-base mb-3">
+              {step.title}
+            </h3>
+
+            {/* Acknowledgment text */}
+            <p className="font-body text-text-body text-sm mb-5 leading-relaxed">
+              {step.acknowledgment
+                ? renderAcknowledgment(step.acknowledgment, acknowledgeName ?? '')
+                : step.content}
+            </p>
+
+            {/* Continue button */}
+            <div className="flex justify-center">
+              <Button variant="primary" size="sm" onClick={onNext}>
+                Continue
+              </Button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    )
+  }
+
   if (!targetRect || !targetFound) return null
 
   const slideOffset = getSlideOffset(activePlacement)
+  const isCreateMode = stepMode === 'create'
 
   return (
-    <div className="fixed inset-0 z-[65]" style={{ pointerEvents: 'none' }}>
+    <div className={`fixed inset-0 ${isCreateMode ? 'z-[45]' : 'z-[65]'}`} style={{ pointerEvents: 'none' }}>
       {/* Spotlight cutout */}
       <div
         style={{
@@ -255,8 +329,8 @@ export function TutorialOverlay({
           borderRadius: targetBorderRadius,
           boxShadow:
             '0 0 0 9999px rgba(0,0,0,0.7), 0 0 20px rgba(212,165,116,0.3)',
-          pointerEvents: 'none',
-          zIndex: 65,
+          pointerEvents: isCreateMode ? 'auto' : 'none',
+          zIndex: isCreateMode ? 45 : 65,
         }}
         className="border-2 border-primary-light"
       />
@@ -279,7 +353,7 @@ export function TutorialOverlay({
             minWidth: 260,
             padding: '16px 20px',
             pointerEvents: 'auto',
-            zIndex: 65,
+            zIndex: isCreateMode ? 45 : 65,
           }}
         >
           {/* Chapter name + step counter */}
@@ -297,24 +371,40 @@ export function TutorialOverlay({
             {step.content}
           </p>
 
+          {/* Create mode: arrow indicator toward target */}
+          {isCreateMode && activePlacement === 'top' && (
+            <div className="flex justify-center -mb-2">
+              <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary-light" />
+            </div>
+          )}
+          {isCreateMode && activePlacement === 'bottom' && (
+            <div className="flex justify-center -mt-6 mb-2">
+              <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[8px] border-b-primary-light" />
+            </div>
+          )}
+
           {/* Button row */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={stepIndex === 0 && chapterIndex === 0}
-              onClick={onBack}
-            >
-              Back
-            </Button>
+            {!isCreateMode && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={stepIndex === 0 && chapterIndex === 0}
+                  onClick={onBack}
+                >
+                  Back
+                </Button>
 
-            <Button variant="primary" size="sm" onClick={onNext}>
-              {isFinish ? 'Finish' : 'Next'}
-            </Button>
+                <Button variant="primary" size="sm" onClick={onNext}>
+                  {isFinish ? 'Finish' : 'Next'}
+                </Button>
+              </>
+            )}
 
             <button
               onClick={onDismiss}
-              className="ml-auto text-xs text-text-muted hover:text-text-body font-body cursor-pointer transition-colors"
+              className={`text-xs text-text-muted hover:text-text-body font-body cursor-pointer transition-colors ${isCreateMode ? '' : 'ml-auto'}`}
             >
               Skip tour
             </button>
