@@ -47,6 +47,7 @@ export type PlayerCharacter = {
   class: string | null
   subclass: string | null
   level: number
+  xp: number
   background: string | null
   alignment: string | null
   ability_scores: AbilityScores
