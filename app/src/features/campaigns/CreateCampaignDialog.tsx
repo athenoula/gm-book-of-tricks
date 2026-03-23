@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useTutorial } from '@/lib/tutorial'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -17,6 +18,14 @@ export function CreateCampaignDialog({ open, onClose }: Props) {
   const [gameSystem, setGameSystem] = useState('dnd5e-2024')
   const createCampaign = useCreateCampaign()
   const navigate = useNavigate()
+  const { prefillData, isActive } = useTutorial()
+
+  useEffect(() => {
+    if (open && isActive && prefillData) {
+      if (prefillData.name) setName(prefillData.name as string)
+      if (prefillData.description) setDescription(prefillData.description as string)
+    }
+  }, [open, isActive, prefillData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

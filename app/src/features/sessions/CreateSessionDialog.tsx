@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useTutorial } from '@/lib/tutorial'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { AnimatePresence, ScaleIn, motion } from '@/components/motion'
@@ -15,6 +16,13 @@ export function CreateSessionDialog({ campaignId, open, onClose }: Props) {
   const [sessionNumber, setSessionNumber] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
   const createSession = useCreateSession()
+  const { prefillData, isActive } = useTutorial()
+
+  useEffect(() => {
+    if (open && isActive && prefillData) {
+      if (prefillData.name) setName(prefillData.name as string)
+    }
+  }, [open, isActive, prefillData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
