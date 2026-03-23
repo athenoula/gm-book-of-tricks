@@ -10,6 +10,7 @@ import { getNextLevelXP, getXPProgress } from '@/lib/data/xp-thresholds'
 import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { useUpdatePC, useDeletePC, useUpdatePortrait } from './useCharacters'
 import { SpellPicker } from './SpellPicker'
+import { CharacterInventory } from '@/features/inventory/CharacterInventory'
 import type { PlayerCharacter, AbilityScores } from '@/lib/types'
 
 const ABILITY_NAMES = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] as const
@@ -213,6 +214,9 @@ export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: s
           </div>
         )}
       </div>
+
+      {/* Inventory section */}
+      <CharacterInventory characterId={pc.id} campaignId={campaignId} />
     </div>
   )
 }

@@ -62,3 +62,9 @@ export { GiDungeonGate } from 'react-icons/gi'       // Dungeon entrance
 export { GiTrail } from 'react-icons/gi'             // Road/wilderness trail
 export { GiWaveCrest } from 'react-icons/gi'         // Coastal/sea waves
 export { GiMountainRoad } from 'react-icons/gi'      // Mountain path
+
+// Inventory icons
+export { GiBackpack } from 'react-icons/gi'          // 🎒 inventory/backpack
+export { GiGems } from 'react-icons/gi'              // 💎 SRD/magic items
+export { GiSwordSmithing } from 'react-icons/gi'     // ⚔ equipped/worn
+export { GiTrashCan } from 'react-icons/gi'          // 🗑 remove item
