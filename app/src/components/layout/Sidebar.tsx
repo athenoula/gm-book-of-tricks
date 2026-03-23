@@ -25,13 +25,13 @@ interface NavItem {
 
 const campaignNav: NavItem[] = [
   { icon: GiCrossedSwords, label: 'Overview', to: '/campaign/$campaignId' },
+  { icon: GiScrollUnfurled, label: 'Sessions', to: '/campaign/$campaignId/sessions' },
   { icon: GiThreeFriends, label: 'Characters', to: '/campaign/$campaignId/characters' },
   { icon: GiSpikedDragonHead, label: 'Bestiary', to: '/campaign/$campaignId/bestiary' },
   { icon: GiSparkles, label: 'Spellbook', to: '/campaign/$campaignId/spellbook' },
   { icon: GiPositionMarker, label: 'Locations', to: '/campaign/$campaignId/locations' },
   { icon: GiRollingDices, label: 'Generators', to: '/campaign/$campaignId/generators' },
   { icon: GiNotebook, label: 'Scratchpad', to: '/campaign/$campaignId/scratchpad' },
-  { icon: GiScrollUnfurled, label: 'Sessions', to: '/campaign/$campaignId/sessions' },
 ]
 
 export function Sidebar({ campaignId }: { campaignId: string }) {
