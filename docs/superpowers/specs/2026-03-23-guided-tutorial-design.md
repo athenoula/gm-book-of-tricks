@@ -168,13 +168,28 @@ Register a "Take the Tour" action in the command palette search results, matchin
 
 ### Route Transitions
 - Provider navigates first when a step has a `route` property
-- Waits one `requestAnimationFrame` for DOM to settle
+- Poll for target selector (retry `querySelector` every 100ms, timeout after 3s) rather than a single rAF — TanStack Query may still be loading data after route change
+- If target never appears, skip the step
 - If user manually navigates away during the tour, dismiss gracefully
+
+### Command Palette / Quick Reference Steps
+- Chapter 1 steps 2–3 reference the Command Palette (z-50) and Quick Reference, which render *below* the tutorial overlay (z-65)
+- For these steps, the tooltip explains the shortcut and what it does — the palette is NOT actually opened during the tour
+- The tooltip alone is sufficient; no z-index promotion needed
+
+### Session ID Resolution
+- Chapter 3 steps that navigate into a session (route includes `$sessionId`) use the first session in the campaign
+- If the campaign has no sessions, those steps are skipped (missing target handling applies)
+- The sessions list step (Chapter 3, step 1) still shows, pointing at the empty state or list
+
+### localStorage Serialization
+- `completedChapters` stored as a JSON array (`[0, 1, 2]`), converted to/from `Set<number>` on read/write
 
 ### Mobile
 - Target `MobileNav` elements instead of sidebar
 - Tooltip renders above/below only (never left/right) on narrow screens
 - Skip sidebar-specific steps that don't exist on mobile
+- Also listen to scroll events on target's scroll container to reposition spotlight/tooltip if target scrolls
 
 ---
 
