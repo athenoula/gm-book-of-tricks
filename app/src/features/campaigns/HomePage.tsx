@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiRollingDices } from '@/components/ui/icons'
+import { GiRollingDices, GiPuzzle } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaigns } from './useCampaigns'
 import { CampaignCard } from './CampaignCard'
@@ -76,6 +76,42 @@ export function HomePage() {
         {/* Global Inspiration Inbox */}
         <div className="mt-12">
           <InspirationBoard isGlobal />
+        </div>
+
+        <OrnamentalDivider />
+
+        {/* Browser Extension */}
+        <div className="mt-12 bg-bg-base rounded-[--radius-lg] border border-border p-6">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 mt-1">
+              <GameIcon icon={GiPuzzle} size="xl" className="text-primary-light" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
+                Web Clipper Extension
+              </h3>
+              <p className="text-sm text-text-secondary mb-3">
+                Clip web content straight to your Inspiration Board while browsing. Save pages, text snippets, and images from any website with one click.
+              </p>
+              <div className="text-xs text-text-muted space-y-1.5 mb-4">
+                <p className="font-medium text-text-secondary">How to install:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Download and unzip the file below</li>
+                  <li>Open Chrome and go to <span className="font-mono text-text-body">chrome://extensions</span></li>
+                  <li>Turn on <span className="text-text-body">Developer mode</span> (top right toggle)</li>
+                  <li>Click <span className="text-text-body">Load unpacked</span> and select the <span className="font-mono text-text-body">extension</span> folder</li>
+                  <li>Click the puzzle icon in your toolbar and pin Book of Tricks Clipper</li>
+                </ol>
+              </div>
+              <a
+                href={`${import.meta.env.BASE_URL}book-of-tricks-clipper.zip`}
+                download
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-[--radius-md] bg-primary/10 border border-primary/30 text-primary-light text-sm font-medium hover:bg-primary/20 transition-colors"
+              >
+                Download Extension
+              </a>
+            </div>
+          </div>
         </div>
       </main>
 

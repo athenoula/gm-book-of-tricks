@@ -68,3 +68,6 @@ export { GiBackpack } from 'react-icons/gi'          // 🎒 inventory/backpack
 export { GiGems } from 'react-icons/gi'              // 💎 SRD/magic items
 export { GiSwordSmithing } from 'react-icons/gi'     // ⚔ equipped/worn
 export { GiTrashCan } from 'react-icons/gi'          // 🗑 remove item
+
+// Extension/plugin
+export { GiPuzzle } from 'react-icons/gi'            // 🧩 browser extension
