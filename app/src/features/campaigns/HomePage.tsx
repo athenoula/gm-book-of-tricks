@@ -32,7 +32,7 @@ export function HomePage() {
       <main className="max-w-5xl mx-auto px-4 py-10 md:px-8">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl">Your Campaigns</h2>
-          <Button size="md" onClick={() => setShowCreate(true)}>
+          <Button size="md" onClick={() => setShowCreate(true)} data-tutorial="create-campaign">
             + New Campaign
           </Button>
         </div>

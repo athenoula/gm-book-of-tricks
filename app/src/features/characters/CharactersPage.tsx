@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useTutorial } from '@/lib/tutorial'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GameIcon } from '@/components/ui/GameIcon'
@@ -48,7 +49,7 @@ function PCList({ campaignId }: { campaignId: string }) {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Button size="sm" onClick={() => setShowForm(!showForm)}>
+        <Button size="sm" onClick={() => setShowForm(!showForm)} data-tutorial="create-character">
           {showForm ? 'Cancel' : '+ Add PC'}
         </Button>
       </div>
@@ -107,6 +108,15 @@ function PCCreateForm({ campaignId, onSave, isPending }: {
   const [hpMax, setHpMax] = useState('10')
   const [ac, setAc] = useState('10')
   const [playerName, setPlayerName] = useState('')
+  const { prefillData, isActive } = useTutorial()
+
+  useEffect(() => {
+    if (isActive && prefillData) {
+      if (prefillData.name) setName(prefillData.name as string)
+      if (prefillData.class) setPcClass(prefillData.class as string)
+      if (prefillData.level) setLevel(String(prefillData.level))
+    }
+  }, [isActive, prefillData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
