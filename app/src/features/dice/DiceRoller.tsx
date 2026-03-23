@@ -112,7 +112,7 @@ export function DiceRoller({ isOpen, onClose }: Props) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed top-0 right-0 bottom-0 w-[350px] bg-bg-base border-l border-border z-40 flex flex-col shadow-lg"
+          className="fixed top-0 right-0 bottom-0 w-[350px] bg-bg-base border-l border-border z-[45] flex flex-col shadow-lg"
           initial={{ x: 350 }}
           animate={{ x: 0 }}
           exit={{ x: 350 }}

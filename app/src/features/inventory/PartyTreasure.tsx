@@ -19,6 +19,7 @@ export function PartyTreasure({ campaignId }: PartyTreasureProps) {
   const [showItemSearch, setShowItemSearch] = useState(false)
   const [showGoldInput, setShowGoldInput] = useState(false)
   const [goldAmount, setGoldAmount] = useState('')
+  const [localNotes, setLocalNotes] = useState<Record<string, string>>({})
 
   const { data: treasureItems = [], isLoading } = usePartyTreasure(campaignId)
   const addItem = useAddToPartyTreasure()
@@ -70,7 +71,14 @@ export function PartyTreasure({ campaignId }: PartyTreasureProps) {
   }
 
   const handleNotesChange = (id: string, notes: string) => {
-    updateItem.mutate({ id, campaign_id: campaignId, notes })
+    setLocalNotes((prev) => ({ ...prev, [id]: notes }))
+  }
+
+  const handleNotesBlur = (id: string) => {
+    const notes = localNotes[id]
+    if (notes !== undefined) {
+      updateItem.mutate({ id, campaign_id: campaignId, notes })
+    }
   }
 
   const handleRemove = (id: string) => {
@@ -249,8 +257,9 @@ export function PartyTreasure({ campaignId }: PartyTreasureProps) {
               {/* Notes field */}
               <input
                 type="text"
-                value={entry.notes ?? ''}
+                value={localNotes[entry.id] ?? entry.notes ?? ''}
                 onChange={(e) => handleNotesChange(entry.id, e.target.value)}
+                onBlur={() => handleNotesBlur(entry.id)}
                 placeholder="Notes..."
                 className="mt-1.5 w-full bg-transparent text-xs text-text-muted placeholder:text-text-muted/50 outline-none border-b border-transparent focus:border-border-active transition-colors"
               />

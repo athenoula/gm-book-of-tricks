@@ -162,7 +162,7 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
             {/* Pinned item */}
             {pinnedItemId && (() => {
               const pinned = timeline.find((item) => {
-                const id = item.kind === 'scene' ? item.data.id : item.data.id
+                const id = item.data.id
                 return id === pinnedItemId
               })
               if (!pinned) return null
