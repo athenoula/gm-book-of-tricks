@@ -21,17 +21,18 @@ interface NavItem {
   icon: IconComponent
   label: string
   to: string
+  tutorialId?: string
 }
 
 const campaignNav: NavItem[] = [
   { icon: GiCrossedSwords, label: 'Overview', to: '/campaign/$campaignId' },
   { icon: GiScrollUnfurled, label: 'Sessions', to: '/campaign/$campaignId/sessions' },
-  { icon: GiThreeFriends, label: 'Characters', to: '/campaign/$campaignId/characters' },
-  { icon: GiSpikedDragonHead, label: 'Bestiary', to: '/campaign/$campaignId/bestiary' },
+  { icon: GiThreeFriends, label: 'Characters', to: '/campaign/$campaignId/characters', tutorialId: 'nav-characters' },
+  { icon: GiSpikedDragonHead, label: 'Bestiary', to: '/campaign/$campaignId/bestiary', tutorialId: 'nav-bestiary' },
   { icon: GiSparkles, label: 'Spellbook', to: '/campaign/$campaignId/spellbook' },
-  { icon: GiPositionMarker, label: 'Locations', to: '/campaign/$campaignId/locations' },
+  { icon: GiPositionMarker, label: 'Locations', to: '/campaign/$campaignId/locations', tutorialId: 'nav-locations' },
   { icon: GiRollingDices, label: 'Generators', to: '/campaign/$campaignId/generators' },
-  { icon: GiNotebook, label: 'Scratchpad', to: '/campaign/$campaignId/scratchpad' },
+  { icon: GiNotebook, label: 'Scratchpad', to: '/campaign/$campaignId/scratchpad', tutorialId: 'nav-scratchpad' },
 ]
 
 export function Sidebar({ campaignId }: { campaignId: string }) {
@@ -41,6 +42,7 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
 
   return (
     <aside
+      data-tutorial="sidebar"
       className={`
         fixed left-0 top-0 bottom-0 z-40
         bg-bg-base border-r border-border
@@ -80,6 +82,7 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
                   : 'text-text-muted hover:text-text-body hover:bg-bg-raised'
                 }
               `}
+              data-tutorial={item.tutorialId}
               title={expanded ? undefined : item.label}
             >
               <GameIcon icon={item.icon} size="base" />
@@ -95,6 +98,7 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
       <div className="p-2 border-t border-border">
         <Link
           to="/home"
+          data-tutorial="all-campaigns"
           className={`
             flex items-center gap-3 rounded-[--radius-md] min-h-[44px]
             text-text-muted hover:text-text-body hover:bg-bg-raised

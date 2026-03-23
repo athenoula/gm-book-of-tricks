@@ -9,7 +9,7 @@ export function SessionsPage({ campaignId }: { campaignId: string }) {
   const [showCreate, setShowCreate] = useState(false)
 
   return (
-    <div>
+    <div data-tutorial="sessions-list">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl flex items-center gap-2"><GameIcon icon={GiScrollUnfurled} size="xl" /> Sessions</h2>
         <Button size="sm" onClick={() => setShowCreate(true)}>

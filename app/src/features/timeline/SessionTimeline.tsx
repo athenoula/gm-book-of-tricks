@@ -114,7 +114,7 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
   }
 
   return (
-    <div>
+    <div data-tutorial="session-timeline">
       {/* Actions */}
       <div className="flex items-center justify-end mb-4">
         <div className="flex gap-2 max-md:hidden">
@@ -214,6 +214,7 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                                 dragHandleProps={provided.dragHandleProps ?? undefined}
                                 onPin={() => handlePin(item.data.id)}
                                 isPinned={pinnedItemId === item.data.id}
+                                index={index}
                               />
                             ) : (
                               <TimelineBlockCard

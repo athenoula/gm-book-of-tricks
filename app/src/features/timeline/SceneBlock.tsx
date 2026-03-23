@@ -21,9 +21,10 @@ interface Props {
   dragHandleProps?: Record<string, unknown>
   onPin?: () => void
   isPinned?: boolean
+  index?: number
 }
 
-export function SceneBlock({ scene, dragHandleProps, onPin, isPinned }: Props) {
+export function SceneBlock({ scene, dragHandleProps, onPin, isPinned, index }: Props) {
   const [editing, setEditing] = useState(false)
   // Local edit state — only used while editing
   const [editName, setEditName] = useState('')
@@ -85,7 +86,7 @@ export function SceneBlock({ scene, dragHandleProps, onPin, isPinned }: Props) {
     : (lastSavedContent.current || scene.content)
 
   return (
-    <div className={`bg-bg-base rounded-[--radius-lg] border border-border overflow-hidden ${scene.status === 'done' ? 'opacity-60' : ''}`}>
+    <div data-tutorial={index === 0 ? 'scene-block' : undefined} className={`bg-bg-base rounded-[--radius-lg] border border-border overflow-hidden ${scene.status === 'done' ? 'opacity-60' : ''}`}>
       {/* Scene header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
         <span

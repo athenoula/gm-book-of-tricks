@@ -13,6 +13,8 @@ export function CampaignLayout({ campaignId, children }: CampaignLayoutProps) {
   return (
     <div className="min-h-dvh">
       <Sidebar campaignId={campaignId} />
+      <div data-tutorial="cmd-palette" className="fixed top-4 right-1/2 w-0 h-0" />
+      <div data-tutorial="quick-ref" className="fixed top-4 right-1/3 w-0 h-0" />
       <main
         className={`
           transition-all duration-[--duration-slow] ease-[--ease-out]

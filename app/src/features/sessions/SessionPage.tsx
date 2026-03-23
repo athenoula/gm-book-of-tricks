@@ -90,6 +90,7 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
               size="sm"
               variant={showInitiative ? 'primary' : 'secondary'}
               onClick={() => setShowInitiative(!showInitiative)}
+              data-tutorial="play-mode"
             >
               <GameIcon icon={GiCrossedSwords} size="sm" /> {showInitiative ? 'Hide' : 'Initiative'}
             </Button>
@@ -98,7 +99,9 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
       </div>
 
       {/* Recap (only visible on completed sessions) */}
-      <SessionRecap session={session} />
+      <div data-tutorial="session-recap">
+        <SessionRecap session={session} />
+      </div>
 
       {/* Initiative tracker slide-out */}
       {showInitiative && (

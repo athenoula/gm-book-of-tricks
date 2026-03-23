@@ -28,7 +28,7 @@ export function CampaignOverview({ campaignId }: { campaignId: string }) {
   const system = GAME_SYSTEMS.find((s) => s.value === campaign.game_system)
 
   return (
-    <div>
+    <div data-tutorial="campaign-overview">
       {/* Campaign header */}
       <div className="mb-8">
         <div className="flex items-start justify-between gap-4 mb-2">
