@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { chapters } from '@/features/tutorial/steps'
 
 const STORAGE_KEY_SEEN = 'gm-bot-tutorial-seen'
-const STORAGE_KEY_COMPLETED = 'gm-bot-tutorial-completed'
+const STORAGE_KEY_COMPLETED = 'gm-bot-tutorial-completed-v2'
 
 function loadSeen(): boolean {
   return localStorage.getItem(STORAGE_KEY_SEEN) === 'true'
@@ -23,11 +23,23 @@ interface TutorialState {
   completedChapters: Set<number>
   hasSeenTutorial: boolean
 
+  prefillData: Record<string, unknown> | null
+  tutorialCampaignId: string | null
+  tutorialSessionId: string | null
+  stepMode: 'highlight' | 'create' | 'acknowledge' | null
+  acknowledgeName: string | null
+
   start: (chapter?: number) => void
   advanceStep: (chapterLength: number) => void
   back: () => void
   skipChapter: () => void
   dismiss: () => void
+
+  setPrefillData: (data: Record<string, unknown> | null) => void
+  setTutorialCampaignId: (id: string | null) => void
+  setTutorialSessionId: (id: string | null) => void
+  setStepMode: (mode: 'highlight' | 'create' | 'acknowledge' | null) => void
+  setAcknowledgeName: (name: string | null) => void
 }
 
 export const useTutorial = create<TutorialState>((set, get) => ({
@@ -36,6 +48,11 @@ export const useTutorial = create<TutorialState>((set, get) => ({
   currentStep: 0,
   completedChapters: new Set(loadCompleted()),
   hasSeenTutorial: loadSeen(),
+  prefillData: null,
+  tutorialCampaignId: null,
+  tutorialSessionId: null,
+  stepMode: null,
+  acknowledgeName: null,
 
   start: (chapter = 0) => set({
     isActive: true,
@@ -104,4 +121,10 @@ export const useTutorial = create<TutorialState>((set, get) => ({
     localStorage.setItem(STORAGE_KEY_SEEN, 'true')
     set({ isActive: false, hasSeenTutorial: true })
   },
+
+  setPrefillData: (data) => set({ prefillData: data }),
+  setTutorialCampaignId: (id) => set({ tutorialCampaignId: id }),
+  setTutorialSessionId: (id) => set({ tutorialSessionId: id }),
+  setStepMode: (mode) => set({ stepMode: mode }),
+  setAcknowledgeName: (name) => set({ acknowledgeName: name }),
 }))
