@@ -12,6 +12,7 @@ import { useQuickReference } from '@/lib/quick-reference'
 import { GameIcon } from '@/components/ui/GameIcon'
 import { GiRollingDices } from '@/components/ui/icons'
 import { AmbientEmbers } from '@/components/ui/AmbientEmbers'
+import { TutorialProvider } from '@/features/tutorial/TutorialProvider'
 
 export default function App() {
   const { loading, initialize } = useAuth()
@@ -68,6 +69,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <TutorialProvider />
       <Toaster />
       <CommandPalette />
       <QuickReference />

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useMatches } from '@tanstack/react-router'
 import { create } from 'zustand'
 import { GameIcon } from '@/components/ui/GameIcon'
@@ -5,7 +6,9 @@ import type { IconComponent } from '@/components/ui/icons'
 import {
   GiCrossedSwords, GiThreeFriends, GiSpikedDragonHead, GiSparkles,
   GiPositionMarker, GiRollingDices, GiNotebook, GiScrollUnfurled, GiCastle,
+  GiOpenBook,
 } from '@/components/ui/icons'
+import { ChapterPicker } from '@/features/tutorial/ChapterPicker'
 
 interface SidebarState {
   expanded: boolean
@@ -39,8 +42,10 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
   const { expanded, toggle } = useSidebar()
   const matches = useMatches()
   const currentPath = matches[matches.length - 1]?.fullPath ?? ''
+  const [showChapterPicker, setShowChapterPicker] = useState(false)
 
   return (
+    <>
     <aside
       data-tutorial="sidebar"
       className={`
@@ -96,6 +101,19 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
 
       {/* Bottom actions */}
       <div className="p-2 border-t border-border">
+        <button
+          onClick={() => setShowChapterPicker(true)}
+          className={`
+            flex items-center gap-3 rounded-[--radius-md] min-h-[44px]
+            text-text-muted hover:text-text-body hover:bg-bg-raised
+            transition-colors duration-[--duration-fast] cursor-pointer
+            ${expanded ? 'px-3' : 'justify-center'}
+          `}
+          title={expanded ? undefined : 'Take the tour'}
+        >
+          <GameIcon icon={GiOpenBook} size="base" />
+          {expanded && <span className="text-sm font-medium">Take the Tour</span>}
+        </button>
         <Link
           to="/home"
           data-tutorial="all-campaigns"
@@ -112,5 +130,7 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
         </Link>
       </div>
     </aside>
+    <ChapterPicker isOpen={showChapterPicker} onClose={() => setShowChapterPicker(false)} />
+    </>
   )
 }

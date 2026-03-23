@@ -71,3 +71,6 @@ export { GiTrashCan } from 'react-icons/gi'          // 🗑 remove item
 
 // Extension/plugin
 export { GiPuzzle } from 'react-icons/gi'            // 🧩 browser extension
+
+// Tutorial/help
+export { GiOpenBook } from 'react-icons/gi'           // 📖 tutorial/help

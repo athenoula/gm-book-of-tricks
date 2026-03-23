@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useCommandPalette } from '@/lib/command-palette'
+import { useTutorial } from '@/lib/tutorial'
 import { useCommandPaletteSearch } from '@/hooks/useCommandPaletteSearch'
 import { AnimatePresence, motion, ScaleIn } from '@/components/motion'
 import { GameIcon } from '@/components/ui/GameIcon'
@@ -35,6 +36,9 @@ const NAV_MAP: Record<string, string> = {
 
 export function CommandPalette() {
   const { isOpen, query, close, setQuery } = useCommandPalette()
+  const queryLower = query.toLowerCase()
+  const showTourAction = query.length >= 2 &&
+    ['tour', 'tutorial', 'help', 'guide'].some(k => k.startsWith(queryLower))
   const campaignId = useMemo(() => (isOpen ? getCampaignIdFromUrl() : null), [isOpen])
   const { data: groups } = useCommandPaletteSearch(query, campaignId)
   const navigate = useNavigate()
@@ -126,6 +130,24 @@ export function CommandPalette() {
 
               {/* Results */}
               <div className="max-h-[360px] overflow-y-auto">
+                {showTourAction && (
+                  <div className="py-2">
+                    <div className="px-4 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wide">
+                      Actions
+                    </div>
+                    <button
+                      className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-bg-raised cursor-pointer"
+                      onClick={() => {
+                        useTutorial.getState().start()
+                        close()
+                      }}
+                    >
+                      <GameIcon icon={GiScrollUnfurled} size="sm" />
+                      <span className="text-text-heading text-sm font-medium">Take the Tour</span>
+                      <span className="text-text-muted text-xs">Guided walkthrough</span>
+                    </button>
+                  </div>
+                )}
                 {query.length < 2 ? (
                   <div className="px-4 py-8 text-center text-text-muted text-sm">
                     Type to search...
