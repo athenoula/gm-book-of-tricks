@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { router } from '@/routes/router'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth'
 import { useTutorial } from '@/lib/tutorial'
 import { chapters } from '@/features/tutorial/steps'
@@ -88,10 +89,11 @@ export function TutorialProvider() {
     // If this step should be skipped on mobile, don't bother with routing/polling
     if (shouldSkipOnMobile(step.target)) return
 
+    let cancelled = false
     setReadyToShow(false)
     clearPolling()
 
-    const resolveRoute = (): string | null => {
+    const resolveRoute = async (): Promise<string | null> => {
       if (!step.route) return null
       let route = step.route
       if (route.includes('$campaignId')) {
@@ -100,22 +102,29 @@ export function TutorialProvider() {
         route = route.replace('$campaignId', campaignId)
       }
       if (route.includes('$sessionId')) {
-        const sessionId = extractSessionId()
+        // Try URL first, then query Supabase for the first session
+        let sessionId = extractSessionId()
+        if (!sessionId) {
+          const campaignId = extractCampaignId()
+          if (campaignId) {
+            const { data } = await supabase
+              .from('sessions')
+              .select('id')
+              .eq('campaign_id', campaignId)
+              .order('session_number', { ascending: false, nullsFirst: false })
+              .limit(1)
+              .single()
+            sessionId = data?.id ?? null
+          }
+        }
         if (!sessionId) return null
         route = route.replace('$sessionId', sessionId)
       }
       return route
     }
 
-    const resolvedRoute = resolveRoute()
-
-    // If route needed but can't resolve, skip step
-    if (step.route && !resolvedRoute) {
-      handleSkipStep()
-      return
-    }
-
     const startPolling = () => {
+      if (cancelled) return
       // Check immediately
       const el = document.querySelector(step.target)
       if (el) {
@@ -126,6 +135,7 @@ export function TutorialProvider() {
       // Poll for target element
       const startTime = Date.now()
       pollIntervalRef.current = setInterval(() => {
+        if (cancelled) { clearPolling(); return }
         const target = document.querySelector(step.target)
         if (target) {
           clearPolling()
@@ -139,27 +149,39 @@ export function TutorialProvider() {
       // Safety timeout
       pollTimeoutRef.current = setTimeout(() => {
         clearPolling()
-        if (!document.querySelector(step.target)) {
+        if (!cancelled && !document.querySelector(step.target)) {
           handleSkipStep()
         }
       }, POLL_TIMEOUT_MS + 100)
     }
 
-    if (resolvedRoute) {
-      isNavigatingRef.current = true
-      lastHashRef.current = '#' + resolvedRoute
-      void router.navigate({ to: resolvedRoute }).then(() => {
+    void (async () => {
+      const resolvedRoute = await resolveRoute()
+      if (cancelled) return
+
+      // If route needed but can't resolve, skip step
+      if (step.route && !resolvedRoute) {
+        handleSkipStep()
+        return
+      }
+
+      if (resolvedRoute) {
+        isNavigatingRef.current = true
+        lastHashRef.current = '#' + resolvedRoute
+        await router.navigate({ to: resolvedRoute })
+        if (cancelled) return
         // Let the DOM settle, then reset the navigating flag
         requestAnimationFrame(() => {
           isNavigatingRef.current = false
-          startPolling()
+          if (!cancelled) startPolling()
         })
-      })
-    } else {
-      startPolling()
-    }
+      } else {
+        startPolling()
+      }
+    })()
 
     return () => {
+      cancelled = true
       clearPolling()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
