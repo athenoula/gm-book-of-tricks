@@ -71,7 +71,7 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
                 {status.label}
               </span>
               {session.status !== 'completed' && (
-                <Button size="sm" variant="ghost" onClick={handleAdvanceStatus}>
+                <Button size="sm" variant="ghost" onClick={handleAdvanceStatus} data-tutorial="play-mode">
                   {session.status === 'upcoming' ? 'Start Session' : 'Complete Session'}
                 </Button>
               )}
@@ -90,7 +90,6 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
               size="sm"
               variant={showInitiative ? 'primary' : 'secondary'}
               onClick={() => setShowInitiative(!showInitiative)}
-              data-tutorial="play-mode"
             >
               <GameIcon icon={GiCrossedSwords} size="sm" /> {showInitiative ? 'Hide' : 'Initiative'}
             </Button>

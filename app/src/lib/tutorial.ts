@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { chapters } from '@/features/tutorial/steps'
 
 const STORAGE_KEY_SEEN = 'gm-bot-tutorial-seen'
 const STORAGE_KEY_COMPLETED = 'gm-bot-tutorial-completed'
@@ -52,7 +53,7 @@ export const useTutorial = create<TutorialState>((set, get) => ({
       newCompleted.add(currentChapter)
       localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify([...newCompleted]))
 
-      if (currentChapter < 3) {
+      if (currentChapter < chapters.length - 1) {
         set({
           currentChapter: currentChapter + 1,
           currentStep: 0,
@@ -82,7 +83,7 @@ export const useTutorial = create<TutorialState>((set, get) => ({
     newCompleted.add(currentChapter)
     localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify([...newCompleted]))
 
-    if (currentChapter < 3) {
+    if (currentChapter < chapters.length - 1) {
       set({
         currentChapter: currentChapter + 1,
         currentStep: 0,

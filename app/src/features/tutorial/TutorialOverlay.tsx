@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from '@/components/motion'
 import { Button } from '@/components/ui/Button'
-import { chapters, type TutorialStep } from '@/features/tutorial/steps'
+import type { TutorialStep } from '@/features/tutorial/steps'
 
 interface TutorialOverlayProps {
   step: TutorialStep
@@ -9,6 +9,7 @@ interface TutorialOverlayProps {
   stepIndex: number
   totalSteps: number
   chapterIndex: number
+  totalChapters: number
   onNext: () => void
   onBack: () => void
   onDismiss: () => void
@@ -133,6 +134,7 @@ export function TutorialOverlay({
   stepIndex,
   totalSteps,
   chapterIndex,
+  totalChapters,
   onNext,
   onBack,
   onDismiss,
@@ -145,7 +147,7 @@ export function TutorialOverlay({
   const [activePlacement, setActivePlacement] = useState<Placement>(step.placement)
   const [targetFound, setTargetFound] = useState(true)
 
-  const isLastChapter = chapterIndex === chapters.length - 1
+  const isLastChapter = chapterIndex === totalChapters - 1
   const isLastStep = stepIndex === totalSteps - 1
   const isFinish = isLastChapter && isLastStep
 

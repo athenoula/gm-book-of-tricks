@@ -113,8 +113,8 @@ export const chapters: TutorialChapter[] = [
     steps: [
       {
         target: '[data-tutorial="play-mode"]',
-        title: 'Play Mode',
-        content: 'Switch to Play mode when it\'s game time. Your prep becomes a read-through runner.',
+        title: 'Session Status',
+        content: 'Advance your session from Upcoming to In Progress when game time starts, then mark it Complete when you\'re done.',
         placement: 'bottom',
       },
       {

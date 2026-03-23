@@ -32,10 +32,10 @@ export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
   const [filter, setFilter] = useState('')
 
   return (
-    <div className="bg-bg-base rounded-[--radius-lg] border border-border overflow-hidden">
+    <div className="bg-bg-base rounded-[--radius-lg] border border-border overflow-hidden" data-tutorial="content-drawer">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h3 className="text-sm text-text-heading font-medium">Add to Timeline</h3>
-        <Button size="sm" variant="ghost" onClick={onClose} data-tutorial="content-drawer">✕</Button>
+        <Button size="sm" variant="ghost" onClick={onClose}>✕</Button>
       </div>
 
       <div className="flex gap-1 p-2 border-b border-border">

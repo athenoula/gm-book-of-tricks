@@ -173,14 +173,15 @@ export function TutorialProvider() {
     advanceStep(chapter.steps.length)
   }, [chapter, advanceStep])
 
-  // 6. Skip step
+  // 6. Skip step — uses getState() to avoid stale closures in polling effects
   function handleSkipStep() {
-    const ch = chapters[useTutorial.getState().currentChapter]
+    const state = useTutorial.getState()
+    const ch = chapters[state.currentChapter]
     if (!ch) return
     console.warn(
-      `[Tutorial] Skipping step: target not found or route unresolvable (chapter ${useTutorial.getState().currentChapter}, step ${useTutorial.getState().currentStep})`,
+      `[Tutorial] Skipping step: target not found or route unresolvable (chapter ${state.currentChapter}, step ${state.currentStep})`,
     )
-    advanceStep(ch.steps.length)
+    state.advanceStep(ch.steps.length)
   }
 
   // 7. Keyboard handling
@@ -237,6 +238,7 @@ export function TutorialProvider() {
       stepIndex={currentStep}
       totalSteps={chapter.steps.length}
       chapterIndex={currentChapter}
+      totalChapters={chapters.length}
       onNext={handleNext}
       onBack={back}
       onDismiss={dismiss}
