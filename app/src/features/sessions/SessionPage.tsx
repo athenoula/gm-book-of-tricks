@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiScrollUnfurled, GiCrossedSwords } from '@/components/ui/icons'
+import { GiScrollUnfurled, GiCrossedSwords, GiRollingDices } from '@/components/ui/icons'
 import { useSession, useUpdateSession } from './useSessions'
 import { SessionRecap } from './SessionRecap'
 import { SessionTimeline } from '@/features/timeline/SessionTimeline'
 import { InitiativeTracker } from '@/features/initiative/InitiativeTracker'
 import { useAddTimelineBlock } from '@/features/timeline/useTimelineBlocks'
 import { useTimelineBlocks } from '@/features/timeline/useTimelineBlocks'
+import { DiceRoller } from '@/features/dice/DiceRoller'
 import { useState } from 'react'
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -21,6 +22,7 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
   const addBlock = useAddTimelineBlock()
   const { data: blocks } = useTimelineBlocks(sessionId)
   const [showInitiative, setShowInitiative] = useState(false)
+  const [showDice, setShowDice] = useState(false)
 
   if (isLoading || !session) {
     return (
@@ -76,13 +78,22 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
             </div>
           </div>
 
-          <Button
-            size="sm"
-            variant={showInitiative ? 'primary' : 'secondary'}
-            onClick={() => setShowInitiative(!showInitiative)}
-          >
-            <GameIcon icon={GiCrossedSwords} size="sm" /> {showInitiative ? 'Hide' : 'Initiative'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={showDice ? 'primary' : 'secondary'}
+              onClick={() => setShowDice(!showDice)}
+            >
+              <GameIcon icon={GiRollingDices} size="sm" /> Dice
+            </Button>
+            <Button
+              size="sm"
+              variant={showInitiative ? 'primary' : 'secondary'}
+              onClick={() => setShowInitiative(!showInitiative)}
+            >
+              <GameIcon icon={GiCrossedSwords} size="sm" /> {showInitiative ? 'Hide' : 'Initiative'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -102,6 +113,9 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
 
       {/* Timeline */}
       <SessionTimeline sessionId={sessionId} campaignId={campaignId} />
+
+      {/* Dice roller drawer */}
+      <DiceRoller isOpen={showDice} onClose={() => setShowDice(false)} />
     </div>
   )
 }
