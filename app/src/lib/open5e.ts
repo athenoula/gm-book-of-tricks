@@ -224,3 +224,87 @@ export async function fetchRacialTraits(
 
   return all
 }
+
+// ─── Items (Weapons, Armor, Magic Items) ────────────────
+
+export interface Open5eMagicItem {
+  slug: string
+  name: string
+  type: string
+  desc: string
+  rarity: string
+  requires_attunement: string
+  document__slug: string
+  document__title: string
+}
+
+export interface Open5eWeapon {
+  slug: string
+  name: string
+  cost: string
+  damage_dice: string
+  damage_type: string
+  weight: string
+  properties: string[]
+  weapon_range: string
+  document__slug: string
+  document__title: string
+}
+
+export interface Open5eArmor {
+  slug: string
+  name: string
+  cost: string
+  base_ac: number
+  plus_max: number | null
+  stealth_disadvantage: boolean
+  weight: string
+  document__slug: string
+  document__title: string
+}
+
+export async function searchMagicItems(params: {
+  search?: string
+  limit?: number
+}): Promise<{ count: number; results: Open5eMagicItem[] }> {
+  const url = new URL(`${BASE_URL}/magicitems/`)
+  url.searchParams.set('format', 'json')
+  if (params.search) url.searchParams.set('search', params.search)
+  url.searchParams.set('limit', String(params.limit ?? 20))
+
+  const res = await fetch(url.toString())
+  if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
+  return res.json()
+}
+
+export async function fetchAllMagicItems(
+  onProgress?: (loaded: number, total: number) => void,
+): Promise<Open5eMagicItem[]> {
+  const all: Open5eMagicItem[] = []
+  let url: string | null = `${BASE_URL}/magicitems/?format=json&limit=100`
+
+  while (url) {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
+    const data = await res.json()
+    all.push(...data.results)
+    onProgress?.(all.length, data.count)
+    url = data.next
+  }
+
+  return all
+}
+
+export async function fetchAllWeapons(): Promise<Open5eWeapon[]> {
+  const res = await fetch(`${BASE_URL}/weapons/?format=json&limit=100`)
+  if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
+  const data = await res.json()
+  return data.results
+}
+
+export async function fetchAllArmor(): Promise<Open5eArmor[]> {
+  const res = await fetch(`${BASE_URL}/armor/?format=json&limit=100`)
+  if (!res.ok) throw new Error(`Open5e error: ${res.status}`)
+  const data = await res.json()
+  return data.results
+}
