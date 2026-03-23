@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { GameIcon } from '@/components/ui/GameIcon'
 import { GiBackpack, GiSwordSmithing, GiTrashCan } from '@/components/ui/icons'
 import { Button } from '@/components/ui/Button'
@@ -21,6 +21,7 @@ export function CharacterInventory({ characterId, campaignId }: CharacterInvento
   const [showInventory, setShowInventory] = useState(false)
   const [showItemSearch, setShowItemSearch] = useState(false)
   const [localNotes, setLocalNotes] = useState<Record<string, string>>({})
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   const { data: inventoryItems = [], isLoading } = useCharacterInventory(characterId)
   const { data: allItems = [] } = useItems(campaignId)
@@ -94,6 +95,13 @@ export function CharacterInventory({ characterId, campaignId }: CharacterInvento
               const item = itemsById.get(entry.item_id)
               const itemName = item?.name ?? `Unknown item (${entry.item_id.slice(0, 6)}…)`
               const isStackable = item?.stackable ?? false
+              const hasDetails = !!(item?.description || item?.rarity || item?.type)
+              const isExpanded = expandedItems.has(entry.id)
+              const itemMeta = [
+                item?.rarity?.replace('_', ' '),
+                item?.type?.replace('_', ' '),
+                item?.cost,
+              ].filter(Boolean).join(' · ')
 
               return (
                 <div
@@ -116,15 +124,27 @@ export function CharacterInventory({ characterId, campaignId }: CharacterInvento
                       <GameIcon icon={GiSwordSmithing} size="sm" />
                     </button>
 
-                    {/* Item name */}
-                    <span className="flex-1 text-sm text-text-body font-medium leading-tight">
+                    {/* Item name — clickable to expand details */}
+                    <button
+                      onClick={() => hasDetails ? setExpandedItems((prev) => {
+                        const next = new Set(prev)
+                        next.has(entry.id) ? next.delete(entry.id) : next.add(entry.id)
+                        return next
+                      }) : undefined}
+                      className={`flex-1 text-left text-sm text-text-body font-medium leading-tight ${hasDetails ? 'cursor-pointer hover:text-text-heading' : ''}`}
+                    >
                       {itemName}
                       {entry.equipped && (
                         <span className="ml-1.5 text-[10px] text-primary-light font-label uppercase tracking-wider">
                           equipped
                         </span>
                       )}
-                    </span>
+                      {itemMeta && (
+                        <span className="block text-[10px] text-text-muted font-normal capitalize">
+                          {itemMeta}
+                        </span>
+                      )}
+                    </button>
 
                     {/* Quantity controls (stackable items only) */}
                     {isStackable ? (
@@ -159,6 +179,13 @@ export function CharacterInventory({ characterId, campaignId }: CharacterInvento
                       <GameIcon icon={GiTrashCan} size="xs" />
                     </button>
                   </div>
+
+                  {/* Expanded item details */}
+                  {isExpanded && item?.description && (
+                    <div className="mt-2 pl-7 text-xs text-text-secondary leading-relaxed whitespace-pre-line border-l-2 border-border ml-1">
+                      <p className="pl-2">{item.description}</p>
+                    </div>
+                  )}
 
                   {/* Notes field */}
                   <input

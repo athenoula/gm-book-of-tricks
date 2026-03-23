@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion, ScaleIn } from '@/components/motion'
 import { GameIcon } from '@/components/ui/GameIcon'
 import { GiMagnifyingGlass, GiBackpack, GiGems } from '@/components/ui/icons'
+import { Button } from '@/components/ui/Button'
 import { supabase } from '@/lib/supabase'
 import { searchMagicItems } from '@/lib/open5e'
 import { useCreateItem, type Item } from './useItems'
@@ -11,7 +13,8 @@ interface SearchResultItem {
   id: string
   name: string
   subtitle: string
-  source: 'campaign' | 'srd'
+  description?: string
+  source: 'campaign' | 'srd' | 'custom'
   srdSlug?: string
   srdData?: Record<string, unknown>
 }
@@ -39,7 +42,7 @@ function useItemSearch(query: string, campaignId: string) {
       const [campaignItems, srdItems] = await Promise.all([
         supabase
           .from('items')
-          .select('id, name, type, rarity, cost, source, srd_slug')
+          .select('id, name, type, rarity, cost, source, srd_slug, description')
           .eq('campaign_id', campaignId)
           .ilike('name', pattern)
           .limit(8),
@@ -59,6 +62,7 @@ function useItemSearch(query: string, campaignId: string) {
             id: i.id,
             name: i.name,
             subtitle: [i.rarity, i.type?.replace('_', ' '), i.cost].filter(Boolean).join(' · '),
+            description: i.description || undefined,
             source: 'campaign' as const,
           })),
         })
@@ -75,6 +79,7 @@ function useItemSearch(query: string, campaignId: string) {
             id: `srd:${i.slug}`,
             name: i.name,
             subtitle: [i.rarity, i.type, 'SRD'].filter(Boolean).join(' · '),
+            description: i.desc ? i.desc.slice(0, 120) + (i.desc.length > 120 ? '…' : '') : undefined,
             source: 'srd' as const,
             srdSlug: i.slug,
             srdData: i as unknown as Record<string, unknown>,
@@ -96,6 +101,9 @@ interface ItemSearchProps {
 export function ItemSearch({ campaignId, onSelect, onClose }: ItemSearchProps) {
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [showCustomForm, setShowCustomForm] = useState(false)
+  const [customName, setCustomName] = useState('')
+  const [customDescription, setCustomDescription] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const createItem = useCreateItem()
 
@@ -115,7 +123,6 @@ export function ItemSearch({ campaignId, onSelect, onClose }: ItemSearchProps) {
   const handleSelect = useCallback(
     async (result: SearchResultItem) => {
       if (result.source === 'campaign') {
-        // Fetch full item from Supabase
         const { data, error } = await supabase
           .from('items')
           .select('*')
@@ -150,8 +157,33 @@ export function ItemSearch({ campaignId, onSelect, onClose }: ItemSearchProps) {
     [campaignId, createItem, onSelect],
   )
 
+  const handleCreateCustom = () => {
+    if (!customName.trim()) return
+    createItem.mutate(
+      {
+        campaign_id: campaignId,
+        name: customName.trim(),
+        description: customDescription.trim(),
+        type: 'other',
+        source: 'homebrew',
+      },
+      {
+        onSuccess: (item) => {
+          onSelect(item)
+        },
+      },
+    )
+  }
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (showCustomForm) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          setShowCustomForm(false)
+        }
+        return
+      }
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         setSelectedIndex((i) => (i + 1 < flatItems.length ? i + 1 : 0))
@@ -167,12 +199,12 @@ export function ItemSearch({ campaignId, onSelect, onClose }: ItemSearchProps) {
         onClose()
       }
     },
-    [flatItems, selectedIndex, handleSelect, onClose],
+    [flatItems, selectedIndex, handleSelect, onClose, showCustomForm],
   )
 
   const isImporting = createItem.isPending
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <div
         className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
@@ -190,96 +222,144 @@ export function ItemSearch({ campaignId, onSelect, onClose }: ItemSearchProps) {
 
         <ScaleIn className="relative w-full max-w-md">
           <div className="bg-bg-base rounded-xl border border-border shadow-lg overflow-hidden">
-            {/* Search input */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-              <span className="text-text-muted shrink-0">
-                <GameIcon icon={GiMagnifyingGlass} size="lg" />
-              </span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search items or SRD magic items..."
-                className="flex-1 bg-transparent text-base text-text-heading placeholder:text-text-muted outline-none"
-                disabled={isImporting}
-              />
-              <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium text-text-muted">
-                ESC
-              </kbd>
-            </div>
-
-            {/* Results */}
-            <div className="max-h-[55vh] overflow-y-auto">
-              {isImporting ? (
-                <div className="px-4 py-6 text-center text-text-muted text-sm">
-                  Importing item...
+            {showCustomForm ? (
+              /* Custom item form */
+              <div className="p-4 space-y-3">
+                <h3 className="text-sm font-medium text-text-heading" style={{ fontFamily: 'var(--font-heading)' }}>
+                  Create Custom Item
+                </h3>
+                <input
+                  type="text"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder="Item name"
+                  autoFocus
+                  className="w-full bg-bg-raised rounded-[--radius-sm] border border-border px-3 py-2 text-sm text-text-heading placeholder:text-text-muted outline-none focus:border-border-active"
+                />
+                <textarea
+                  value={customDescription}
+                  onChange={(e) => setCustomDescription(e.target.value)}
+                  placeholder="Description (optional)"
+                  rows={3}
+                  className="w-full bg-bg-raised rounded-[--radius-sm] border border-border px-3 py-2 text-sm text-text-heading placeholder:text-text-muted outline-none focus:border-border-active resize-none"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button size="sm" variant="ghost" onClick={() => setShowCustomForm(false)}>
+                    Back
+                  </Button>
+                  <Button size="sm" onClick={handleCreateCustom} disabled={!customName.trim() || isImporting}>
+                    {isImporting ? 'Creating...' : 'Create & Add'}
+                  </Button>
                 </div>
-              ) : query.length < 2 ? (
-                <div className="px-4 py-6 text-center text-text-muted text-sm">
-                  Type to search items...
+              </div>
+            ) : (
+              <>
+                {/* Search input */}
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+                  <span className="text-text-muted shrink-0">
+                    <GameIcon icon={GiMagnifyingGlass} size="lg" />
+                  </span>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search items or SRD magic items..."
+                    className="flex-1 bg-transparent text-base text-text-heading placeholder:text-text-muted outline-none"
+                    disabled={isImporting}
+                  />
+                  <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium text-text-muted">
+                    ESC
+                  </kbd>
                 </div>
-              ) : !groups?.length ? (
-                <div className="px-4 py-6 text-center text-text-muted text-sm">No items found</div>
-              ) : (
-                <div className="py-1">
-                  {groups.map((group) => {
-                    const groupIcon = group.icon === 'srd' ? GiGems : GiBackpack
-                    const groupStartIndex = flatItems.findIndex(
-                      (fi) => fi.groupLabel === group.label && fi.id === group.items[0]?.id,
-                    )
 
-                    return (
-                      <div key={group.label}>
-                        {/* Group header */}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium text-text-muted uppercase tracking-wide">
-                          <GameIcon icon={groupIcon} size="xs" />
-                          {group.label}
-                        </div>
+                {/* Results */}
+                <div className="max-h-[55vh] overflow-y-auto">
+                  {isImporting ? (
+                    <div className="px-4 py-6 text-center text-text-muted text-sm">
+                      Importing item...
+                    </div>
+                  ) : query.length < 2 ? (
+                    <div className="px-4 py-6 text-center text-text-muted text-sm">
+                      Type to search items...
+                    </div>
+                  ) : !groups?.length ? (
+                    <div className="px-4 py-6 text-center text-text-muted text-sm">
+                      No items found
+                    </div>
+                  ) : (
+                    <div className="py-1">
+                      {groups.map((group) => {
+                        const groupIcon = group.icon === 'srd' ? GiGems : GiBackpack
+                        const groupStartIndex = flatItems.findIndex(
+                          (fi) => fi.groupLabel === group.label && fi.id === group.items[0]?.id,
+                        )
 
-                        {group.items.map((item, i) => {
-                          const flatIndex = groupStartIndex + i
-                          const isSelected = flatIndex === selectedIndex
+                        return (
+                          <div key={group.label}>
+                            {/* Group header */}
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium text-text-muted uppercase tracking-wide">
+                              <GameIcon icon={groupIcon} size="xs" />
+                              {group.label}
+                            </div>
 
-                          return (
-                            <button
-                              key={item.id}
-                              className={`w-full text-left px-3 py-2 cursor-pointer transition-colors border-l-2 ${
-                                isSelected
-                                  ? 'bg-primary-ghost border-primary'
-                                  : 'border-transparent hover:bg-bg-raised'
-                              }`}
-                              onClick={() => handleSelect(item)}
-                              onMouseEnter={() => setSelectedIndex(flatIndex)}
-                            >
-                              <div className="text-sm text-text-heading font-medium">{item.name}</div>
-                              {item.subtitle && (
-                                <div className="text-[11px] text-text-muted capitalize">
-                                  {item.subtitle}
-                                </div>
-                              )}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )
-                  })}
+                            {group.items.map((item, i) => {
+                              const flatIndex = groupStartIndex + i
+                              const isSelected = flatIndex === selectedIndex
+
+                              return (
+                                <button
+                                  key={item.id}
+                                  className={`w-full text-left px-3 py-2 cursor-pointer transition-colors border-l-2 ${
+                                    isSelected
+                                      ? 'bg-primary-ghost border-primary'
+                                      : 'border-transparent hover:bg-bg-raised'
+                                  }`}
+                                  onClick={() => handleSelect(item)}
+                                  onMouseEnter={() => setSelectedIndex(flatIndex)}
+                                >
+                                  <div className="text-sm text-text-heading font-medium">
+                                    {item.name}
+                                  </div>
+                                  {item.subtitle && (
+                                    <div className="text-[11px] text-text-muted capitalize">
+                                      {item.subtitle}
+                                    </div>
+                                  )}
+                                  {item.description && (
+                                    <div className="text-[11px] text-text-secondary mt-0.5 leading-snug">
+                                      {item.description}
+                                    </div>
+                                  )}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Footer hint */}
-            <div className="flex items-center gap-3 px-4 py-2 border-t border-border text-xs text-text-muted">
-              <span>↑↓ navigate</span>
-              <span>↵ select</span>
-              <span>esc close</span>
-              {groups?.some((g) => g.icon === 'srd') && (
-                <span className="ml-auto text-[10px] opacity-60">SRD items auto-imported</span>
-              )}
-            </div>
+                {/* Footer */}
+                <div className="flex items-center gap-3 px-4 py-2 border-t border-border text-xs text-text-muted">
+                  <button
+                    onClick={() => {
+                      setShowCustomForm(true)
+                      setCustomName(query)
+                    }}
+                    className="text-primary-light hover:text-primary cursor-pointer font-medium"
+                  >
+                    + Create custom item
+                  </button>
+                  <span className="ml-auto">esc close</span>
+                </div>
+              </>
+            )}
           </div>
         </ScaleIn>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

@@ -41,7 +41,7 @@ export function DiceRoller({ isOpen, onClose }: Props) {
         container: '#dice-canvas-container',
         assetPath: '/dice-box-assets/',
         theme: 'default',
-        scale: 6,
+        scale: 18,
         gravity: 1,
         mass: 1,
         spinForce: 4,
