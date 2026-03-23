@@ -4,6 +4,10 @@ export interface TutorialStep {
   content: string
   placement: 'top' | 'bottom' | 'left' | 'right'
   route?: string
+  type?: 'highlight' | 'create'
+  createEntity?: 'campaign' | 'session' | 'character'
+  prefill?: Record<string, unknown>
+  acknowledgment?: string
 }
 
 export interface TutorialChapter {
@@ -12,6 +16,44 @@ export interface TutorialChapter {
 }
 
 export const chapters: TutorialChapter[] = [
+  {
+    name: 'Getting Started',
+    steps: [
+      {
+        target: '[data-tutorial="create-campaign"]',
+        title: 'Create a Campaign',
+        content: "Let's create your first campaign to get started. Click the button to begin!",
+        placement: 'bottom',
+        route: '/home',
+        type: 'create' as const,
+        createEntity: 'campaign' as const,
+        prefill: { name: 'My First Campaign', description: 'A practice campaign to learn the tools.' },
+        acknowledgment: "You already have a campaign! We'll use **{name}** for this tour.",
+      },
+      {
+        target: '[data-tutorial="create-character"]',
+        title: 'Add a Character',
+        content: "Every adventure needs heroes. Let's add your first player character.",
+        placement: 'bottom',
+        route: '/campaign/$campaignId/characters',
+        type: 'create' as const,
+        createEntity: 'character' as const,
+        prefill: { name: 'Aldric', class: 'Fighter', level: 1 },
+        acknowledgment: "You've already got characters — great! Let's keep going.",
+      },
+      {
+        target: '[data-tutorial="create-session"]',
+        title: 'Create a Session',
+        content: "Sessions are where you prep and run your games. Let's create your first one.",
+        placement: 'bottom',
+        route: '/campaign/$campaignId/sessions',
+        type: 'create' as const,
+        createEntity: 'session' as const,
+        prefill: { name: 'Session 1' },
+        acknowledgment: "You already have sessions set up. Let's continue.",
+      },
+    ],
+  },
   {
     name: 'Navigation',
     steps: [
