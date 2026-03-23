@@ -28,9 +28,11 @@ const BLOCK_STYLES: Record<string, { icon: IconComponent; borderColor: string; l
 interface Props {
   block: TimelineBlock
   dragHandleProps?: Record<string, unknown>
+  onPin?: () => void
+  isPinned?: boolean
 }
 
-export function TimelineBlockCard({ block, dragHandleProps }: Props) {
+export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: Props) {
   const updateBlock = useUpdateTimelineBlock()
   const removeBlock = useRemoveTimelineBlock()
   const updateSnapshot = useUpdateTimelineBlockSnapshot()
@@ -125,6 +127,11 @@ export function TimelineBlockCard({ block, dragHandleProps }: Props) {
               Save
             </Button>
           </>
+        )}
+        {onPin && !editingNote && (
+          <Button size="sm" variant="ghost" onClick={onPin} title={isPinned ? 'Unpin' : 'Pin to top'}>
+            {isPinned ? '📌' : '📍'}
+          </Button>
         )}
         <Button size="sm" variant="ghost" onClick={handleRemove} className="text-danger hover:text-danger">
           ✕

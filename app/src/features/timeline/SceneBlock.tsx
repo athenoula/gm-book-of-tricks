@@ -19,9 +19,11 @@ const STATUS_STYLES: Record<Scene['status'], { label: string; className: string;
 interface Props {
   scene: Scene
   dragHandleProps?: Record<string, unknown>
+  onPin?: () => void
+  isPinned?: boolean
 }
 
-export function SceneBlock({ scene, dragHandleProps }: Props) {
+export function SceneBlock({ scene, dragHandleProps, onPin, isPinned }: Props) {
   const [editing, setEditing] = useState(false)
   // Local edit state — only used while editing
   const [editName, setEditName] = useState('')
@@ -124,6 +126,11 @@ export function SceneBlock({ scene, dragHandleProps }: Props) {
             </>
           ) : (
             <>
+              {onPin && (
+                <Button size="sm" variant="ghost" onClick={onPin} title={isPinned ? 'Unpin' : 'Pin to top'}>
+                  {isPinned ? '📌' : '📍'}
+                </Button>
+              )}
               <Button size="sm" variant="ghost" onClick={handleStartEdit}>
                 Edit
               </Button>

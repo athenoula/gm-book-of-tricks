@@ -28,6 +28,11 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
   const addBlock = useAddTimelineBlock()
   const reorderBlocks = useReorderTimelineBlocks()
   const [showLibrary, setShowLibrary] = useState(false)
+  const [pinnedItemId, setPinnedItemId] = useState<string | null>(null)
+
+  const handlePin = (itemId: string) => {
+    setPinnedItemId((prev) => (prev === itemId ? null : itemId))
+  }
 
   // Merge scenes and blocks into a unified sorted list
   const timeline = useMemo<TimelineItem[]>(() => {
@@ -153,6 +158,37 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
               </div>
             </div>
           ) : (
+            <>
+            {/* Pinned item */}
+            {pinnedItemId && (() => {
+              const pinned = timeline.find((item) => {
+                const id = item.kind === 'scene' ? item.data.id : item.data.id
+                return id === pinnedItemId
+              })
+              if (!pinned) return null
+              return (
+                <div className="mb-3 relative">
+                  <div className="absolute -top-2 left-3 bg-primary text-text-inverse text-[10px] px-2 py-0.5 rounded-full font-medium z-10">
+                    Pinned
+                  </div>
+                  {pinned.kind === 'scene' ? (
+                    <SceneBlock
+                      scene={pinned.data}
+                      dragHandleProps={undefined}
+                      isPinned={true}
+                      onPin={() => handlePin(pinned.data.id)}
+                    />
+                  ) : (
+                    <TimelineBlockCard
+                      block={pinned.data}
+                      dragHandleProps={undefined}
+                      isPinned={true}
+                      onPin={() => handlePin(pinned.data.id)}
+                    />
+                  )}
+                </div>
+              )
+            })()}
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="timeline">
                 {(provided) => (
@@ -176,11 +212,15 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                               <SceneBlock
                                 scene={item.data}
                                 dragHandleProps={provided.dragHandleProps ?? undefined}
+                                onPin={() => handlePin(item.data.id)}
+                                isPinned={pinnedItemId === item.data.id}
                               />
                             ) : (
                               <TimelineBlockCard
                                 block={item.data}
                                 dragHandleProps={provided.dragHandleProps ?? undefined}
+                                onPin={() => handlePin(item.data.id)}
+                                isPinned={pinnedItemId === item.data.id}
                               />
                             )}
                           </div>
@@ -192,6 +232,7 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                 )}
               </Droppable>
             </DragDropContext>
+            </>
           )}
         </div>
 
