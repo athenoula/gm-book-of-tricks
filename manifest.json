@@ -1,0 +1,11 @@
+{
+  "name": "GM Book of Tricks",
+  "short_name": "GM Tricks",
+  "start_url": "/home",
+  "display": "standalone",
+  "theme_color": "#141210",
+  "background_color": "#141210",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
