@@ -4,6 +4,7 @@ import { useCommandPalette } from '@/lib/command-palette'
 import { useTutorial } from '@/lib/tutorial'
 import { useCommandPaletteSearch } from '@/hooks/useCommandPaletteSearch'
 import { AnimatePresence, motion, ScaleIn } from '@/components/motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
 import {
@@ -36,6 +37,7 @@ const NAV_MAP: Record<string, string> = {
 
 export function CommandPalette() {
   const { isOpen, query, close, setQuery } = useCommandPalette()
+  const isMobile = useIsMobile()
   const queryLower = query.toLowerCase()
   const showTourAction = query.length >= 2 &&
     ['tour', 'tutorial', 'help', 'guide'].some(k => k.startsWith(queryLower))
@@ -96,11 +98,117 @@ export function CommandPalette() {
     [flatItems, selectedIndex, navigateToItem, close],
   )
 
+  const innerContent = (
+    <>
+      {/* Search input */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+        <span className="text-text-muted text-lg shrink-0">
+          <GameIcon icon={GiMagnifyingGlass} size="lg" />
+        </span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search campaigns..."
+          className="flex-1 bg-transparent text-lg text-text-heading placeholder:text-text-muted outline-none"
+        />
+      </div>
+
+      {/* Results */}
+      <div className={isMobile ? 'flex-1 overflow-y-auto' : 'max-h-[360px] overflow-y-auto'}>
+        {showTourAction && (
+          <div className="py-2">
+            <div className="px-4 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wide">
+              Actions
+            </div>
+            <button
+              className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-bg-raised cursor-pointer"
+              onClick={() => {
+                useTutorial.getState().start()
+                close()
+              }}
+            >
+              <GameIcon icon={GiScrollUnfurled} size="sm" />
+              <span className="text-text-heading text-sm font-medium">Take the Tour</span>
+              <span className="text-text-muted text-xs">Guided walkthrough</span>
+            </button>
+          </div>
+        )}
+        {query.length < 2 ? (
+          <div className="px-4 py-8 text-center text-text-muted text-sm">
+            Type to search...
+          </div>
+        ) : !groups?.length ? (
+          <div className="px-4 py-8 text-center text-text-muted text-sm">
+            No results found
+          </div>
+        ) : (
+          <div className="py-2">
+            {groups.map((group) => {
+              const groupStartIndex = flatItems.findIndex(
+                (fi) =>
+                  fi.type === group.type &&
+                  fi.id === group.items[0]?.id,
+              )
+              return (
+                <div key={group.type}>
+                  <div className="px-4 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wide">
+                    <GameIcon icon={GROUP_ICONS[group.icon]} size="sm" /> {group.type}
+                  </div>
+                  {group.items.map((item, i) => {
+                    const flatIndex = groupStartIndex + i
+                    const isSelected = flatIndex === selectedIndex
+                    return (
+                      <button
+                        key={item.id}
+                        className={`w-full text-left px-3 py-2 flex items-center gap-2 cursor-pointer ${
+                          isSelected
+                            ? 'bg-bg-raised'
+                            : 'hover:bg-bg-raised'
+                        }`}
+                        onClick={() => navigateToItem(group.type)}
+                        onMouseEnter={() =>
+                          setSelectedIndex(flatIndex)
+                        }
+                      >
+                        <span className="text-text-heading text-sm font-medium">
+                          {item.name}
+                        </span>
+                        {item.subtitle && (
+                          <span className="text-text-muted text-xs">
+                            {item.subtitle}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between px-4 py-2 border-t border-border text-xs text-text-muted">
+        <div className="flex items-center gap-3">
+          {!isMobile && <span>{'\u2191\u2193'} navigate</span>}
+          {!isMobile && <span>{'\u21B5'} open</span>}
+          <span>esc close</span>
+        </div>
+        <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium">
+          {isMobile ? 'ESC' : `${'\u2318'}K`}
+        </kbd>
+      </div>
+    </>
+  )
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+          className="fixed inset-0 z-50"
           onKeyDown={handleKeyDown}
         >
           <motion.div
@@ -111,111 +219,25 @@ export function CommandPalette() {
             transition={{ duration: 0.15 }}
             onClick={close}
           />
-          <ScaleIn className="relative max-w-[540px] w-full">
-            <div className="bg-bg-base rounded-xl border border-border shadow-lg overflow-hidden">
-              {/* Search input */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-                <span className="text-text-muted text-lg shrink-0">
-                  <GameIcon icon={GiMagnifyingGlass} size="lg" />
-                </span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search campaigns..."
-                  className="flex-1 bg-transparent text-lg text-text-heading placeholder:text-text-muted outline-none"
-                />
-              </div>
-
-              {/* Results */}
-              <div className="max-h-[360px] overflow-y-auto">
-                {showTourAction && (
-                  <div className="py-2">
-                    <div className="px-4 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wide">
-                      Actions
-                    </div>
-                    <button
-                      className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-bg-raised cursor-pointer"
-                      onClick={() => {
-                        useTutorial.getState().start()
-                        close()
-                      }}
-                    >
-                      <GameIcon icon={GiScrollUnfurled} size="sm" />
-                      <span className="text-text-heading text-sm font-medium">Take the Tour</span>
-                      <span className="text-text-muted text-xs">Guided walkthrough</span>
-                    </button>
-                  </div>
-                )}
-                {query.length < 2 ? (
-                  <div className="px-4 py-8 text-center text-text-muted text-sm">
-                    Type to search...
-                  </div>
-                ) : !groups?.length ? (
-                  <div className="px-4 py-8 text-center text-text-muted text-sm">
-                    No results found
-                  </div>
-                ) : (
-                  <div className="py-2">
-                    {groups.map((group) => {
-                      const groupStartIndex = flatItems.findIndex(
-                        (fi) =>
-                          fi.type === group.type &&
-                          fi.id === group.items[0]?.id,
-                      )
-                      return (
-                        <div key={group.type}>
-                          <div className="px-4 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wide">
-                            <GameIcon icon={GROUP_ICONS[group.icon]} size="sm" /> {group.type}
-                          </div>
-                          {group.items.map((item, i) => {
-                            const flatIndex = groupStartIndex + i
-                            const isSelected = flatIndex === selectedIndex
-                            return (
-                              <button
-                                key={item.id}
-                                className={`w-full text-left px-3 py-2 flex items-center gap-2 cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-bg-raised'
-                                    : 'hover:bg-bg-raised'
-                                }`}
-                                onClick={() => navigateToItem(group.type)}
-                                onMouseEnter={() =>
-                                  setSelectedIndex(flatIndex)
-                                }
-                              >
-                                <span className="text-text-heading text-sm font-medium">
-                                  {item.name}
-                                </span>
-                                {item.subtitle && (
-                                  <span className="text-text-muted text-xs">
-                                    {item.subtitle}
-                                  </span>
-                                )}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between px-4 py-2 border-t border-border text-xs text-text-muted">
-                <div className="flex items-center gap-3">
-                  <span>{'\u2191\u2193'} navigate</span>
-                  <span>{'\u21B5'} open</span>
-                  <span>esc close</span>
+          {isMobile ? (
+            <motion.div
+              className="absolute inset-0 bg-bg-base flex flex-col"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            >
+              {innerContent}
+            </motion.div>
+          ) : (
+            <div className="flex items-start justify-center pt-[15vh]">
+              <ScaleIn className="relative max-w-[540px] w-full">
+                <div className="bg-bg-base rounded-xl border border-border shadow-lg overflow-hidden">
+                  {innerContent}
                 </div>
-                <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium">
-                  {'\u2318'}K
-                </kbd>
-              </div>
+              </ScaleIn>
             </div>
-          </ScaleIn>
+          )}
         </div>
       )}
     </AnimatePresence>
