@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import { AnimatePresence, motion, ScaleIn } from '@/components/motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { GameIcon } from '@/components/ui/GameIcon'
 import {
   GiSparkles, GiSpikedDragonHead, GiThreeFriends,
@@ -38,6 +39,7 @@ type _SearchGroup = SearchGroup
 
 export function QuickReference() {
   const { isOpen, query, selectedItem, close, setQuery, selectItem } = useQuickReference()
+  const isMobile = useIsMobile()
   const campaignId = useMemo(() => (isOpen ? getCampaignIdFromUrl() : null), [isOpen])
   const sessionId = useMemo(() => (isOpen ? getSessionIdFromUrl() : null), [isOpen])
   const { data: groups } = useQuickReferenceSearch(query, campaignId)
@@ -108,11 +110,129 @@ export function QuickReference() {
     [flatItems, selectedIndex, selectItem, close],
   )
 
+  const innerContent = (
+    <>
+      {/* Search bar */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+        <span className="text-text-muted text-lg shrink-0">
+          <GameIcon icon={GiMagnifyingGlass} size="lg" />
+        </span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search spells, monsters, abilities, characters..."
+          className="flex-1 bg-transparent text-lg text-text-heading placeholder:text-text-muted outline-none"
+        />
+        <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium text-text-muted">
+          ESC
+        </kbd>
+      </div>
+
+      {/* Split pane */}
+      <div className={`flex max-md:flex-col ${isMobile ? 'flex-1' : 'h-[60vh] max-md:h-[70vh]'}`}>
+        {/* Left: Results */}
+        <div className="w-[240px] max-md:w-full shrink-0 border-r max-md:border-r-0 max-md:border-b border-border overflow-y-auto max-md:max-h-[35vh]">
+          {query.length < 2 ? (
+            <div className="px-4 py-8 text-center text-text-muted text-sm">
+              Type to search...
+            </div>
+          ) : !groups?.length ? (
+            <div className="px-4 py-8 text-center text-text-muted text-sm">
+              No results found
+            </div>
+          ) : (
+            <div className="py-1">
+              {groups.map((group) => {
+                const groupStartIndex = flatItems.findIndex(
+                  (fi) => fi.groupType === group.type && fi.id === group.items[0]?.id,
+                )
+                return (
+                  <div key={group.label}>
+                    <div className="px-3 py-1.5 text-[10px] font-medium text-text-muted uppercase tracking-wide">
+                      <GameIcon icon={GROUP_ICONS[group.icon] ?? GiSparkles} size="xs" /> {group.label}
+                    </div>
+                    {group.items.map((item, i) => {
+                      const flatIndex = groupStartIndex + i
+                      const isSelected = selectedItem?.id === item.id && selectedItem?.type === group.type
+                      return (
+                        <button
+                          key={item.id}
+                          className={`w-full text-left px-3 py-2 cursor-pointer transition-colors ${
+                            isSelected
+                              ? 'bg-primary-ghost border-l-2 border-primary'
+                              : 'border-l-2 border-transparent hover:bg-bg-raised'
+                          }`}
+                          onClick={() => {
+                            setSelectedIndex(flatIndex)
+                            selectItem({ id: item.id, type: group.type })
+                          }}
+                          onMouseEnter={() => setSelectedIndex(flatIndex)}
+                        >
+                          <div className="text-sm text-text-heading font-medium">{item.name}</div>
+                          {item.subtitle && (
+                            <div className="text-[11px] text-text-muted">{item.subtitle}</div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Ability import prompt */}
+          {showAbilityImportPrompt && (
+            <div className="px-3 py-3 border-t border-border">
+              <p className="text-[11px] text-text-muted mb-1.5">No abilities found in campaign</p>
+              <button
+                onClick={handleImportAbilities}
+                disabled={importingAbilities}
+                className="text-[11px] text-primary-light hover:text-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {importingAbilities ? 'Importing...' : 'Import SRD abilities?'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Detail */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {selectedItem && campaignId ? (
+            <QuickReferenceDetail
+              type={selectedItem.type}
+              id={selectedItem.id}
+              campaignId={campaignId}
+              sessionId={sessionId}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-text-muted text-sm">
+              Select an item to view details
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between px-4 py-2 border-t border-border text-xs text-text-muted">
+        <div className="flex items-center gap-3">
+          {!isMobile && <span>{'\u2191\u2193'} navigate</span>}
+          <span>esc close</span>
+        </div>
+        <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium">
+          {isMobile ? 'ESC' : '\u2318J'}
+        </kbd>
+      </div>
+    </>
+  )
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]"
+          className="fixed inset-0 z-50"
           onKeyDown={handleKeyDown}
         >
           <motion.div
@@ -123,121 +243,25 @@ export function QuickReference() {
             transition={{ duration: 0.15 }}
             onClick={close}
           />
-          <ScaleIn className="relative max-w-[800px] w-full mx-4 max-md:mx-2">
-            <div className="bg-bg-base rounded-xl border border-border shadow-lg overflow-hidden">
-              {/* Search bar */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-                <span className="text-text-muted text-lg shrink-0">
-                  <GameIcon icon={GiMagnifyingGlass} size="lg" />
-                </span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search spells, monsters, abilities, characters..."
-                  className="flex-1 bg-transparent text-lg text-text-heading placeholder:text-text-muted outline-none"
-                />
-                <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium text-text-muted">
-                  ESC
-                </kbd>
-              </div>
-
-              {/* Split pane */}
-              <div className="flex max-md:flex-col h-[60vh] max-md:h-[70vh]">
-                {/* Left: Results */}
-                <div className="w-[240px] max-md:w-full shrink-0 border-r max-md:border-r-0 max-md:border-b border-border overflow-y-auto max-md:max-h-[35vh]">
-                  {query.length < 2 ? (
-                    <div className="px-4 py-8 text-center text-text-muted text-sm">
-                      Type to search...
-                    </div>
-                  ) : !groups?.length ? (
-                    <div className="px-4 py-8 text-center text-text-muted text-sm">
-                      No results found
-                    </div>
-                  ) : (
-                    <div className="py-1">
-                      {groups.map((group) => {
-                        const groupStartIndex = flatItems.findIndex(
-                          (fi) => fi.groupType === group.type && fi.id === group.items[0]?.id,
-                        )
-                        return (
-                          <div key={group.label}>
-                            <div className="px-3 py-1.5 text-[10px] font-medium text-text-muted uppercase tracking-wide">
-                              <GameIcon icon={GROUP_ICONS[group.icon] ?? GiSparkles} size="xs" /> {group.label}
-                            </div>
-                            {group.items.map((item, i) => {
-                              const flatIndex = groupStartIndex + i
-                              const isSelected = selectedItem?.id === item.id && selectedItem?.type === group.type
-                              return (
-                                <button
-                                  key={item.id}
-                                  className={`w-full text-left px-3 py-2 cursor-pointer transition-colors ${
-                                    isSelected
-                                      ? 'bg-primary-ghost border-l-2 border-primary'
-                                      : 'border-l-2 border-transparent hover:bg-bg-raised'
-                                  }`}
-                                  onClick={() => {
-                                    setSelectedIndex(flatIndex)
-                                    selectItem({ id: item.id, type: group.type })
-                                  }}
-                                  onMouseEnter={() => setSelectedIndex(flatIndex)}
-                                >
-                                  <div className="text-sm text-text-heading font-medium">{item.name}</div>
-                                  {item.subtitle && (
-                                    <div className="text-[11px] text-text-muted">{item.subtitle}</div>
-                                  )}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                  {/* Ability import prompt */}
-                  {showAbilityImportPrompt && (
-                    <div className="px-3 py-3 border-t border-border">
-                      <p className="text-[11px] text-text-muted mb-1.5">No abilities found in campaign</p>
-                      <button
-                        onClick={handleImportAbilities}
-                        disabled={importingAbilities}
-                        className="text-[11px] text-primary-light hover:text-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {importingAbilities ? 'Importing...' : 'Import SRD abilities?'}
-                      </button>
-                    </div>
-                  )}
+          {isMobile ? (
+            <motion.div
+              className="absolute inset-0 bg-bg-base flex flex-col"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            >
+              {innerContent}
+            </motion.div>
+          ) : (
+            <div className="flex items-start justify-center pt-[10vh]">
+              <ScaleIn className="relative max-w-[800px] w-full mx-4 max-md:mx-2">
+                <div className="bg-bg-base rounded-xl border border-border shadow-lg overflow-hidden">
+                  {innerContent}
                 </div>
-
-                {/* Right: Detail */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  {selectedItem && campaignId ? (
-                    <QuickReferenceDetail
-                      type={selectedItem.type}
-                      id={selectedItem.id}
-                      campaignId={campaignId}
-                      sessionId={sessionId}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-text-muted text-sm">
-                      Select an item to view details
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between px-4 py-2 border-t border-border text-xs text-text-muted">
-                <div className="flex items-center gap-3">
-                  <span>↑↓ navigate</span>
-                  <span>esc close</span>
-                </div>
-                <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium">⌘J</kbd>
-              </div>
+              </ScaleIn>
             </div>
-          </ScaleIn>
+          )}
         </div>
       )}
     </AnimatePresence>
