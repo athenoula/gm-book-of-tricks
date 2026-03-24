@@ -9,10 +9,10 @@ export interface TutorialStep {
   prefill?: Record<string, unknown>
   acknowledgment?: string
   mobileAlternative?: {
-    target: string
-    title: string
-    content: string
-    placement: 'top' | 'bottom' | 'left' | 'right'
+    target?: string
+    title?: string
+    content?: string
+    placement?: 'top' | 'bottom' | 'left' | 'right'
   }
 }
 
@@ -35,6 +35,9 @@ export const chapters: TutorialChapter[] = [
         createEntity: 'campaign' as const,
         prefill: { name: 'My First Campaign', description: 'A practice campaign to learn the tools.' },
         acknowledgment: "You already have a campaign! We'll use **{name}** for this tour.",
+        mobileAlternative: {
+          content: "Let's create your first campaign to get started. Tap the button to begin!",
+        },
       },
       {
         target: '[data-tutorial="create-character"]',
@@ -46,6 +49,9 @@ export const chapters: TutorialChapter[] = [
         createEntity: 'character' as const,
         prefill: { name: 'Aldric', class: 'Fighter', level: 1 },
         acknowledgment: "You've already got characters — great! Let's keep going.",
+        mobileAlternative: {
+          content: "Every adventure needs heroes. Tap below to add your first player character.",
+        },
       },
       {
         target: '[data-tutorial="create-session"]',
@@ -57,6 +63,9 @@ export const chapters: TutorialChapter[] = [
         createEntity: 'session' as const,
         prefill: { name: 'Session 1' },
         acknowledgment: "You already have sessions set up. Let's continue.",
+        mobileAlternative: {
+          content: "Sessions are where you prep and run your games. Tap below to create your first one.",
+        },
       },
     ],
   },
@@ -159,6 +168,9 @@ export const chapters: TutorialChapter[] = [
         title: 'Scene Blocks',
         content: 'Each block is a scene, encounter, or note. Drag to reorder, click to expand.',
         placement: 'bottom',
+        mobileAlternative: {
+          content: 'Each block is a scene, encounter, or note. Tap to expand, hold and drag to reorder.',
+        },
       },
       {
         target: '[data-tutorial="content-drawer"]',
@@ -189,12 +201,18 @@ export const chapters: TutorialChapter[] = [
         title: 'Initiative Tracker',
         content: 'Click this to open the combat tracker — manage turn order, HP, and conditions.',
         placement: 'bottom',
+        mobileAlternative: {
+          content: 'Tap this to open the combat tracker — manage turn order, HP, and conditions.',
+        },
       },
       {
         target: '[data-tutorial="dice-roller"]',
         title: 'Dice Roller',
         content: 'Click to roll any dice expression right here — no need to leave the app.',
         placement: 'bottom',
+        mobileAlternative: {
+          content: 'Tap to roll any dice expression right here — no need to leave the app.',
+        },
       },
       {
         target: '[data-tutorial="nav-scratchpad"]',

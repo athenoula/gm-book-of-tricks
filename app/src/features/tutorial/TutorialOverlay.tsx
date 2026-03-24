@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { motion, AnimatePresence } from '@/components/motion'
 import { Button } from '@/components/ui/Button'
 import { useTutorial } from '@/lib/tutorial'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { TutorialStep } from '@/features/tutorial/steps'
 
 function renderAcknowledgment(template: string, name: string): React.ReactNode {
@@ -149,6 +150,7 @@ export function TutorialOverlay({
   onSkipStep,
 }: TutorialOverlayProps) {
   const { stepMode, acknowledgeName } = useTutorial()
+  const isMobile = useIsMobile()
   const tooltipRef = useRef<HTMLDivElement>(null)
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [targetBorderRadius, setTargetBorderRadius] = useState('0px')
@@ -247,21 +249,45 @@ export function TutorialOverlay({
     }
   }, [step.target, updatePosition])
 
-  // Acknowledge mode: centered overlay, no target positioning
+  // Acknowledge mode: centered overlay (desktop) or bottom bar (mobile)
   if (stepMode === 'acknowledge') {
+    const ackContent = step.acknowledgment
+      ? renderAcknowledgment(step.acknowledgment, acknowledgeName ?? '')
+      : step.content
+
+    if (isMobile) {
+      return (
+        <div className="fixed inset-0 z-[65]" style={{ pointerEvents: 'none' }}>
+          <div
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', pointerEvents: 'auto' }}
+          />
+          <motion.div
+            key={`acknowledge-mobile-${stepIndex}`}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed left-0 right-0 bg-bg-base border-t border-primary-light px-4 py-3"
+            style={{ bottom: 74, pointerEvents: 'auto', zIndex: 65 }}
+          >
+            <div className="flex items-baseline justify-between mb-1">
+              <h3 className="font-heading text-text-heading text-sm">{step.title}</h3>
+              <span className="font-label text-primary-light text-xs">{chapterName}</span>
+            </div>
+            <p className="font-body text-text-body text-xs leading-relaxed mb-2">{ackContent}</p>
+            <div className="flex justify-end">
+              <Button variant="primary" size="sm" onClick={onNext}>Continue</Button>
+            </div>
+          </motion.div>
+        </div>
+      )
+    }
+
     return (
       <div className="fixed inset-0 z-[65]" style={{ pointerEvents: 'none' }}>
-        {/* Semi-transparent backdrop */}
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            pointerEvents: 'auto',
-          }}
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', pointerEvents: 'auto' }}
         />
-
-        {/* Centered tooltip */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`acknowledge-${stepIndex}`}
@@ -282,28 +308,11 @@ export function TutorialOverlay({
               zIndex: 65,
             }}
           >
-            {/* Chapter name */}
-            <p className="font-label text-primary-light text-xs mb-1">
-              {chapterName}
-            </p>
-
-            {/* Title */}
-            <h3 className="font-heading text-text-heading text-base mb-3">
-              {step.title}
-            </h3>
-
-            {/* Acknowledgment text */}
-            <p className="font-body text-text-body text-sm mb-5 leading-relaxed">
-              {step.acknowledgment
-                ? renderAcknowledgment(step.acknowledgment, acknowledgeName ?? '')
-                : step.content}
-            </p>
-
-            {/* Continue button */}
+            <p className="font-label text-primary-light text-xs mb-1">{chapterName}</p>
+            <h3 className="font-heading text-text-heading text-base mb-3">{step.title}</h3>
+            <p className="font-body text-text-body text-sm mb-5 leading-relaxed">{ackContent}</p>
             <div className="flex justify-center">
-              <Button variant="primary" size="sm" onClick={onNext}>
-                Continue
-              </Button>
+              <Button variant="primary" size="sm" onClick={onNext}>Continue</Button>
             </div>
           </motion.div>
         </AnimatePresence>
@@ -315,27 +324,89 @@ export function TutorialOverlay({
 
   const slideOffset = getSlideOffset(activePlacement)
   const isCreateMode = stepMode === 'create'
+  const zClass = isCreateMode ? 'z-[45]' : 'z-[65]'
+  const zValue = isCreateMode ? 45 : 65
 
+  // Shared spotlight element
+  const spotlight = (
+    <div
+      style={{
+        position: 'fixed',
+        top: targetRect.top,
+        left: targetRect.left,
+        width: targetRect.width,
+        height: targetRect.height,
+        borderRadius: targetBorderRadius,
+        boxShadow: '0 0 0 9999px rgba(0,0,0,0.7), 0 0 20px rgba(212,165,116,0.3)',
+        pointerEvents: isCreateMode ? 'auto' : 'none',
+        zIndex: zValue,
+      }}
+      className="border-2 border-primary-light"
+    />
+  )
+
+  // Mobile: bottom bar instead of positioned tooltip
+  if (isMobile) {
+    return (
+      <div className={`fixed inset-0 ${zClass}`} style={{ pointerEvents: 'none' }}>
+        {spotlight}
+
+        <motion.div
+          key={`mobile-bar-${step.target}-${stepIndex}`}
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed left-0 right-0 bg-bg-base border-t border-primary-light px-4 py-3"
+          style={{ bottom: 74, pointerEvents: 'auto', zIndex: zValue }}
+        >
+          {/* Top row: title + chapter counter */}
+          <div className="flex items-baseline justify-between mb-1">
+            <h3 className="font-heading text-text-heading text-sm">{step.title}</h3>
+            <span className="font-label text-primary-light text-xs">
+              {chapterName} &middot; {stepIndex + 1}/{totalSteps}
+            </span>
+          </div>
+
+          {/* Description */}
+          <p className="font-body text-text-body text-xs leading-relaxed mb-2">
+            {step.content}
+          </p>
+
+          {/* Button row */}
+          <div className="flex items-center gap-2">
+            {!isCreateMode && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={stepIndex === 0 && chapterIndex === 0}
+                  onClick={onBack}
+                >
+                  Back
+                </Button>
+                <Button variant="primary" size="sm" onClick={onNext}>
+                  {isFinish ? 'Finish' : 'Next'}
+                </Button>
+              </>
+            )}
+            <button
+              onClick={onDismiss}
+              className={`text-xs text-text-muted hover:text-text-body font-body cursor-pointer transition-colors ${isCreateMode ? '' : 'ml-auto'}`}
+            >
+              Skip tour
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Desktop: positioned tooltip
   return (
-    <div className={`fixed inset-0 ${isCreateMode ? 'z-[45]' : 'z-[65]'}`} style={{ pointerEvents: 'none' }}>
-      {/* Spotlight cutout */}
-      <div
-        style={{
-          position: 'fixed',
-          top: targetRect.top,
-          left: targetRect.left,
-          width: targetRect.width,
-          height: targetRect.height,
-          borderRadius: targetBorderRadius,
-          boxShadow:
-            '0 0 0 9999px rgba(0,0,0,0.7), 0 0 20px rgba(212,165,116,0.3)',
-          pointerEvents: isCreateMode ? 'auto' : 'none',
-          zIndex: isCreateMode ? 45 : 65,
-        }}
-        className="border-2 border-primary-light"
-      />
+    <div className={`fixed inset-0 ${zClass}`} style={{ pointerEvents: 'none' }}>
+      {spotlight}
 
-      {/* Tooltip */}
       <AnimatePresence mode="wait">
         <motion.div
           key={`${step.target}-${stepIndex}`}
@@ -353,25 +424,15 @@ export function TutorialOverlay({
             minWidth: 260,
             padding: '16px 20px',
             pointerEvents: 'auto',
-            zIndex: isCreateMode ? 45 : 65,
+            zIndex: zValue,
           }}
         >
-          {/* Chapter name + step counter */}
           <p className="font-label text-primary-light text-xs mb-1">
             {chapterName} &middot; Step {stepIndex + 1} of {totalSteps}
           </p>
+          <h3 className="font-heading text-text-heading text-base mb-2">{step.title}</h3>
+          <p className="font-body text-text-body text-sm mb-4 leading-relaxed">{step.content}</p>
 
-          {/* Title */}
-          <h3 className="font-heading text-text-heading text-base mb-2">
-            {step.title}
-          </h3>
-
-          {/* Content */}
-          <p className="font-body text-text-body text-sm mb-4 leading-relaxed">
-            {step.content}
-          </p>
-
-          {/* Create mode: arrow indicator toward target */}
           {isCreateMode && activePlacement === 'top' && (
             <div className="flex justify-center -mb-2">
               <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary-light" />
@@ -383,25 +444,17 @@ export function TutorialOverlay({
             </div>
           )}
 
-          {/* Button row */}
           <div className="flex items-center gap-2">
             {!isCreateMode && (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={stepIndex === 0 && chapterIndex === 0}
-                  onClick={onBack}
-                >
+                <Button variant="ghost" size="sm" disabled={stepIndex === 0 && chapterIndex === 0} onClick={onBack}>
                   Back
                 </Button>
-
                 <Button variant="primary" size="sm" onClick={onNext}>
                   {isFinish ? 'Finish' : 'Next'}
                 </Button>
               </>
             )}
-
             <button
               onClick={onDismiss}
               className={`text-xs text-text-muted hover:text-text-body font-body cursor-pointer transition-colors ${isCreateMode ? '' : 'ml-auto'}`}
