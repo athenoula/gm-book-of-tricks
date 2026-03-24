@@ -50,11 +50,13 @@ Replace the floating tooltip popover with a fixed bottom bar on mobile for the t
 
 **Create mode:** Bar shows step content. No Next button (user must tap the highlighted element). "Skip tour" still available. Spotlight gets `pointer-events: auto`. Bar renders at `z-[45]` (below dialogs) same as desktop create mode.
 
-**Acknowledge mode:** Bar shows acknowledgment text with `{name}` replaced. Single "Continue" button centered. No Back or Skip.
+**Acknowledge mode:** Also renders as the bottom bar (not the centered overlay used on desktop). Bar shows acknowledgment text with `{name}` replaced. Single "Continue" button right-aligned. No Back or Skip. No spotlight (same as desktop acknowledge — no element to highlight).
 
 ### Spotlight
 
 Same spotlight behavior as desktop — `getBoundingClientRect()`, gold border, box-shadow cutout. All existing positioning/scroll/resize logic applies. The only difference is the tooltip is replaced by the bottom bar.
+
+**Overlap handling:** If the target element is in the lower portion of the viewport and would be overlapped by the bar, scroll the target into view above the bar using `element.scrollIntoView({ block: 'center' })` before positioning the spotlight. This ensures the highlighted element is always visible above the bar.
 
 ---
 
@@ -74,11 +76,13 @@ Extend `mobileAlternative` on steps where desktop content references clicks or k
 
 **Navigation chapter:** Already has full `mobileAlternative` overrides (target, title, content, placement) from the mobile nav spec.
 
-**Campaign Setup chapter:**
+**Navigation chapter:**
 
 | Step | Field | Mobile value |
 |------|-------|-------------|
-| All Campaigns | content | "Tap here to switch between campaigns or create a new one." |
+| All Campaigns (step 4) | content | "Tap here to switch between campaigns or create a new one." |
+
+Note: This step is already skipped on mobile (sidebar-only target), so this override only matters if the skip logic changes in the future.
 
 **Session Prep chapter:**
 
