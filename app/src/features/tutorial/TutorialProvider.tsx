@@ -119,7 +119,13 @@ export function TutorialProvider() {
 
   // 2. Resolve current step
   const chapter = isActive ? chapters[currentChapter] : null
-  const step = chapter?.steps[currentStep] ?? null
+  const rawStep = chapter?.steps[currentStep] ?? null
+
+  // Use mobile alternative if available and on mobile
+  // Note: use the existing local isMobile() function already in TutorialProvider
+  const step = rawStep && isMobile() && rawStep.mobileAlternative
+    ? { ...rawStep, ...rawStep.mobileAlternative }
+    : rawStep
 
   // 3. Auto-advance past mobile-skipped steps
   useEffect(() => {

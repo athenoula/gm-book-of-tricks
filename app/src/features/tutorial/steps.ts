@@ -8,6 +8,12 @@ export interface TutorialStep {
   createEntity?: 'campaign' | 'session' | 'character'
   prefill?: Record<string, unknown>
   acknowledgment?: string
+  mobileAlternative?: {
+    target: string
+    title: string
+    content: string
+    placement: 'top' | 'bottom' | 'left' | 'right'
+  }
 }
 
 export interface TutorialChapter {
@@ -62,18 +68,36 @@ export const chapters: TutorialChapter[] = [
         title: 'The Sidebar',
         content: 'Your navigation hub. Each icon leads to a different section of your campaign.',
         placement: 'right',
+        mobileAlternative: {
+          target: '[data-tutorial="mobile-nav"]',
+          title: 'Navigation Bar',
+          content: 'Swipe this bar to access all sections of your campaign. Your most-used pages are right here.',
+          placement: 'top',
+        },
       },
       {
         target: '[data-tutorial="cmd-palette"]',
         title: 'Command Palette',
         content: 'Press Cmd+K to quickly search and jump to any entity — monsters, spells, NPCs, sessions.',
         placement: 'bottom',
+        mobileAlternative: {
+          target: '[data-tutorial="mobile-search"]',
+          title: 'Search',
+          content: 'Tap here to quickly search and jump to any entity — monsters, spells, NPCs, sessions.',
+          placement: 'top',
+        },
       },
       {
         target: '[data-tutorial="quick-ref"]',
         title: 'Quick Reference',
         content: 'Press Cmd+J to look up any entity without leaving your current page.',
         placement: 'bottom',
+        mobileAlternative: {
+          target: '[data-tutorial="mobile-ref"]',
+          title: 'Quick Reference',
+          content: 'Tap here to look up any entity without leaving your current page.',
+          placement: 'top',
+        },
       },
       {
         target: '[data-tutorial="all-campaigns"]',
