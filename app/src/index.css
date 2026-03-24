@@ -356,3 +356,17 @@
 .combatant-active-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
+
+/* =============================================
+   Utility Classes
+   ============================================= */
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
