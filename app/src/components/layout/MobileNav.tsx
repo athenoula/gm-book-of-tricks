@@ -50,15 +50,21 @@ export function MobileNav({ campaignId }: { campaignId: string }) {
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showFade, setShowFade] = useState(true)
+  const [scrollProgress, setScrollProgress] = useState(0)
   const [showChapterPicker, setShowChapterPicker] = useState(false)
+
+  // Number of "pages" based on how many screenfuls of items there are
+  const DOT_COUNT = 3
 
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
 
     const handleScroll = () => {
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2
+      const maxScroll = el.scrollWidth - el.clientWidth
+      const atEnd = el.scrollLeft >= maxScroll - 2
       setShowFade(!atEnd)
+      setScrollProgress(maxScroll > 0 ? el.scrollLeft / maxScroll : 0)
     }
 
     handleScroll()
@@ -150,9 +156,26 @@ export function MobileNav({ campaignId }: { campaignId: string }) {
             })}
           </div>
 
+          {/* Scroll position dots */}
+          <div className="flex justify-center gap-1.5 py-1">
+            {Array.from({ length: DOT_COUNT }).map((_, i) => {
+              const activeDot = Math.round(scrollProgress * (DOT_COUNT - 1))
+              return (
+                <div
+                  key={i}
+                  className={`h-1 rounded-full transition-all duration-200 ${
+                    i === activeDot
+                      ? 'w-3 bg-primary-light'
+                      : 'w-1 bg-text-muted/30'
+                  }`}
+                />
+              )
+            })}
+          </div>
+
           {/* Right-edge fade gradient */}
           {showFade && (
-            <div className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none bg-gradient-to-l from-[var(--color-bg-base)] to-transparent" />
+            <div className="absolute right-0 top-0 bottom-[18px] w-8 pointer-events-none bg-gradient-to-l from-[var(--color-bg-base)] to-transparent" />
           )}
         </div>
       </nav>
