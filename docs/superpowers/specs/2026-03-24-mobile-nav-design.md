@@ -113,7 +113,7 @@ On mobile (< 768px), change the overlay from a centered dialog to a full-screen 
 Same treatment as Command Palette:
 - Desktop: existing centered overlay
 - Mobile: full-screen bottom sheet sliding up
-- Drag handle pill at top
+- No drag handle (same as Command Palette — rely on backdrop tap and Escape to close)
 - Full-width content
 
 ---
