@@ -14,7 +14,7 @@ Replace the limited 4-tab mobile bottom nav with a swipeable horizontal bar cont
 - Item order: core nav (Overview, Sessions, Characters), then utilities (Search, Ref), then remaining nav, Tour at end
 - Right-edge fade gradient as scroll affordance
 - Command Palette and Quick Reference slide up as full-screen sheets on mobile
-- Note mobile-specific tutorial step alternatives for the Navigation chapter (future enhancement acknowledged)
+- Mobile-specific tutorial step alternatives for the Navigation chapter
 
 ---
 
@@ -71,11 +71,19 @@ Right-edge fade gradient indicating more content to the right:
 ### Styling
 
 ```
-Container: fixed bottom-0 left-0 right-0 z-40 bg-bg-base/95 backdrop-blur-sm border-t border-border md:hidden
+Container: fixed bottom-0 left-0 right-0 z-40 bg-bg-base/95 backdrop-blur-sm border-t border-border md:hidden pb-[env(safe-area-inset-bottom)]
 Scroll area: flex overflow-x-auto gap-0 scrollbar-hide
 Each item: flex-shrink-0 flex flex-col items-center gap-0.5 py-2 min-h-[56px] justify-center w-[64px]
 Fade overlay: absolute right-0 top-0 bottom-0 w-8 pointer-events-none bg-gradient-to-l from-bg-base to-transparent
 ```
+
+### Notes
+
+- **Item order change:** The current MobileNav has Characters before Sessions. This spec intentionally swaps that to match the sidebar order (Sessions first, per recent commit "ui: move Sessions to top of sidebar navigation").
+- **"More" tab removed:** The current "More" tab pointing to Generators is replaced by listing all pages individually in the scrollable bar.
+- **`layoutId` animation:** Drop the `layoutId="mobile-nav-indicator"` approach from the current MobileNav. With 11 items in a scrollable container, the spring animation across off-screen items causes visual glitches. Instead, use a simple `motion.div` indicator rendered below the active item without `layoutId`.
+- **Accessibility:** The nav container should have `role="tablist"`. Utility buttons need `aria-label` attributes (e.g., `aria-label="Search"`, `aria-label="Quick Reference"`).
+- **ChapterPicker:** Import from `@/features/tutorial/ChapterPicker`. Uses `isOpen` and `onClose` props. Manage open state with local `useState` in MobileNav.
 
 ---
 
@@ -93,12 +101,12 @@ On mobile (< 768px), change the overlay from a centered dialog to a full-screen 
 **Mobile (<md):**
 - Fixed overlay, anchored to bottom: `fixed inset-0`
 - The dialog itself: `fixed bottom-0 inset-x-0 h-full` with `rounded-t-xl` top corners
-- Slide-up animation: `initial={{ y: "100%" }}` → `animate={{ y: 0 }}`
-- Drag handle pill at top: small `w-8 h-1 bg-border rounded-full mx-auto mt-2 mb-1`
+- Slide-up animation: `initial={{ y: "100%" }}` → `animate={{ y: 0 }}` with `transition={{ type: 'spring', damping: 30, stiffness: 300 }}`
+- No drag handle — rely on backdrop tap and Escape key to close. (A drag handle without drag-to-dismiss is a misleading affordance, and implementing gesture detection adds complexity for little gain.)
 - Same search input + results, just full width
 - Backdrop: same dark overlay with tap-to-close
 
-**Implementation:** Use `window.innerWidth < 768` check or a media query hook to conditionally apply mobile vs desktop styles and animation. Or use Tailwind responsive classes where possible.
+**Viewport detection:** Create a shared `useIsMobile()` hook in `src/hooks/useIsMobile.ts` that listens for the `md` breakpoint (768px) via `window.matchMedia('(max-width: 767px)')`. This responds to orientation changes and resizes, unlike a one-shot `window.innerWidth` check. Both CommandPalette and QuickReference use this hook to switch between desktop and mobile rendering.
 
 ### Quick Reference (`QuickReference.tsx`)
 
@@ -110,9 +118,9 @@ Same treatment as Command Palette:
 
 ---
 
-## Tutorial Navigation Chapter — Mobile Alternatives
+## Tutorial Navigation Chapter — Mobile Alternatives (In Scope)
 
-The tutorial's Navigation chapter (Chapter 1) currently targets sidebar elements which are skipped on mobile. Add mobile-specific step alternatives that target the swipeable nav bar instead.
+The tutorial's Navigation chapter (Chapter 1) currently targets sidebar elements which are skipped on mobile. Add mobile-specific step alternatives that target the swipeable nav bar instead. This is in scope for this spec.
 
 **Mobile Navigation steps (replace sidebar steps when `window.innerWidth < 768`):**
 
@@ -133,10 +141,13 @@ Add `data-tutorial` attributes to the swipeable nav bar:
 
 ## File Changes Summary
 
+**New files:**
+- `src/hooks/useIsMobile.ts` — Shared hook using `matchMedia` for responsive mobile detection
+
 **Modified files:**
 - `src/components/layout/MobileNav.tsx` — Full rewrite: swipeable bar with all items + utilities + fade gradient
-- `src/components/ui/CommandPalette.tsx` — Add mobile full-screen sheet layout
-- `src/features/quick-reference/QuickReference.tsx` — Add mobile full-screen sheet layout
+- `src/components/ui/CommandPalette.tsx` — Add mobile full-screen sheet layout using `useIsMobile`
+- `src/features/quick-reference/QuickReference.tsx` — Add mobile full-screen sheet layout using `useIsMobile`
 - `src/features/tutorial/steps.ts` — Add `mobileAlternative` field to TutorialStep, add mobile alternatives for Navigation chapter steps
 - `src/features/tutorial/TutorialProvider.tsx` — Swap step definitions based on viewport width for mobile alternatives
 
