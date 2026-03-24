@@ -113,6 +113,15 @@ export function CommandPalette() {
           placeholder="Search campaigns..."
           className="flex-1 bg-transparent text-lg text-text-heading placeholder:text-text-muted outline-none"
         />
+        {isMobile && (
+          <button
+            onClick={close}
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:text-text-body hover:bg-bg-raised transition-colors cursor-pointer"
+            aria-label="Close search"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Results */}
