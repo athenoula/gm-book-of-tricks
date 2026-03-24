@@ -125,9 +125,19 @@ export function QuickReference() {
           placeholder="Search spells, monsters, abilities, characters..."
           className="flex-1 bg-transparent text-lg text-text-heading placeholder:text-text-muted outline-none"
         />
-        <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium text-text-muted">
-          ESC
-        </kbd>
+        {isMobile ? (
+          <button
+            onClick={close}
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:text-text-body hover:bg-bg-raised transition-colors cursor-pointer"
+            aria-label="Close quick reference"
+          >
+            ✕
+          </button>
+        ) : (
+          <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium text-text-muted">
+            ESC
+          </kbd>
+        )}
       </div>
 
       {/* Split pane */}
