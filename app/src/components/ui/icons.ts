@@ -74,3 +74,7 @@ export { GiPuzzle } from 'react-icons/gi'            // 🧩 browser extension
 
 // Tutorial/help
 export { GiOpenBook } from 'react-icons/gi'           // 📖 tutorial/help
+
+// Feedback / beta
+export { GiSpeechBubble } from 'react-icons/gi'    // 💬 feedback
+export { GiBugNet } from 'react-icons/gi'            // 🐛 bug report
