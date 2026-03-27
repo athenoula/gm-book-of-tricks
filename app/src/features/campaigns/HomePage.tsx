@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiRollingDices, GiPuzzle } from '@/components/ui/icons'
+import { GiRollingDices, GiPuzzle, GiSpeechBubble, GiBugNet } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaigns } from './useCampaigns'
 import { CampaignCard } from './CampaignCard'
@@ -70,6 +71,29 @@ export function HomePage() {
             ))}
           </StaggerList>
         )}
+
+        {/* Beta tester CTA */}
+        <div className="mt-12 mb-8">
+          <OrnamentalDivider />
+          <div className="mt-8 bg-primary-ghost/20 border border-primary/20 rounded-[--radius-lg] p-6 text-center">
+            <h3 className="text-lg mb-2 gold-foil">Help Shape Book of Tricks</h3>
+            <p className="text-text-secondary text-sm mb-4">
+              Your feedback directly shapes what we build next. Beta testers get free access forever.
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <Link to="/feedback">
+                <Button variant="primary" size="sm">
+                  <GameIcon icon={GiSpeechBubble} size="sm" /> Give Feedback
+                </Button>
+              </Link>
+              <Link to="/report">
+                <Button variant="secondary" size="sm">
+                  <GameIcon icon={GiBugNet} size="sm" /> Report Bug / Idea
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
 
         <OrnamentalDivider />
 
