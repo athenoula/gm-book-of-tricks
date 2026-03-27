@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiRollingDices, GiPuzzle, GiSpeechBubble, GiBugNet } from '@/components/ui/icons'
+import { GiRollingDices, GiPuzzle, GiChatBubble, GiBugNet } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaigns } from './useCampaigns'
 import { CampaignCard } from './CampaignCard'
@@ -83,7 +83,7 @@ export function HomePage() {
             <div className="flex gap-3 justify-center flex-wrap">
               <Link to="/feedback">
                 <Button variant="primary" size="sm">
-                  <GameIcon icon={GiSpeechBubble} size="sm" /> Give Feedback
+                  <GameIcon icon={GiChatBubble} size="sm" /> Give Feedback
                 </Button>
               </Link>
               <Link to="/report">

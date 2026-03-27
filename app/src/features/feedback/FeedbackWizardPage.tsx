@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/Button'
 import { ChipSelect } from '@/components/ui/ChipSelect'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiSpeechBubble, GiCastle } from '@/components/ui/icons'
+import { GiChatBubble, GiCastle } from '@/components/ui/icons'
 import { FadeIn } from '@/components/motion'
 import { useFeedbackResponse, useDetectedFeatures, useSaveFeedbackStep, useSubmitFeedback } from './useFeedback'
 import {
@@ -131,7 +131,7 @@ export function FeedbackWizardPage() {
   if (isLoading) {
     return (
       <div className="min-h-dvh bg-bg-deep flex items-center justify-center">
-        <div className="text-3xl torch-flicker"><GameIcon icon={GiSpeechBubble} size="3xl" /></div>
+        <div className="text-3xl torch-flicker"><GameIcon icon={GiChatBubble} size="3xl" /></div>
       </div>
     )
   }

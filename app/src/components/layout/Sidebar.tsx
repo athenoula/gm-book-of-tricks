@@ -6,7 +6,7 @@ import type { IconComponent } from '@/components/ui/icons'
 import {
   GiCrossedSwords, GiThreeFriends, GiSpikedDragonHead, GiSparkles,
   GiPositionMarker, GiRollingDices, GiNotebook, GiScrollUnfurled, GiCastle,
-  GiOpenBook, GiSpeechBubble, GiBugNet,
+  GiOpenBook, GiChatBubble, GiBugNet,
 } from '@/components/ui/icons'
 import { ChapterPicker } from '@/features/tutorial/ChapterPicker'
 
@@ -39,7 +39,7 @@ const campaignNav: NavItem[] = [
 ]
 
 const betaNav: NavItem[] = [
-  { icon: GiSpeechBubble, label: 'Give Feedback', to: '/feedback' },
+  { icon: GiChatBubble, label: 'Give Feedback', to: '/feedback' },
   { icon: GiBugNet, label: 'Report Bug / Idea', to: '/report' },
 ]
 
