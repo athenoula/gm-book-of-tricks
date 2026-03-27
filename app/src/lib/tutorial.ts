@@ -54,11 +54,15 @@ export const useTutorial = create<TutorialState>((set, get) => ({
   stepMode: null,
   acknowledgeName: null,
 
-  start: (chapter = 0) => set({
-    isActive: true,
-    currentChapter: chapter,
-    currentStep: 0,
-  }),
+  start: (chapter = 0) => {
+    localStorage.setItem(STORAGE_KEY_SEEN, 'true')
+    set({
+      isActive: true,
+      currentChapter: chapter,
+      currentStep: 0,
+      hasSeenTutorial: true,
+    })
+  },
 
   advanceStep: (chapterLength: number) => {
     const { currentChapter, currentStep, completedChapters } = get()
