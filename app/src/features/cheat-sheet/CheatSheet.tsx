@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useEffect } from 'react'
 import { AnimatePresence, motion, ScaleIn } from '@/components/motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useCheatSheet } from '@/lib/cheat-sheet'
@@ -188,15 +188,17 @@ export function CheatSheet() {
   const { isOpen, activeTab, close, setTab } = useCheatSheet()
   const isMobile = useIsMobile()
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
         close()
       }
-    },
-    [close],
-  )
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, close])
 
   const ActiveContent = TAB_CONTENT[activeTab]
 
@@ -246,7 +248,9 @@ export function CheatSheet() {
 
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-2 border-t border-border text-xs text-text-muted">
-        <span>esc close</span>
+        <div className="flex items-center gap-3">
+          {!isMobile && <span>esc close</span>}
+        </div>
         <kbd className="px-1.5 py-0.5 rounded border border-border text-[10px] font-medium">
           {isMobile ? 'ESC' : '\u2318L'}
         </kbd>
@@ -259,7 +263,6 @@ export function CheatSheet() {
       {isOpen && (
         <div
           className="fixed inset-0 z-50"
-          onKeyDown={handleKeyDown}
         >
           <motion.div
             className="absolute inset-0 bg-bg-deep/60 backdrop-blur-sm"
