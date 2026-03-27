@@ -6,7 +6,7 @@ import type { IconComponent } from '@/components/ui/icons'
 import {
   GiCrossedSwords, GiThreeFriends, GiSpikedDragonHead, GiSparkles,
   GiPositionMarker, GiRollingDices, GiNotebook, GiScrollUnfurled, GiCastle,
-  GiOpenBook,
+  GiOpenBook, GiSpeechBubble, GiBugNet,
 } from '@/components/ui/icons'
 import { ChapterPicker } from '@/features/tutorial/ChapterPicker'
 
@@ -36,6 +36,11 @@ const campaignNav: NavItem[] = [
   { icon: GiPositionMarker, label: 'Locations', to: '/campaign/$campaignId/locations', tutorialId: 'nav-locations' },
   { icon: GiRollingDices, label: 'Generators', to: '/campaign/$campaignId/generators' },
   { icon: GiNotebook, label: 'Scratchpad', to: '/campaign/$campaignId/scratchpad', tutorialId: 'nav-scratchpad' },
+]
+
+const betaNav: NavItem[] = [
+  { icon: GiSpeechBubble, label: 'Give Feedback', to: '/feedback' },
+  { icon: GiBugNet, label: 'Report Bug / Idea', to: '/report' },
 ]
 
 export function Sidebar({ campaignId }: { campaignId: string }) {
@@ -98,6 +103,37 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
           )
         })}
       </nav>
+
+      {/* Beta section */}
+      <div className="px-2 pb-2">
+        <div className={`text-[10px] uppercase tracking-wider text-text-muted mb-1 ${expanded ? 'px-3' : 'text-center'}`}>
+          {expanded ? 'Beta' : '·'}
+        </div>
+        {betaNav.map((item) => {
+          const isActive = currentPath === item.to
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`
+                flex items-center gap-3 rounded-[--radius-md] min-h-[44px]
+                transition-colors duration-[--duration-fast]
+                ${expanded ? 'px-3' : 'justify-center'}
+                ${isActive
+                  ? 'bg-primary-ghost text-primary-light'
+                  : 'text-text-muted hover:text-text-body hover:bg-bg-raised'
+                }
+              `}
+              title={expanded ? undefined : item.label}
+            >
+              <GameIcon icon={item.icon} size="base" />
+              {expanded && (
+                <span className="text-sm font-medium truncate">{item.label}</span>
+              )}
+            </Link>
+          )
+        })}
+      </div>
 
       {/* Bottom actions */}
       <div className="p-2 border-t border-border">
