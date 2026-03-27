@@ -21,6 +21,8 @@ import { SessionsPage } from '@/features/sessions/SessionsPage'
 import { LocationsPage } from '@/features/locations/LocationsPage'
 import { InspirationBoard } from '@/features/scratchpad/InspirationBoard'
 import { useAuth } from '@/lib/auth'
+import { FeedbackWizardPage } from '@/features/feedback/FeedbackWizardPage'
+import { ReportPage } from '@/features/feedback/ReportPage'
 
 // Root layout — wraps children in page transition
 function RootComponent() {
@@ -65,6 +67,32 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/home',
   component: HomePage,
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && !user) {
+      throw redirect({ to: '/' })
+    }
+  },
+})
+
+// Protected: Feedback wizard
+const feedbackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/feedback',
+  component: FeedbackWizardPage,
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && !user) {
+      throw redirect({ to: '/' })
+    }
+  },
+})
+
+// Protected: Bug/idea reporter
+const reportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/report',
+  component: ReportPage,
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
     if (!loading && !user) {
@@ -194,6 +222,8 @@ function PlaceholderPage({ title, icon }: { title: string; icon: string }) {
 const routeTree = rootRoute.addChildren([
   loginRoute,
   homeRoute,
+  feedbackRoute,
+  reportRoute,
   campaignRoute.addChildren([
     campaignOverviewRoute,
     charactersRoute,
