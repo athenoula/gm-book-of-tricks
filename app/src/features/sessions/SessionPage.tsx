@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiScrollUnfurled, GiCrossedSwords, GiRollingDices } from '@/components/ui/icons'
+import { GiScrollUnfurled, GiCrossedSwords, GiRollingDices, GiBookPile } from '@/components/ui/icons'
+import { useCheatSheet } from '@/lib/cheat-sheet'
 import { useSession, useUpdateSession } from './useSessions'
 import { SessionRecap } from './SessionRecap'
 import { SessionTimeline } from '@/features/timeline/SessionTimeline'
@@ -79,6 +80,13 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => useCheatSheet.getState().open()}
+            >
+              <GameIcon icon={GiBookPile} size="sm" /> Cheat Sheet
+            </Button>
             <Button
               size="sm"
               variant={showDice ? 'primary' : 'secondary'}
