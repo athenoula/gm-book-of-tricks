@@ -78,3 +78,6 @@ export { GiOpenBook } from 'react-icons/gi'           // 📖 tutorial/help
 // Feedback / beta
 export { GiSpeechBubble } from 'react-icons/gi'    // 💬 feedback
 export { GiBugNet } from 'react-icons/gi'            // 🐛 bug report
+
+// Cheat sheet
+export { GiBookPile } from 'react-icons/gi'          // 📚 DM's cheat sheet
