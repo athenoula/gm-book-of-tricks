@@ -44,7 +44,7 @@ export function useSubmitBugReport() {
   })
 }
 
-// Upload screenshot via Edge Function → Google Drive
+// Upload screenshot to Supabase Storage
 export async function uploadScreenshot(file: File): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('Invalid file type. Please select an image.')
@@ -53,13 +53,18 @@ export async function uploadScreenshot(file: File): Promise<string> {
     throw new Error('Image too large. Maximum size is 5MB.')
   }
 
-  const formData = new FormData()
-  formData.append('file', file)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
 
-  const response = await supabase.functions.invoke('upload-screenshot', {
-    body: formData,
-  })
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+  const path = `bug-reports/${user.id}/${crypto.randomUUID()}.${ext}`
 
-  if (response.error) throw new Error(response.error.message || 'Upload failed')
-  return response.data.fileId as string
+  const { error } = await supabase.storage
+    .from('campaign-images')
+    .upload(path, file, { contentType: file.type })
+
+  if (error) throw error
+
+  const { data } = supabase.storage.from('campaign-images').getPublicUrl(path)
+  return data.publicUrl
 }
