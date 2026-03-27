@@ -180,3 +180,167 @@ export type CampaignFile = {
   file_size: number | null
   created_at: string
 }
+
+// =============================================
+// Beta Feedback
+// =============================================
+
+export type FeedbackStep1 = {
+  role: string
+  experience: string
+  systems: string[]
+  frequency: string
+}
+
+export type FeedbackStep2 = {
+  detected_features: { name: string; count: number }[]
+  ratings: Record<string, 'meh' | 'good' | 'love'>
+  best_thing: string
+  worst_thing: string
+}
+
+export type FeedbackStep3 = {
+  wanted_features: string[]
+  top_wish: string
+  other_tools: string[]
+}
+
+export type FeedbackStep4 = {
+  paid_tools: string[]
+  monthly_spend: string
+  fair_price: string
+  anything_else: string
+}
+
+export type FeedbackResponse = {
+  id: string
+  user_id: string
+  step1: FeedbackStep1 | null
+  step2: FeedbackStep2 | null
+  step3: FeedbackStep3 | null
+  step4: FeedbackStep4 | null
+  current_step: number
+  completed: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type BugReport = {
+  id: string
+  user_id: string
+  type: 'bug' | 'feature' | 'feedback'
+  title: string
+  description: string
+  severity: 'blocking' | 'annoying' | 'minor' | null
+  page: string | null
+  screenshot_ids: string[]
+  status: 'new' | 'seen' | 'resolved'
+  created_at: string
+}
+
+export const FEEDBACK_ROLES = [
+  'Forever DM',
+  'DM & Player',
+  'Mostly Player',
+  'New to TTRPGs',
+] as const
+
+export const FEEDBACK_EXPERIENCE = [
+  'Less than a year',
+  '1–3 years',
+  '3–10 years',
+  '10+ years',
+] as const
+
+export const FEEDBACK_SYSTEMS = [
+  'D&D 5e',
+  'D&D 5e (2024)',
+  'Pathfinder 2e',
+  'Call of Cthulhu',
+  'Blades in the Dark',
+] as const
+
+export const FEEDBACK_FREQUENCY = [
+  'Weekly',
+  'Biweekly',
+  'Monthly',
+  'Irregularly',
+  'Not currently running',
+] as const
+
+export const FEEDBACK_WANTED_FEATURES = [
+  'In-game calendar',
+  'Interactive maps',
+  'Faction tracker',
+  'NPC relationship web',
+  'Session recap / notes',
+  'Quest tracker',
+  'Player-facing portal',
+  'Discord integration',
+  'Music / ambiance links',
+  'AI-generated portraits',
+  'XP / leveling tracker',
+  'Shareable handouts',
+  'Offline mode',
+  'Mobile app',
+  'World state changelog',
+] as const
+
+export const FEEDBACK_OTHER_TOOLS = [
+  'Google Docs',
+  'Notion',
+  'OneNote',
+  'Obsidian',
+  'Pen & paper',
+  'World Anvil',
+  'Kanka',
+] as const
+
+export const FEEDBACK_PAID_TOOLS = [
+  'D&D Beyond subscription',
+  'D&D Beyond books',
+  'Roll20',
+  'Foundry VTT',
+  'Fantasy Grounds',
+  'World Anvil',
+  'Kanka',
+  'Owlbear Rodeo',
+  "DM's Guild / DriveThruRPG",
+  'Patreon (map makers, etc.)',
+  'None — I only use free tools',
+] as const
+
+export const FEEDBACK_MONTHLY_SPEND = [
+  '$0',
+  '$1–5',
+  '$5–15',
+  '$15–30',
+  '$30+',
+] as const
+
+export const FEEDBACK_FAIR_PRICE = [
+  'Free only',
+  '$3–5/mo',
+  '$5–10/mo',
+  '$10–15/mo',
+  '$15+/mo',
+] as const
+
+export const REPORT_TYPES = ['bug', 'feature', 'feedback'] as const
+export const REPORT_SEVERITIES = ['blocking', 'annoying', 'minor'] as const
+
+export const APP_PAGES = [
+  'Campaign Overview',
+  'Sessions',
+  'Session Timeline',
+  'Characters',
+  'Bestiary',
+  'Spellbook',
+  'Locations',
+  'Generators',
+  'Inspiration Board',
+  'Initiative Tracker',
+  'Quick Reference',
+  'Command Palette',
+  'Other',
+] as const
