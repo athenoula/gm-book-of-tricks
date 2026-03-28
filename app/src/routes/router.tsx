@@ -23,6 +23,8 @@ import { InspirationBoard } from '@/features/scratchpad/InspirationBoard'
 import { useAuth } from '@/lib/auth'
 import { FeedbackWizardPage } from '@/features/feedback/FeedbackWizardPage'
 import { ReportPage } from '@/features/feedback/ReportPage'
+import { LandingPage } from '@/features/landing/LandingPage'
+import { FeaturePage } from '@/features/landing/FeaturePage'
 
 // Root layout — wraps children in page transition
 function RootComponent() {
@@ -49,10 +51,23 @@ const rootRoute = createRootRoute({
   ),
 })
 
+// Public: Landing page
+const landingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: LandingPage,
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && user) {
+      throw redirect({ to: '/home' })
+    }
+  },
+})
+
 // Public: Login
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: '/login',
   component: LoginPage,
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
@@ -60,6 +75,13 @@ const loginRoute = createRoute({
       throw redirect({ to: '/home' })
     }
   },
+})
+
+// Public: Feature pages
+const featureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/features/$slug',
+  component: FeaturePage,
 })
 
 // Protected: Home (campaign list)
@@ -70,7 +92,7 @@ const homeRoute = createRoute({
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
     if (!loading && !user) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/login' })
     }
   },
 })
@@ -83,7 +105,7 @@ const feedbackRoute = createRoute({
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
     if (!loading && !user) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/login' })
     }
   },
 })
@@ -96,7 +118,7 @@ const reportRoute = createRoute({
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
     if (!loading && !user) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/login' })
     }
   },
 })
@@ -116,7 +138,7 @@ const campaignRoute = createRoute({
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
     if (!loading && !user) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/login' })
     }
   },
 })
@@ -220,7 +242,9 @@ function PlaceholderPage({ title, icon }: { title: string; icon: string }) {
 
 // Build the route tree
 const routeTree = rootRoute.addChildren([
+  landingRoute,
   loginRoute,
+  featureRoute,
   homeRoute,
   feedbackRoute,
   reportRoute,
