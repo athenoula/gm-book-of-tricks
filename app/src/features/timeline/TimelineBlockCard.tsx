@@ -6,6 +6,7 @@ import {
   GiScrollUnfurled, GiQuillInk, GiSpikedDragonHead, GiHoodedFigure,
   GiSparkles, GiPositionMarker, GiCrossedSwords,
 } from '@/components/ui/icons'
+import { HandoutSnapshot } from '@/features/handouts/HandoutSnapshot'
 import { MarkdownPreview } from './MarkdownPreview'
 import { SceneEditor } from './SceneEditor'
 import { useUpdateTimelineBlock, useRemoveTimelineBlock, useUpdateTimelineBlockSnapshot } from './useTimelineBlocks'
@@ -23,6 +24,7 @@ const BLOCK_STYLES: Record<string, { icon: IconComponent; borderColor: string; l
   spell: { icon: GiSparkles, borderColor: 'border-l-info', label: 'Spell' },
   location: { icon: GiPositionMarker, borderColor: 'border-l-success', label: 'Location' },
   battle: { icon: GiCrossedSwords, borderColor: 'border-l-warning', label: 'Battle' },
+  handout: { icon: GiQuillInk, borderColor: 'border-l-amber-600', label: 'Handout' },
 }
 
 interface Props {
@@ -145,6 +147,7 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: P
           {block.block_type === 'npc' && <NPCSnapshot data={snapshot} />}
           {block.block_type === 'spell' && <SpellSnapshot data={snapshot} />}
           {block.block_type === 'location' && <LocationSnapshot data={snapshot} />}
+          {block.block_type === 'handout' && <HandoutSnapshot data={snapshot} />}
           {block.block_type === 'note' && (
             <SceneEditor
               content={editingNote ? editContent : (snapshot.content as string) || ''}

@@ -19,6 +19,7 @@ import { GeneratorsPage } from '@/features/generators/GeneratorsPage'
 import { SessionPage } from '@/features/sessions/SessionPage'
 import { SessionsPage } from '@/features/sessions/SessionsPage'
 import { LocationsPage } from '@/features/locations/LocationsPage'
+import { HandoutsPage } from '@/features/handouts/HandoutsPage'
 import { InspirationBoard } from '@/features/scratchpad/InspirationBoard'
 import { useAuth } from '@/lib/auth'
 import { FeedbackWizardPage } from '@/features/feedback/FeedbackWizardPage'
@@ -190,6 +191,15 @@ const locationsRoute = createRoute({
   },
 })
 
+const handoutsRoute = createRoute({
+  getParentRoute: () => campaignRoute,
+  path: '/handouts',
+  component: () => {
+    const { campaignId } = campaignRoute.useParams()
+    return <HandoutsPage campaignId={campaignId} />
+  },
+})
+
 const generatorsRoute = createRoute({
   getParentRoute: () => campaignRoute,
   path: '/generators',
@@ -254,6 +264,7 @@ const routeTree = rootRoute.addChildren([
     bestiaryRoute,
     spellbookRoute,
     locationsRoute,
+    handoutsRoute,
     generatorsRoute,
     scratchpadRoute,
     sessionsRoute,

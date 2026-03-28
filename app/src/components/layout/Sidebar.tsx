@@ -6,7 +6,7 @@ import type { IconComponent } from '@/components/ui/icons'
 import {
   GiCrossedSwords, GiThreeFriends, GiSpikedDragonHead, GiSparkles,
   GiPositionMarker, GiRollingDices, GiNotebook, GiScrollUnfurled, GiCastle,
-  GiOpenBook, GiChatBubble, GiBugNet, GiSun, GiMoonBats,
+  GiOpenBook, GiChatBubble, GiBugNet, GiSun, GiMoonBats, GiQuillInk,
 } from '@/components/ui/icons'
 import { useTheme } from '@/lib/theme'
 import { ChapterPicker } from '@/features/tutorial/ChapterPicker'
@@ -35,6 +35,7 @@ const campaignNav: NavItem[] = [
   { icon: GiSpikedDragonHead, label: 'Bestiary', to: '/campaign/$campaignId/bestiary', tutorialId: 'nav-bestiary' },
   { icon: GiSparkles, label: 'Spellbook', to: '/campaign/$campaignId/spellbook' },
   { icon: GiPositionMarker, label: 'Locations', to: '/campaign/$campaignId/locations', tutorialId: 'nav-locations' },
+  { icon: GiQuillInk, label: 'Handouts', to: '/campaign/$campaignId/handouts' },
   { icon: GiRollingDices, label: 'Generators', to: '/campaign/$campaignId/generators' },
   { icon: GiNotebook, label: 'Scratchpad', to: '/campaign/$campaignId/scratchpad', tutorialId: 'nav-scratchpad' },
 ]

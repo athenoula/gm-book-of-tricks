@@ -9,6 +9,96 @@ import { HandoutPreview } from './HandoutPreview'
 import { SealBuilder } from './SealBuilder'
 import { TEMPLATE_CONFIGS, ALL_FONTS } from './templates'
 
+function TavernSectionsEditor({ sections, onChange }: {
+  sections: { name: string; items: { name: string; price: string }[] }[]
+  onChange: (sections: { name: string; items: { name: string; price: string }[] }[]) => void
+}) {
+  const addSection = () => onChange([...sections, { name: '', items: [{ name: '', price: '' }] }])
+  const removeSection = (i: number) => onChange(sections.filter((_, idx) => idx !== i))
+  const updateSection = (i: number, name: string) => {
+    const updated = [...sections]
+    updated[i] = { ...updated[i], name }
+    onChange(updated)
+  }
+  const addItem = (si: number) => {
+    const updated = [...sections]
+    updated[si] = { ...updated[si], items: [...updated[si].items, { name: '', price: '' }] }
+    onChange(updated)
+  }
+  const removeItem = (si: number, ii: number) => {
+    const updated = [...sections]
+    updated[si] = { ...updated[si], items: updated[si].items.filter((_, idx) => idx !== ii) }
+    onChange(updated)
+  }
+  const updateItem = (si: number, ii: number, field: 'name' | 'price', value: string) => {
+    const updated = [...sections]
+    const items = [...updated[si].items]
+    items[ii] = { ...items[ii], [field]: value }
+    updated[si] = { ...updated[si], items }
+    onChange(updated)
+  }
+
+  return (
+    <div className="space-y-3">
+      {sections.map((section, si) => (
+        <div key={si} className="bg-bg-raised border border-border rounded-[--radius-md] p-2 space-y-1">
+          <div className="flex gap-2 items-center">
+            <Input
+              placeholder="Section name (e.g. Ales & Meads)"
+              value={section.name}
+              onChange={(e) => updateSection(si, e.target.value)}
+              className="flex-1 text-xs"
+            />
+            <Button size="sm" variant="ghost" className="text-danger" onClick={() => removeSection(si)}>✕</Button>
+          </div>
+          {section.items.map((item, ii) => (
+            <div key={ii} className="flex gap-1 items-center ml-2">
+              <Input placeholder="Item" value={item.name} onChange={(e) => updateItem(si, ii, 'name', e.target.value)} className="flex-1 text-xs" />
+              <Input placeholder="Price" value={item.price} onChange={(e) => updateItem(si, ii, 'price', e.target.value)} className="w-20 text-xs" />
+              <button onClick={() => removeItem(si, ii)} className="text-xs text-danger cursor-pointer">✕</button>
+            </div>
+          ))}
+          <button onClick={() => addItem(si)} className="text-xs text-primary cursor-pointer hover:underline ml-2">+ item</button>
+        </div>
+      ))}
+      <button onClick={addSection} className="text-xs text-primary cursor-pointer hover:underline">+ section</button>
+    </div>
+  )
+}
+
+function ArticlesEditor({ articles, onChange }: {
+  articles: { headline: string; body: string }[]
+  onChange: (articles: { headline: string; body: string }[]) => void
+}) {
+  const addArticle = () => onChange([...articles, { headline: '', body: '' }])
+  const removeArticle = (i: number) => onChange(articles.filter((_, idx) => idx !== i))
+  const updateArticle = (i: number, field: 'headline' | 'body', value: string) => {
+    const updated = [...articles]
+    updated[i] = { ...updated[i], [field]: value }
+    onChange(updated)
+  }
+
+  return (
+    <div className="space-y-2">
+      {articles.map((article, i) => (
+        <div key={i} className="bg-bg-raised border border-border rounded-[--radius-md] p-2 space-y-1">
+          <div className="flex gap-2 items-center">
+            <Input placeholder="Headline" value={article.headline} onChange={(e) => updateArticle(i, 'headline', e.target.value)} className="flex-1 text-xs" />
+            <Button size="sm" variant="ghost" className="text-danger" onClick={() => removeArticle(i)}>✕</Button>
+          </div>
+          <textarea
+            placeholder="Article body..."
+            value={article.body}
+            onChange={(e) => updateArticle(i, 'body', e.target.value)}
+            className="w-full h-16 px-2 py-1 bg-bg-base border border-border rounded-[--radius-sm] text-text-body text-xs resize-vertical font-[inherit]"
+          />
+        </div>
+      ))}
+      <button onClick={addArticle} className="text-xs text-primary cursor-pointer hover:underline">+ article</button>
+    </div>
+  )
+}
+
 interface Props {
   handout: Handout
   campaignId: string
@@ -188,6 +278,15 @@ export function HandoutEditor({ handout, campaignId, onClose }: Props) {
             <Input value={(content.establishment_name as string) || ''} onChange={(e) => updateContent('establishment_name', e.target.value)} />
           </div>
         )}
+        {config.fields.includes('sections') && (
+          <div>
+            <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Menu Sections</label>
+            <TavernSectionsEditor
+              sections={(content.sections ?? []) as { name: string; items: { name: string; price: string }[] }[]}
+              onChange={(sections) => updateContent('sections', sections)}
+            />
+          </div>
+        )}
         {config.fields.includes('masthead') && (
           <div>
             <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Masthead</label>
@@ -198,6 +297,26 @@ export function HandoutEditor({ handout, campaignId, onClose }: Props) {
           <div>
             <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Headline</label>
             <Input value={(content.headline as string) || ''} onChange={(e) => updateContent('headline', e.target.value)} />
+          </div>
+        )}
+        {config.fields.includes('articles') && (
+          <div>
+            <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Articles</label>
+            <ArticlesEditor
+              articles={(content.articles ?? []) as { headline: string; body: string }[]}
+              onChange={(articles) => updateContent('articles', articles)}
+            />
+          </div>
+        )}
+        {config.fields.includes('ads') && (
+          <div>
+            <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Ads / Notices</label>
+            <textarea
+              value={(content.ads as string) || ''}
+              onChange={(e) => updateContent('ads', e.target.value)}
+              className="w-full h-16 px-3 py-2 bg-bg-raised border border-border rounded-[--radius-md] text-text-body text-sm resize-vertical font-[inherit]"
+              placeholder="Small ads, notices..."
+            />
           </div>
         )}
         {config.fields.includes('host_line') && (

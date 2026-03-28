@@ -13,6 +13,8 @@ import { useCampaignMonsters } from '@/features/bestiary/useMonsters'
 import { useCampaignSpells } from '@/features/spellbook/useSpells'
 import { useLocations } from '@/features/locations/useLocations'
 import { useCampaignInspiration } from '@/features/scratchpad/useInspiration'
+import { useHandouts } from '@/features/handouts/useHandouts'
+import type { Handout } from '@/lib/types'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { PlayerCharacter, NPC, Monster, Spell, AbilityScores } from '@/lib/types'
 import type { Open5eMonster, Open5eSpell } from '@/lib/open5e'
@@ -25,7 +27,7 @@ interface Props {
   onClose: () => void
 }
 
-type Tab = 'characters' | 'monsters' | 'spells' | 'locations' | 'inspiration'
+type Tab = 'characters' | 'monsters' | 'spells' | 'locations' | 'inspiration' | 'handouts'
 
 export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
   const [tab, setTab] = useState<Tab>('characters')
@@ -45,6 +47,7 @@ export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
           { key: 'spells' as Tab, label: 'Spells', icon: GiSparkles },
           { key: 'locations' as Tab, label: 'Locations', icon: GiPositionMarker },
           { key: 'inspiration' as Tab, label: 'Inspiration', icon: GiNotebook },
+          { key: 'handouts' as Tab, label: 'Handouts', icon: GiQuillInk },
         ]).map((t) => (
           <button
             key={t.key}
@@ -72,6 +75,7 @@ export function ContentDrawer({ campaignId, onAddToTimeline, onClose }: Props) {
           {tab === 'spells' && <SpellItems campaignId={campaignId} filter={filter} onAdd={onAddToTimeline} />}
           {tab === 'locations' && <LocationItems campaignId={campaignId} filter={filter} onAdd={onAddToTimeline} />}
           {tab === 'inspiration' && <InspirationItems campaignId={campaignId} onAdd={onAddToTimeline} />}
+          {tab === 'handouts' && <HandoutItems campaignId={campaignId} filter={filter} onAdd={onAddToTimeline} />}
         </div>
 
         {/* Quick add battle block */}
@@ -283,6 +287,39 @@ function InspirationItems({ campaignId, onAdd }: {
         />
       ))}
     </div>
+  )
+}
+
+function HandoutItems({ campaignId, filter, onAdd }: {
+  campaignId: string; filter: string
+  onAdd: (b: { block_type: string; source_id: string; title: string; content_snapshot: Record<string, unknown> }) => void
+}) {
+  const { data: handouts } = useHandouts(campaignId)
+  const filtered = handouts?.filter((h: Handout) => h.name.toLowerCase().includes(filter.toLowerCase()))
+
+  return (
+    <>
+      {filtered?.map((h: Handout) => (
+        <ItemRow
+          key={h.id}
+          icon={GiQuillInk}
+          name={h.name}
+          subtitle={h.template}
+          onAdd={() => onAdd({
+            block_type: 'handout',
+            source_id: h.id,
+            title: h.name,
+            content_snapshot: {
+              template: h.template,
+              content: h.content,
+              style: h.style,
+              seal: h.seal,
+            },
+          })}
+        />
+      ))}
+      {!filtered?.length && <Empty />}
+    </>
   )
 }
 
