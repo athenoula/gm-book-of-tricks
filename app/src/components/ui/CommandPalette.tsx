@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useCommandPalette } from '@/lib/command-palette'
 import { useTutorial } from '@/lib/tutorial'
 import { useCheatSheet } from '@/lib/cheat-sheet'
+import { useTheme } from '@/lib/theme'
 import { useCommandPaletteSearch } from '@/hooks/useCommandPaletteSearch'
 import { AnimatePresence, motion, ScaleIn } from '@/components/motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -10,7 +11,7 @@ import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
 import {
   GiSparkles, GiSpikedDragonHead, GiThreeFriends,
-  GiPositionMarker, GiScrollUnfurled, GiMagnifyingGlass, GiBookPile,
+  GiPositionMarker, GiScrollUnfurled, GiMagnifyingGlass, GiBookPile, GiSun,
 } from '@/components/ui/icons'
 
 function getCampaignIdFromUrl(): string | null {
@@ -44,6 +45,8 @@ export function CommandPalette() {
     ['tour', 'tutorial', 'help', 'guide'].some(k => k.startsWith(queryLower))
   const showCheatSheetAction = query.length >= 2 &&
     ['cheat', 'cheat sheet', 'dm', 'reference', 'rules'].some(k => k.startsWith(queryLower))
+  const showThemeAction = query.length >= 2 &&
+    ['theme', 'light', 'dark', 'mode', 'toggle'].some(k => k.startsWith(queryLower))
   const campaignId = useMemo(() => (isOpen ? getCampaignIdFromUrl() : null), [isOpen])
   const { data: groups } = useCommandPaletteSearch(query, campaignId)
   const navigate = useNavigate()
@@ -162,6 +165,24 @@ export function CommandPalette() {
               <GameIcon icon={GiBookPile} size="sm" />
               <span className="text-text-heading text-sm font-medium">DM's Cheat Sheet</span>
               <span className="text-text-muted text-xs">Rules quick reference</span>
+            </button>
+          </div>
+        )}
+        {showThemeAction && (
+          <div className="py-2">
+            <div className="px-4 py-1.5 text-xs font-medium text-text-muted uppercase tracking-wide">
+              Actions
+            </div>
+            <button
+              className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-bg-raised cursor-pointer"
+              onClick={() => {
+                useTheme.getState().toggle()
+                close()
+              }}
+            >
+              <GameIcon icon={GiSun} size="sm" />
+              <span className="text-text-heading text-sm font-medium">Toggle Light/Dark Mode</span>
+              <span className="text-text-muted text-xs">Switch theme</span>
             </button>
           </div>
         )}
