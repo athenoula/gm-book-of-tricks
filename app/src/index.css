@@ -69,6 +69,18 @@
   --font-body: 'Crimson Pro', Georgia, serif;
   --font-label: 'Spectral SC', serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Theme-aware effect values (dark defaults) */
+  --gold-foil-start: #a67c28;
+  --gold-foil-mid: #f5d78e;
+  --gold-foil-accent: #d4a24e;
+  --ornament-color: rgba(245, 158, 11, 0.2);
+  --ornament-color-hover: rgba(245, 158, 11, 0.5);
+  --vignette-opacity: 0.45;
+  --grain-blend: overlay;
+  --ember-from: #f0c060;
+  --ember-to: #f59e0b;
+  --pulse-color: 245, 158, 11;
 }
 
 /* =============================================
@@ -78,6 +90,10 @@
 @layer base {
   html {
     color-scheme: dark;
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
   }
 
   body {
@@ -140,6 +156,57 @@
   }
 }
 
+/* =============================================
+   Light Mode Overrides
+   ============================================= */
+
+html[data-theme="light"] {
+  --color-bg-deep: #f5f0e8;
+  --color-bg-base: #ede8df;
+  --color-bg-raised: #e6e0d4;
+  --color-bg-surface: #ddd6c8;
+
+  --color-text-heading: #1a1612;
+  --color-text-body: #2d2a26;
+  --color-text-secondary: #5c5650;
+  --color-text-muted: #8a837b;
+  --color-text-inverse: #f5f0e8;
+
+  --color-primary: #b45309;
+  --color-primary-light: #d97706;
+  --color-primary-dim: #92400e;
+  --color-primary-ghost: oklch(0.55 0.12 55 / 0.06);
+  --color-primary-subtle: oklch(0.55 0.12 55 / 0.12);
+
+  --color-success: #2d6a4f;
+  --color-success-dim: #1b4332;
+  --color-danger: #9b2226;
+  --color-danger-dim: #6b1518;
+  --color-info: #4338ca;
+  --color-info-dim: #312e81;
+  --color-warning: #b45309;
+  --color-accent: #7c3aed;
+
+  --color-border: oklch(0 0 0 / 0.08);
+  --color-border-hover: oklch(0 0 0 / 0.15);
+  --color-border-active: oklch(0.55 0.12 55 / 0.3);
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.08);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.1);
+
+  --gold-foil-start: #7c5a1e;
+  --gold-foil-mid: #b8860b;
+  --gold-foil-accent: #92400e;
+  --ornament-color: rgba(146, 64, 14, 0.25);
+  --ornament-color-hover: rgba(146, 64, 14, 0.5);
+  --vignette-opacity: 0.06;
+  --grain-blend: multiply;
+  --ember-from: #d4a24e;
+  --ember-to: #b45309;
+  --pulse-color: 180, 83, 9;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -154,7 +221,7 @@
 
 /* Gold foil metallic text effect */
 .gold-foil {
-  background: linear-gradient(135deg, #a67c28 0%, #f5d78e 35%, #d4a24e 50%, #f5d78e 65%, #a67c28 100%);
+  background: linear-gradient(135deg, var(--gold-foil-start) 0%, var(--gold-foil-mid) 35%, var(--gold-foil-accent) 50%, var(--gold-foil-mid) 65%, var(--gold-foil-start) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -173,7 +240,7 @@
   position: absolute;
   width: 16px;
   height: 16px;
-  border-color: rgba(245, 158, 11, 0.2);
+  border-color: var(--ornament-color);
   border-style: solid;
   transition: border-color var(--duration-normal);
   pointer-events: none;
@@ -190,7 +257,7 @@
 }
 .ornamental-corners:hover::before,
 .ornamental-corners:hover::after {
-  border-color: rgba(245, 158, 11, 0.5);
+  border-color: var(--ornament-color-hover);
 }
 
 /* Torch flicker animation */
@@ -346,10 +413,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4), 0 0 24px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 12px rgba(var(--pulse-color), 0.4), 0 0 24px rgba(var(--pulse-color), 0.15);
   }
   50% {
-    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2), 0 0 16px rgba(245, 158, 11, 0.08);
+    box-shadow: 0 0 8px rgba(var(--pulse-color), 0.2), 0 0 16px rgba(var(--pulse-color), 0.08);
   }
 }
 
