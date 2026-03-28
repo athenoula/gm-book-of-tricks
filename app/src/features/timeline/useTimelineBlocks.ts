@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useToastStore } from '@/lib/toast'
 
-export type BlockType = 'scene' | 'note' | 'monster' | 'npc' | 'spell' | 'location' | 'battle'
+export type BlockType = 'scene' | 'note' | 'monster' | 'npc' | 'spell' | 'location' | 'battle' | 'handout'
 
 export type TimelineBlock = {
   id: string

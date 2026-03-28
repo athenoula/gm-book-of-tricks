@@ -153,6 +153,34 @@ export type Spell = {
   updated_at: string
 }
 
+export type HandoutTemplate = 'scroll' | 'wanted' | 'decree' | 'map_note' | 'tavern' | 'broadsheet' | 'invitation' | 'blank'
+
+export type HandoutSeal = {
+  type: 'built'
+  icon: string
+  ring_text: string
+  colour: string
+  shape: 'round' | 'shield' | 'oval'
+  position: { x: number; y: number }
+} | {
+  type: 'uploaded'
+  custom_image_url: string
+  position: { x: number; y: number }
+}
+
+export type Handout = {
+  id: string
+  campaign_id: string
+  name: string
+  template: HandoutTemplate
+  content: Record<string, unknown>
+  style: { font_family?: string; font_size?: number; text_align?: string }
+  seal: HandoutSeal | null
+  image_url: string | null
+  created_at: string
+  updated_at: string
+}
+
 export const GAME_SYSTEMS = [
   { value: 'dnd5e-2024', label: 'D&D 5e (2024)' },
   { value: 'dnd5e-2014', label: 'D&D 5e (2014)' },
