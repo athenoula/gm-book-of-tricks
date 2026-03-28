@@ -126,7 +126,7 @@ export const SEAL_COLOURS = [
   { name: 'Crimson', value: '#c0392b' },
   { name: 'Forest', value: '#27ae60' },
   { name: 'Navy', value: '#2c3e7b' },
-  { name: 'Black', value: '#2c2c2c' },
+  { name: 'Black', value: '#4a4a4a' },
   { name: 'Gold', value: '#b8860b' },
   { name: 'Purple', value: '#7b3fa0' },
 ]

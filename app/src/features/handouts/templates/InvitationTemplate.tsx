@@ -30,7 +30,7 @@ export function InvitationTemplate({ content, style }: Props) {
           </div>
         )}
 
-        <div className="mb-1 text-xs uppercase tracking-[3px] opacity-50">cordially invites you to</div>
+        <div className="mb-1 text-xs uppercase tracking-[3px] opacity-50">{(content.subtitle as string) || 'cordially invites you to'}</div>
 
         {content.event_title && (
           <div className="my-4" style={{ fontSize: size * 1.8, fontWeight: 700, lineHeight: 1.2 }}>

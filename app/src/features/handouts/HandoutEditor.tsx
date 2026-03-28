@@ -244,6 +244,24 @@ export function HandoutEditor({ handout, campaignId, onClose }: Props) {
             <Input value={(content.reward as string) || ''} onChange={(e) => updateContent('reward', e.target.value)} />
           </div>
         )}
+        {config.fields.includes('reward') && (
+          <div>
+            <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Reward Label</label>
+            <Input value={(content.reward_label as string) || ''} onChange={(e) => updateContent('reward_label', e.target.value)} placeholder="Reward" />
+          </div>
+        )}
+        {(template === 'decree' || template === 'invitation') && (
+          <div>
+            <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">
+              {template === 'decree' ? 'Header Text' : 'Subtitle'}
+            </label>
+            <Input
+              value={(content.subtitle as string) || ''}
+              onChange={(e) => updateContent('subtitle', e.target.value)}
+              placeholder={template === 'decree' ? 'By Royal Decree' : 'cordially invites you to'}
+            />
+          </div>
+        )}
         {config.fields.includes('signature_line') && (
           <div>
             <label className="text-[10px] uppercase tracking-[1.5px] text-text-muted block mb-1">Signature Line</label>

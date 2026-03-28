@@ -18,7 +18,7 @@ export function DecreeTemplate({ content, style }: Props) {
       <div className="text-center" style={{ fontFamily: font }}>
         {content.title && (
           <div className="mb-6">
-            <div className="text-xs uppercase tracking-[4px] mb-2 opacity-60">By Royal Decree</div>
+            <div className="text-xs uppercase tracking-[4px] mb-2 opacity-60">{(content.subtitle as string) || 'By Royal Decree'}</div>
             <div className="text-2xl font-bold" style={{ fontSize: size * 1.6 }}>
               {content.title as string}
             </div>

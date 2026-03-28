@@ -47,7 +47,7 @@ export function WantedTemplate({ content, style, imageUrl }: Props) {
 
         {content.reward && (
           <div className="mt-4 pt-3 border-t border-current/30">
-            <div className="text-xs uppercase tracking-wider mb-1">Reward</div>
+            <div className="text-xs uppercase tracking-wider mb-1">{(content.reward_label as string) || 'Reward'}</div>
             <div className="text-2xl font-bold" style={{ fontSize: size * 1.6 }}>
               {content.reward as string}
             </div>
