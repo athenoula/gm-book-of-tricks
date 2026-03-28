@@ -6,8 +6,9 @@ import type { IconComponent } from '@/components/ui/icons'
 import {
   GiCrossedSwords, GiThreeFriends, GiSpikedDragonHead, GiSparkles,
   GiPositionMarker, GiRollingDices, GiNotebook, GiScrollUnfurled, GiCastle,
-  GiOpenBook, GiChatBubble, GiBugNet,
+  GiOpenBook, GiChatBubble, GiBugNet, GiSun, GiMoonBats,
 } from '@/components/ui/icons'
+import { useTheme } from '@/lib/theme'
 import { ChapterPicker } from '@/features/tutorial/ChapterPicker'
 
 interface SidebarState {
@@ -46,6 +47,8 @@ const betaNav: NavItem[] = [
 export function Sidebar({ campaignId }: { campaignId: string }) {
   const { expanded, toggle } = useSidebar()
   const matches = useMatches()
+  const resolved = useTheme((s) => s.resolved)
+  const toggleTheme = useTheme((s) => s.toggle)
   const currentPath = matches[matches.length - 1]?.fullPath ?? ''
   const [showChapterPicker, setShowChapterPicker] = useState(false)
 
@@ -137,6 +140,19 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
 
       {/* Bottom actions */}
       <div className="p-2 border-t border-border">
+        <button
+          onClick={toggleTheme}
+          className={`
+            flex items-center gap-3 rounded-[--radius-md] min-h-[44px]
+            text-text-muted hover:text-text-body hover:bg-bg-raised
+            transition-colors duration-[--duration-fast] cursor-pointer
+            ${expanded ? 'px-3' : 'justify-center'}
+          `}
+          title={expanded ? undefined : (resolved === 'dark' ? 'Light mode' : 'Dark mode')}
+        >
+          <GameIcon icon={resolved === 'dark' ? GiSun : GiMoonBats} size="base" />
+          {expanded && <span className="text-sm font-medium">{resolved === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
         <button
           onClick={() => setShowChapterPicker(true)}
           className={`
