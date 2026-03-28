@@ -20,7 +20,7 @@ export function AmbientEmbers() {
             left: config.x,
             width: config.size,
             height: config.size,
-            background: `radial-gradient(circle, #f0c060, #f59e0b)`,
+            background: `radial-gradient(circle, var(--ember-from), var(--ember-to))`,
             animation: `ember-rise ${config.duration} linear infinite`,
             animationDelay: config.delay,
             willChange: 'transform, opacity',
