@@ -8,8 +8,9 @@ import { InitiativeDemo } from '../demos/InitiativeDemo'
 import { SpellbookDemo } from '../demos/SpellbookDemo'
 import { GeneratorsDemo } from '../demos/GeneratorsDemo'
 import { WebClipperDemo } from '../demos/WebClipperDemo'
+import { QuickReferenceDemo } from '../demos/QuickReferenceDemo'
 
-const demos = [TimelineDemo, InitiativeDemo, SpellbookDemo, GeneratorsDemo, WebClipperDemo]
+const demos = [TimelineDemo, InitiativeDemo, SpellbookDemo, GeneratorsDemo, WebClipperDemo, QuickReferenceDemo]
 
 export function HeroSection() {
   const [activeDemoIndex, setActiveDemoIndex] = useState(0)

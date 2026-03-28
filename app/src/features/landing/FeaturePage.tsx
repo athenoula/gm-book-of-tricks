@@ -10,6 +10,7 @@ import { InitiativeDemo } from './demos/InitiativeDemo'
 import { SpellbookDemo } from './demos/SpellbookDemo'
 import { GeneratorsDemo } from './demos/GeneratorsDemo'
 import { WebClipperDemo } from './demos/WebClipperDemo'
+import { QuickReferenceDemo } from './demos/QuickReferenceDemo'
 
 const demoMap: Record<string, React.ComponentType<{ isVisible: boolean }>> = {
   'session-timeline': TimelineDemo,
@@ -17,6 +18,7 @@ const demoMap: Record<string, React.ComponentType<{ isVisible: boolean }>> = {
   spellbook: SpellbookDemo,
   generators: GeneratorsDemo,
   'web-clipper': WebClipperDemo,
+  'quick-reference': QuickReferenceDemo,
 }
 
 export function FeaturePage() {

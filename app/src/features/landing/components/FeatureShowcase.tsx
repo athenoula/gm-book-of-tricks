@@ -6,10 +6,11 @@ import { InitiativeDemo } from '../demos/InitiativeDemo'
 import { SpellbookDemo } from '../demos/SpellbookDemo'
 import { GeneratorsDemo } from '../demos/GeneratorsDemo'
 import { WebClipperDemo } from '../demos/WebClipperDemo'
+import { QuickReferenceDemo } from '../demos/QuickReferenceDemo'
 import { useScrollAnimation } from '../useScrollAnimation'
 import { OrnamentalDivider } from '@/components/ui/OrnamentalDivider'
 
-const demoComponents = [TimelineDemo, InitiativeDemo, SpellbookDemo, GeneratorsDemo, WebClipperDemo]
+const demoComponents = [TimelineDemo, InitiativeDemo, SpellbookDemo, GeneratorsDemo, WebClipperDemo, QuickReferenceDemo]
 
 function ShowcaseRow({ index }: { index: number }) {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1, once: false })

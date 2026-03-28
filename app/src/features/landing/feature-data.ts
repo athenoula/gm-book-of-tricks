@@ -5,6 +5,7 @@ import {
   GiSparkles,
   GiHoodedFigure,
   GiPuzzle,
+  GiOpenBook,
   GiSpikedDragonHead,
   GiThreeFriends,
   GiPositionMarker,
@@ -99,6 +100,19 @@ export const showcaseFeatures: ShowcaseFeature[] = [
     seoDescription:
       'Clip D&D content from any website straight to your campaign. Chrome extension for Game Masters. Free browser extension.',
   },
+  {
+    slug: 'quick-reference',
+    category: 'IN-PLAY',
+    title: 'Quick Reference',
+    shortDescription:
+      'Conditions, actions, and rules at your fingertips. Hit ⌘J mid-session and search for anything — no more flipping through books.',
+    longDescription:
+      'The Quick Reference panel is your instant lookup tool for everything you need mid-session. Hit ⌘J (or Ctrl+J) to open it from anywhere in the app. Search across conditions, actions, ability checks, and common rules. Each entry shows a concise summary with the key mechanics — advantage, disadvantage, saves, and effects. Pin your most-used references for even faster access. No more flipping through the PHB or DMG while your players wait.',
+    icon: GiOpenBook,
+    seoTitle: 'D&D Quick Reference | GM Book of Tricks',
+    seoDescription:
+      'Instant D&D 5e rules lookup. Search conditions, actions, and rules mid-session with a keyboard shortcut. Free GM reference tool.',
+  },
 ]
 
 export const gridFeatures: GridFeature[] = [
@@ -116,11 +130,6 @@ export const gridFeatures: GridFeature[] = [
     title: 'Locations',
     description: 'Track towns, dungeons, and points of interest',
     icon: GiPositionMarker,
-  },
-  {
-    title: 'Quick Reference',
-    description: 'Rules and conditions at your fingertips',
-    icon: GiMagnifyingGlass,
   },
   {
     title: "DM's Cheat Sheet",

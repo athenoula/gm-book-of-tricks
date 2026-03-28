@@ -12,9 +12,9 @@ export function LandingPage() {
     <div className="min-h-dvh bg-bg-deep">
       <LandingNav />
       <HeroSection />
-      <TrustStrip />
       <FeatureShowcase />
       <MoreFeaturesGrid />
+      <TrustStrip />
       <FinalCTA />
       <LandingFooter />
     </div>
