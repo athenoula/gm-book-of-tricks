@@ -436,4 +436,10 @@ html[data-theme="light"] {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .grain-overlay {
+    mix-blend-mode: var(--grain-blend);
+  }
+  .vignette-overlay {
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, var(--vignette-opacity)) 100%);
+  }
 }
