@@ -154,3 +154,93 @@ export function useDeleteSpell() {
     },
   })
 }
+
+export function useCreateSpell() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: {
+      campaignId: string
+      name: string
+      level: number
+      school: string
+      casting_time: string
+      range: string
+      duration: string
+      concentration: boolean
+      ritual: boolean
+      components: string
+      classes: string[]
+      desc: string
+      higher_level: string
+      notes: string
+    }) => {
+      const { campaignId, desc, higher_level, ...fields } = input
+      const { data, error } = await supabase
+        .from('spells')
+        .insert({
+          campaign_id: campaignId,
+          source: 'homebrew',
+          srd_slug: null,
+          source_book: 'Homebrew',
+          spell_data: { desc, higher_level },
+          ...fields,
+        })
+        .select()
+        .single()
+      if (error) throw error
+      return data as Spell
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['spells', data.campaign_id] })
+      useToastStore.getState().addToast('success', 'Spell created')
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Something went wrong')
+    },
+  })
+}
+
+export function useUpdateSpell() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: {
+      id: string
+      campaignId: string
+      name: string
+      level: number
+      school: string
+      casting_time: string
+      range: string
+      duration: string
+      concentration: boolean
+      ritual: boolean
+      components: string
+      classes: string[]
+      desc: string
+      higher_level: string
+      notes: string
+    }) => {
+      const { id, campaignId, desc, higher_level, ...fields } = input
+      const { data, error } = await supabase
+        .from('spells')
+        .update({
+          spell_data: { desc, higher_level },
+          ...fields,
+        })
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data as Spell
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['spells', data.campaign_id] })
+      useToastStore.getState().addToast('success', 'Spell updated')
+    },
+    onError: (error: Error) => {
+      useToastStore.getState().addToast('error', error.message || 'Something went wrong')
+    },
+  })
+}
