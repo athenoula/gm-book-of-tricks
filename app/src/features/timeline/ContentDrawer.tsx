@@ -121,6 +121,15 @@ function CharacterItems({ campaignId, filter, onAdd }: {
         ability_scores: scores,
         personality_traits: pc.personality_traits, notes: pc.notes,
         player_name: pc.player_name, is_pc: true,
+        portrait_url: pc.portrait_url, subclass: pc.subclass,
+        background: pc.background, alignment: pc.alignment,
+        proficiency_bonus: pc.proficiency_bonus,
+        saving_throw_proficiencies: pc.saving_throw_proficiencies,
+        skill_proficiencies: pc.skill_proficiencies,
+        equipment: pc.equipment, class_features: pc.class_features,
+        traits: pc.traits, ideals: pc.ideals, bonds: pc.bonds,
+        flaws: pc.flaws, backstory: pc.backstory, appearance: pc.appearance,
+        spellcasting_ability: pc.spellcasting_ability,
       },
     })
   }
@@ -134,6 +143,7 @@ function CharacterItems({ campaignId, filter, onAdd }: {
         name: npc.name, race: npc.race, occupation: npc.occupation,
         personality: npc.personality, appearance: npc.appearance,
         notes: npc.notes, stats: npc.stats,
+        portrait_url: npc.portrait_url, stat_block: npc.stat_block,
       },
     })
   }
@@ -175,6 +185,7 @@ function MonsterItems({ campaignId, filter, onAdd }: {
               challenge_rating: m.challenge_rating, armor_class: m.armor_class,
               hit_points: m.hit_points, hit_dice: m.hit_dice, speed: m.speed,
               stat_block: m.stat_block,
+              armor_desc: m.armor_desc, notes: m.notes,
             },
           })}
         />
@@ -208,6 +219,7 @@ function SpellItems({ campaignId, filter, onAdd }: {
               casting_time: s.casting_time, range: s.range, duration: s.duration,
               concentration: s.concentration, ritual: s.ritual, components: s.components,
               spell_data: s.spell_data,
+              classes: s.classes, notes: s.notes,
             },
           })}
         />
@@ -238,6 +250,7 @@ function LocationItems({ campaignId, filter, onAdd }: {
             title: l.name,
             content_snapshot: {
               name: l.name, type: l.type, description: l.description, notes: l.notes,
+              image_url: l.image_url, map_url: l.map_url,
             },
           })}
         />
@@ -314,6 +327,7 @@ function HandoutItems({ campaignId, filter, onAdd }: {
               content: h.content,
               style: h.style,
               seal: h.seal,
+              image_url: h.image_url,
             },
           })}
         />
