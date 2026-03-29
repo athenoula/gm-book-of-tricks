@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiScrollUnfurled, GiCrossedSwords, GiRollingDices, GiBookPile } from '@/components/ui/icons'
+import { GiScrollUnfurled, GiCrossedSwords, GiRollingDices, GiBookPile, GiQuillInk } from '@/components/ui/icons'
+import { generateSessionPrepPDF } from '@/lib/export/pdf/generate'
 import { useCheatSheet } from '@/lib/cheat-sheet'
 import { useSession, useUpdateSession } from './useSessions'
 import { SessionRecap } from './SessionRecap'
@@ -80,6 +81,13 @@ export function SessionPage({ sessionId, campaignId }: { sessionId: string; camp
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => generateSessionPrepPDF(sessionId, campaignId, 'themed')}
+            >
+              <GameIcon icon={GiQuillInk} size="sm" /> Print Prep Sheet
+            </Button>
             <Button
               size="sm"
               variant="secondary"
