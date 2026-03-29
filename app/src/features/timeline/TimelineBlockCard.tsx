@@ -15,6 +15,11 @@ import { InlineBattle } from './InlineBattle'
 import { InitiativeTracker } from '@/features/initiative/InitiativeTracker'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { Open5eMonster, Open5eSpell } from '@/lib/open5e'
+import { MonsterFullView } from './full-views/MonsterFullView'
+import { NPCFullView } from './full-views/NPCFullView'
+import { SpellFullView } from './full-views/SpellFullView'
+import { LocationFullView } from './full-views/LocationFullView'
+import { HandoutFullView } from './full-views/HandoutFullView'
 
 const BLOCK_STYLES: Record<string, { icon: IconComponent; borderColor: string; label: string }> = {
   scene: { icon: GiScrollUnfurled, borderColor: 'border-l-primary', label: 'Scene' },
@@ -32,9 +37,11 @@ interface Props {
   dragHandleProps?: Record<string, unknown>
   onPin?: () => void
   isPinned?: boolean
+  isExpanded?: boolean
+  onToggleExpand?: () => void
 }
 
-export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: Props) {
+export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned, isExpanded, onToggleExpand }: Props) {
   const updateBlock = useUpdateTimelineBlock()
   const removeBlock = useRemoveTimelineBlock()
   const updateSnapshot = useUpdateTimelineBlockSnapshot()
@@ -45,8 +52,18 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: P
   const style = BLOCK_STYLES[block.block_type] ?? BLOCK_STYLES.note
   const snapshot = block.content_snapshot
 
-  const toggleCollapse = () => {
-    updateBlock.mutate({ id: block.id, is_collapsed: !block.is_collapsed })
+  const handleTitleClick = () => {
+    if (block.is_collapsed) {
+      // collapsed → compact
+      updateBlock.mutate({ id: block.id, is_collapsed: false })
+    } else if (!isExpanded) {
+      // compact → expanded
+      onToggleExpand?.()
+    } else {
+      // expanded → collapsed
+      onToggleExpand?.()
+      updateBlock.mutate({ id: block.id, is_collapsed: true })
+    }
   }
 
   const handleRemove = () => {
@@ -75,9 +92,13 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: P
   }
 
   return (
-    <div className={`bg-bg-base rounded-[--radius-lg] border border-border border-l-3 ${style.borderColor} ornamental-corners`}>
+    <div className={`bg-bg-base rounded-[--radius-lg] border border-l-3 ${style.borderColor} ornamental-corners ${
+      isExpanded
+        ? 'border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.1)]'
+        : 'border-border'
+    }`}>
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+      <div className={`flex items-center gap-2 px-4 py-3 border-b border-border ${isExpanded ? 'bg-bg-raised' : ''}`}>
         <span {...dragHandleProps} className="text-text-muted cursor-grab active:cursor-grabbing select-none">
           ⠿
         </span>
@@ -96,7 +117,7 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: P
           </>
         ) : (
           <button
-            onClick={toggleCollapse}
+            onClick={handleTitleClick}
             className="flex items-center gap-2 flex-1 text-left cursor-pointer min-w-0"
           >
             <GameIcon icon={style.icon} size="sm" />
@@ -106,7 +127,9 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: P
             <span className="text-[10px] text-text-muted bg-bg-raised px-1.5 py-0.5 rounded-[--radius-sm]">
               {style.label}
             </span>
-            <span className="text-xs text-text-muted">{block.is_collapsed ? '▸' : '▾'}</span>
+            <span className={`text-xs ${isExpanded ? 'text-amber-500' : 'text-text-muted'}`}>
+              {block.is_collapsed ? '▸' : isExpanded ? '▼' : '▾'}
+            </span>
           </button>
         )}
 
@@ -140,21 +163,37 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned }: P
         </Button>
       </div>
 
-      {/* Content (collapsible, but always shown when editing) */}
-      {(!block.is_collapsed || editingNote) && (
+      {/* Content: compact view */}
+      {!block.is_collapsed && !isExpanded && !editingNote && (
         <div className="px-4 py-3">
           {block.block_type === 'monster' && <MonsterSnapshot data={snapshot} />}
           {block.block_type === 'npc' && <NPCSnapshot data={snapshot} />}
           {block.block_type === 'spell' && <SpellSnapshot data={snapshot} />}
           {block.block_type === 'location' && <LocationSnapshot data={snapshot} />}
           {block.block_type === 'handout' && <HandoutSnapshot data={snapshot} />}
-          {block.block_type === 'note' && (
-            <SceneEditor
-              content={editingNote ? editContent : (snapshot.content as string) || ''}
-              editable={editingNote}
-              onChange={(json) => setEditContent(json)}
-            />
-          )}
+          {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
+        </div>
+      )}
+
+      {/* Content: note editing (always visible when editing) */}
+      {(!block.is_collapsed || editingNote) && block.block_type === 'note' && (
+        <div className="px-4 py-3">
+          <SceneEditor
+            content={editingNote ? editContent : (snapshot.content as string) || ''}
+            editable={editingNote}
+            onChange={(json) => setEditContent(json)}
+          />
+        </div>
+      )}
+
+      {/* Content: expanded full view */}
+      {isExpanded && !block.is_collapsed && (
+        <div className="px-4 py-3">
+          {block.block_type === 'monster' && <MonsterFullView data={snapshot} />}
+          {block.block_type === 'npc' && <NPCFullView data={snapshot} />}
+          {block.block_type === 'spell' && <SpellFullView data={snapshot} />}
+          {block.block_type === 'location' && <LocationFullView data={snapshot} />}
+          {block.block_type === 'handout' && <HandoutFullView data={snapshot} />}
           {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
         </div>
       )}

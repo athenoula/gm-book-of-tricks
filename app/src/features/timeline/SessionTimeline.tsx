@@ -29,9 +29,22 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
   const reorderBlocks = useReorderTimelineBlocks()
   const [showLibrary, setShowLibrary] = useState(false)
   const [pinnedItemId, setPinnedItemId] = useState<string | null>(null)
+  const [expandedBlockIds, setExpandedBlockIds] = useState<Set<string>>(new Set())
 
   const handlePin = (itemId: string) => {
     setPinnedItemId((prev) => (prev === itemId ? null : itemId))
+  }
+
+  const toggleExpand = (blockId: string) => {
+    setExpandedBlockIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(blockId)) {
+        next.delete(blockId)
+      } else {
+        next.add(blockId)
+      }
+      return next
+    })
   }
 
   // Merge scenes and blocks into a unified sorted list
@@ -184,6 +197,8 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                       dragHandleProps={undefined}
                       isPinned={true}
                       onPin={() => handlePin(pinned.data.id)}
+                      isExpanded={expandedBlockIds.has(pinned.data.id)}
+                      onToggleExpand={() => toggleExpand(pinned.data.id)}
                     />
                   )}
                 </div>
@@ -222,6 +237,8 @@ export function SessionTimeline({ sessionId, campaignId }: Props) {
                                 dragHandleProps={provided.dragHandleProps ?? undefined}
                                 onPin={() => handlePin(item.data.id)}
                                 isPinned={pinnedItemId === item.data.id}
+                                isExpanded={expandedBlockIds.has(item.data.id)}
+                                onToggleExpand={() => toggleExpand(item.data.id)}
                               />
                             )}
                           </div>
