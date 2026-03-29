@@ -148,13 +148,11 @@ async function exportCampaignToFolder(
 
   const sessionIds = typedSessions.map(s => s.id)
 
+  // First batch: tables that have campaign_id directly
   const [
     timelineBlocksResult,
     pcsResult,
-    pcSpellsResult,
-    charInventoryResult,
     npcsResult,
-    npcSpellsResult,
     monstersResult,
     spellsResult,
     itemsResult,
@@ -166,10 +164,7 @@ async function exportCampaignToFolder(
       ? supabase.from('timeline_blocks').select('*').in('session_id', sessionIds).order('sort_order', { ascending: true })
       : Promise.resolve({ data: [], error: null }),
     supabase.from('player_characters').select('*').eq('campaign_id', campaignId),
-    supabase.from('pc_spells').select('*, spells(name)').eq('campaign_id', campaignId),
-    supabase.from('character_inventory').select('*, items(name)').eq('campaign_id', campaignId),
     supabase.from('npcs').select('*').eq('campaign_id', campaignId),
-    supabase.from('npc_spells').select('*, spells(name)').eq('campaign_id', campaignId),
     supabase.from('monsters').select('*').eq('campaign_id', campaignId),
     supabase.from('spells').select('*').eq('campaign_id', campaignId),
     supabase.from('items').select('*').eq('campaign_id', campaignId),
@@ -182,10 +177,7 @@ async function exportCampaignToFolder(
   for (const [result, name] of [
     [timelineBlocksResult, 'timeline_blocks'],
     [pcsResult, 'player_characters'],
-    [pcSpellsResult, 'pc_spells'],
-    [charInventoryResult, 'character_inventory'],
     [npcsResult, 'npcs'],
-    [npcSpellsResult, 'npc_spells'],
     [monstersResult, 'monsters'],
     [spellsResult, 'spells'],
     [itemsResult, 'items'],
@@ -198,16 +190,41 @@ async function exportCampaignToFolder(
 
   const allTimelineBlocks = (timelineBlocksResult.data ?? []) as unknown as TimelineBlock[]
   const pcs = (pcsResult.data ?? []) as unknown as PlayerCharacter[]
-  const pcSpells = (pcSpellsResult.data ?? []) as unknown as Array<{ pc_id: string; spells: { name: string } | null }>
-  const charInventory = (charInventoryResult.data ?? []) as unknown as Array<{ pc_id: string; items: { name: string } | null }>
   const npcs = (npcsResult.data ?? []) as unknown as NPC[]
-  const npcSpells = (npcSpellsResult.data ?? []) as unknown as Array<{ npc_id: string; spells: { name: string } | null }>
   const monsters = (monstersResult.data ?? []) as unknown as Monster[]
   const spells = (spellsResult.data ?? []) as unknown as Spell[]
   const items = (itemsResult.data ?? []) as unknown as Item[]
   const locations = (locationsResult.data ?? []) as unknown as Location[]
   const handouts = (handoutsResult.data ?? []) as unknown as Handout[]
   const battles = (battlesResult.data ?? []) as unknown as Battle[]
+
+  // Second batch: junction tables queried by PC/NPC IDs (these don't have campaign_id)
+  const pcIds = pcs.map(pc => pc.id)
+  const npcIds = npcs.map(n => n.id)
+
+  const [pcSpellsResult, charInventoryResult, npcSpellsResult] = await Promise.all([
+    pcIds.length > 0
+      ? supabase.from('pc_spells').select('*, spell:spells(name)').in('pc_id', pcIds)
+      : Promise.resolve({ data: [], error: null }),
+    pcIds.length > 0
+      ? supabase.from('character_inventory').select('*, item:items(name)').in('character_id', pcIds)
+      : Promise.resolve({ data: [], error: null }),
+    npcIds.length > 0
+      ? supabase.from('npc_spells').select('*, spell:spells(name)').in('npc_id', npcIds)
+      : Promise.resolve({ data: [], error: null }),
+  ])
+
+  for (const [result, name] of [
+    [pcSpellsResult, 'pc_spells'],
+    [charInventoryResult, 'character_inventory'],
+    [npcSpellsResult, 'npc_spells'],
+  ] as Array<[{ error: { message: string } | null }, string]>) {
+    if (result.error) throw new Error(`Error fetching ${name}: ${result.error.message}`)
+  }
+
+  const pcSpells = (pcSpellsResult.data ?? []) as unknown as Array<{ pc_id: string; spell: { name: string } | null }>
+  const charInventory = (charInventoryResult.data ?? []) as unknown as Array<{ character_id: string; item: { name: string } | null; quantity: number; equipped: boolean }>
+  const npcSpells = (npcSpellsResult.data ?? []) as unknown as Array<{ npc_id: string; spell: { name: string } | null }>
 
   // =============================================
   // campaign.md
@@ -262,12 +279,12 @@ async function exportCampaignToFolder(
       const slug = pcSlugs[i]
 
       const spellNames = pcSpells
-        .filter(ps => ps.pc_id === pc.id && ps.spells?.name)
-        .map(ps => ps.spells!.name)
+        .filter(ps => ps.pc_id === pc.id && ps.spell?.name)
+        .map(ps => ps.spell!.name)
 
       const inventoryItems = charInventory
-        .filter(ci => ci.pc_id === pc.id && ci.items?.name)
-        .map(ci => ci.items!.name)
+        .filter(ci => ci.character_id === pc.id && ci.item?.name)
+        .map(ci => ci.item!.name)
 
       charsFolder.file(`${slug}.md`, formatPC(pc, spellNames, inventoryItems))
     }
@@ -287,8 +304,8 @@ async function exportCampaignToFolder(
       const slug = npcSlugs[i]
 
       const spellNames = npcSpells
-        .filter(ns => ns.npc_id === npc.id && ns.spells?.name)
-        .map(ns => ns.spells!.name)
+        .filter(ns => ns.npc_id === npc.id && ns.spell?.name)
+        .map(ns => ns.spell!.name)
 
       npcsFolder.file(`${slug}.md`, formatNPC(npc, spellNames))
     }
