@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GameIcon } from '@/components/ui/GameIcon'
@@ -19,19 +19,18 @@ type Tab = 'pcs' | 'npcs' | 'monsters'
 export function QuickAddPanel({ campaignId, sessionId }: Props) {
   const [tab, setTab] = useState<Tab>('pcs')
   const [filter, setFilter] = useState('')
+  const [pendingPcId, setPendingPcId] = useState<string | null>(null)
   const { data: pcs } = usePCs(campaignId)
   const { data: npcs } = useNPCs(campaignId)
   const { data: monsters } = useCampaignMonsters(campaignId)
   const addCombatant = useAddCombatant()
 
-  const addPC = (pc: PlayerCharacter) => {
-    const scores = pc.ability_scores as AbilityScores
-    const init = rollD20() + pc.initiative_bonus
+  const addPC = (pc: PlayerCharacter, initiative: number) => {
     addCombatant.mutate({
       campaign_id: campaignId,
       session_id: sessionId,
       name: pc.name,
-      initiative: init,
+      initiative,
       hp_current: pc.hp_current,
       hp_max: pc.hp_max,
       armor_class: pc.armor_class,
@@ -39,7 +38,7 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
       source_type: 'pc',
       source_snapshot: {
         name: pc.name, race: pc.race, class: pc.class, subclass: pc.subclass,
-        level: pc.level, ability_scores: scores,
+        level: pc.level, ability_scores: pc.ability_scores as AbilityScores,
         hp_current: pc.hp_current, hp_max: pc.hp_max, armor_class: pc.armor_class,
         speed: pc.speed, proficiency_bonus: pc.proficiency_bonus,
         saving_throw_proficiencies: pc.saving_throw_proficiencies,
@@ -53,6 +52,7 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
         is_pc: true,
       },
     })
+    setPendingPcId(null)
   }
 
   const addNPC = (npc: NPC) => {
@@ -130,13 +130,23 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
 
       <div className="max-h-48 overflow-y-auto space-y-1">
         {tab === 'pcs' && filteredPCs?.map((pc) => (
-          <QuickAddRow
-            key={pc.id}
-            name={pc.name}
-            subtitle={`${pc.class ?? ''} Lvl ${pc.level} · HP ${pc.hp_max} · AC ${pc.armor_class}`}
-            onAdd={() => addPC(pc)}
-            disabled={addCombatant.isPending}
-          />
+          pendingPcId === pc.id ? (
+            <PcInitiativeInput
+              key={pc.id}
+              pcName={pc.name}
+              onConfirm={(init) => addPC(pc, init)}
+              onCancel={() => setPendingPcId(null)}
+              disabled={addCombatant.isPending}
+            />
+          ) : (
+            <QuickAddRow
+              key={pc.id}
+              name={pc.name}
+              subtitle={`${pc.class ?? ''} Lvl ${pc.level} · HP ${pc.hp_max} · AC ${pc.armor_class}`}
+              onAdd={() => setPendingPcId(pc.id)}
+              disabled={addCombatant.isPending}
+            />
+          )
         ))}
         {tab === 'npcs' && filteredNPCs?.map((npc) => (
           <QuickAddRow
@@ -179,6 +189,57 @@ function QuickAddRow({ name, subtitle, onAdd, disabled }: {
         className="text-xs text-primary-light hover:underline cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
       >
         + Add
+      </button>
+    </div>
+  )
+}
+
+function PcInitiativeInput({ pcName, onConfirm, onCancel, disabled }: {
+  pcName: string
+  onConfirm: (initiative: number) => void
+  onCancel: () => void
+  disabled: boolean
+}) {
+  const [value, setValue] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const handleSubmit = () => {
+    const num = parseInt(value, 10)
+    if (!isNaN(num)) onConfirm(num)
+  }
+
+  return (
+    <div className="flex items-center gap-2 px-2 py-1.5 rounded-[--radius-sm] bg-bg-raised">
+      <span className="text-sm text-text-body flex-1 truncate">{pcName}</span>
+      <input
+        ref={inputRef}
+        type="number"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSubmit()
+          if (e.key === 'Escape') onCancel()
+        }}
+        placeholder="Init"
+        className="w-14 text-center text-sm font-mono bg-bg-base border border-border rounded-[--radius-sm] px-1 py-1 text-text-heading outline-none focus:border-primary"
+        disabled={disabled}
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={disabled || !value}
+        className="text-xs text-primary-light hover:underline cursor-pointer disabled:opacity-50"
+      >
+        Add
+      </button>
+      <button
+        onClick={onCancel}
+        className="text-xs text-text-muted hover:text-text-body cursor-pointer"
+      >
+        ✕
       </button>
     </div>
   )
