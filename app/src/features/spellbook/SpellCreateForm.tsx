@@ -162,8 +162,8 @@ export function SpellCreateForm({
                 onClick={() => toggleClass(cls)}
                 className={`px-3 py-1 text-sm rounded-full border cursor-pointer transition-colors ${
                   classes.includes(cls)
-                    ? 'bg-primary/20 border-primary text-primary'
-                    : 'border-border text-text-muted hover:text-text-body hover:border-border-active'
+                    ? 'bg-primary/15 border-primary text-text-heading font-medium'
+                    : 'border-border text-text-body hover:text-text-heading hover:border-border-active'
                 }`}
               >
                 {cls}

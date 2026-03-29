@@ -223,7 +223,7 @@ function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit, onMakeNPC,
         )}
         <span className="text-text-heading font-medium flex-1">{monster.name}</span>
         {monster.source_book && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-bg-raised text-text-secondary border border-border">
             {monster.source_book === 'Systems Reference Document' ? 'SRD' : monster.source_book}
           </span>
         )}
@@ -345,7 +345,7 @@ function SrdMonsterSearch({ campaignId }: { campaignId: string }) {
         onChange={(e) => setSearch(e.target.value)}
         className="mb-4"
       />
-      <label className="flex items-center gap-2 text-sm text-stone-400 mb-4">
+      <label className="flex items-center gap-2 text-sm text-text-secondary mb-4">
         <input
           type="checkbox"
           checked={includeOtherEdition}

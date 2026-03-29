@@ -221,7 +221,7 @@ function SpellCard({ spell, expanded, onToggle, onDelete, onEdit, selectMode, se
         >
           <span className="text-text-heading font-medium flex-1">{spell.name}</span>
           {spell.source_book && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-bg-raised text-text-secondary border border-border">
               {spell.source_book === 'Systems Reference Document' ? 'SRD' : spell.source_book}
             </span>
           )}
@@ -337,7 +337,7 @@ function SrdSpellSearch({ campaignId }: { campaignId: string }) {
         </select>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-stone-400 mb-4">
+      <label className="flex items-center gap-2 text-sm text-text-secondary mb-4">
         <input
           type="checkbox"
           checked={includeOtherEdition}
