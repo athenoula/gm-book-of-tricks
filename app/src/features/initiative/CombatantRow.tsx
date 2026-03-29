@@ -8,9 +8,10 @@ interface Props {
   combatant: Combatant
   isActive: boolean
   inCombat: boolean
+  onShowInfo?: (rect: DOMRect) => void
 }
 
-export function CombatantRow({ combatant, isActive, inCombat }: Props) {
+export function CombatantRow({ combatant, isActive, inCombat, onShowInfo }: Props) {
   const [showConditions, setShowConditions] = useState(false)
   const updateCombatant = useUpdateCombatant()
   const removeCombatant = useRemoveCombatant()
@@ -65,9 +66,12 @@ export function CombatantRow({ combatant, isActive, inCombat }: Props) {
         {/* Name + conditions */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`font-medium truncate ${isDowned ? 'line-through' : 'text-text-heading'}`}>
+            <button
+              onClick={(e) => onShowInfo?.((e.currentTarget as HTMLElement).getBoundingClientRect())}
+              className={`font-medium truncate cursor-pointer hover:underline hover:decoration-amber-500/50 ${isDowned ? 'line-through' : 'text-text-heading'}`}
+            >
               {combatant.name}
-            </span>
+            </button>
             {combatant.is_player && (
               <span className="text-[10px] text-info bg-info/10 px-1.5 py-0.5 rounded-[--radius-sm]">PC</span>
             )}
