@@ -2,7 +2,7 @@ import JSZip from 'jszip'
 import { supabase } from '@/lib/supabase'
 import { useExportStore } from '@/features/settings/useExportStore'
 import { useToastStore } from '@/lib/toast'
-import type { Campaign, Session, PlayerCharacter, NPC, Monster, Spell, Handout } from '@/lib/types'
+import type { Campaign } from '@/lib/types'
 import {
   formatCampaign,
   formatSession,
@@ -17,75 +17,22 @@ import {
   type CampaignCounts,
 } from '@/lib/export/markdown-formatters'
 import { slugify, uniqueSlugs, padSessionNumber } from '@/lib/export/slugify'
-
-// =============================================
-// Local inline types (match markdown-formatters.ts)
-// =============================================
-
-type TimelineBlock = {
-  id: string
-  session_id: string
-  campaign_id: string
-  block_type: 'scene' | 'note' | 'monster' | 'npc' | 'spell' | 'location' | 'battle' | 'handout'
-  source_id: string | null
-  title: string
-  content_snapshot: Record<string, unknown>
-  sort_order: number
-  is_collapsed: boolean
-  created_at: string
-  updated_at: string
-}
-
-type Location = {
-  id: string
-  campaign_id: string
-  name: string
-  description: string | null
-  type: string | null
-  parent_location_id: string | null
-  map_url: string | null
-  image_url: string | null
-  notes: string | null
-  created_at: string
-  updated_at: string
-}
-
-type Item = {
-  id: string
-  campaign_id: string
-  name: string
-  description: string
-  type: 'weapon' | 'armor' | 'magic_item' | 'equipment' | 'consumable' | 'other'
-  rarity: string | null
-  cost: string | null
-  stackable: boolean
-  source: 'srd' | 'homebrew'
-  srd_slug: string | null
-  item_data: Record<string, unknown> | null
-  created_at: string
-  updated_at: string
-}
-
-type Battle = {
-  id: string
-  campaign_id: string
-  session_id: string | null
-  name: string
-  type: 'template' | 'save_state'
-  round: number
-  active_index: number
-  in_combat: boolean
-  combatant_data: {
-    name: string
-    hp_max: number
-    armor_class: number
-    initiative: number
-    is_player: boolean
-  }[]
-  notes: string | null
-  created_at: string
-  updated_at: string
-}
+import {
+  fetchCampaign,
+  fetchSessions,
+  fetchTimelineBlocks,
+  fetchPCs,
+  fetchNPCs,
+  fetchMonsters,
+  fetchSpells,
+  fetchItems,
+  fetchLocations,
+  fetchHandouts,
+  fetchBattles,
+  fetchPCSpells,
+  fetchNPCSpells,
+  fetchCharacterInventory,
+} from '@/lib/export/fetch-campaign-data'
 
 // =============================================
 // Progress callback type
@@ -119,112 +66,49 @@ async function exportCampaignToFolder(
 ): Promise<void> {
   // Step 1: Fetch campaign row
   onProgress(5, 'Fetching campaign...')
-  const { data: campaign, error: campaignError } = await supabase
-    .from('campaigns')
-    .select('*')
-    .eq('id', campaignId)
-    .single()
-
-  if (campaignError || !campaign) {
-    throw new Error(campaignError?.message ?? 'Campaign not found')
-  }
-
-  const typedCampaign = campaign as unknown as Campaign
+  const typedCampaign = await fetchCampaign(campaignId)
   const folder = zip.folder(slugify(typedCampaign.name))!
 
   // Step 2: Fetch sessions
   onProgress(10, 'Fetching sessions...')
-  const { data: sessions, error: sessionsError } = await supabase
-    .from('sessions')
-    .select('*')
-    .eq('campaign_id', campaignId)
-    .order('session_number', { ascending: true })
-
-  if (sessionsError) throw new Error(sessionsError.message)
-  const typedSessions = (sessions ?? []) as unknown as Session[]
+  const typedSessions = await fetchSessions(campaignId)
 
   // Step 3: Bulk fetch all related data in parallel
   onProgress(20, 'Fetching all campaign data...')
 
   const sessionIds = typedSessions.map(s => s.id)
 
-  // First batch: tables that have campaign_id directly
   const [
-    timelineBlocksResult,
-    pcsResult,
-    npcsResult,
-    monstersResult,
-    spellsResult,
-    itemsResult,
-    locationsResult,
-    handoutsResult,
-    battlesResult,
+    allTimelineBlocks,
+    pcs,
+    npcs,
+    monsters,
+    spells,
+    items,
+    locations,
+    handouts,
+    battles,
   ] = await Promise.all([
-    sessionIds.length > 0
-      ? supabase.from('timeline_blocks').select('*').in('session_id', sessionIds).order('sort_order', { ascending: true })
-      : Promise.resolve({ data: [], error: null }),
-    supabase.from('player_characters').select('*').eq('campaign_id', campaignId),
-    supabase.from('npcs').select('*').eq('campaign_id', campaignId),
-    supabase.from('monsters').select('*').eq('campaign_id', campaignId),
-    supabase.from('spells').select('*').eq('campaign_id', campaignId),
-    supabase.from('items').select('*').eq('campaign_id', campaignId),
-    supabase.from('locations').select('*').eq('campaign_id', campaignId),
-    supabase.from('handouts').select('*').eq('campaign_id', campaignId),
-    supabase.from('battles').select('*').eq('campaign_id', campaignId),
+    fetchTimelineBlocks(sessionIds),
+    fetchPCs(campaignId),
+    fetchNPCs(campaignId),
+    fetchMonsters(campaignId),
+    fetchSpells(campaignId),
+    fetchItems(campaignId),
+    fetchLocations(campaignId),
+    fetchHandouts(campaignId),
+    fetchBattles(campaignId),
   ])
-
-  // Throw on any errors
-  for (const [result, name] of [
-    [timelineBlocksResult, 'timeline_blocks'],
-    [pcsResult, 'player_characters'],
-    [npcsResult, 'npcs'],
-    [monstersResult, 'monsters'],
-    [spellsResult, 'spells'],
-    [itemsResult, 'items'],
-    [locationsResult, 'locations'],
-    [handoutsResult, 'handouts'],
-    [battlesResult, 'battles'],
-  ] as Array<[{ error: { message: string } | null }, string]>) {
-    if (result.error) throw new Error(`Error fetching ${name}: ${result.error.message}`)
-  }
-
-  const allTimelineBlocks = (timelineBlocksResult.data ?? []) as unknown as TimelineBlock[]
-  const pcs = (pcsResult.data ?? []) as unknown as PlayerCharacter[]
-  const npcs = (npcsResult.data ?? []) as unknown as NPC[]
-  const monsters = (monstersResult.data ?? []) as unknown as Monster[]
-  const spells = (spellsResult.data ?? []) as unknown as Spell[]
-  const items = (itemsResult.data ?? []) as unknown as Item[]
-  const locations = (locationsResult.data ?? []) as unknown as Location[]
-  const handouts = (handoutsResult.data ?? []) as unknown as Handout[]
-  const battles = (battlesResult.data ?? []) as unknown as Battle[]
 
   // Second batch: junction tables queried by PC/NPC IDs (these don't have campaign_id)
   const pcIds = pcs.map(pc => pc.id)
   const npcIds = npcs.map(n => n.id)
 
-  const [pcSpellsResult, charInventoryResult, npcSpellsResult] = await Promise.all([
-    pcIds.length > 0
-      ? supabase.from('pc_spells').select('*, spell:spells(name)').in('pc_id', pcIds)
-      : Promise.resolve({ data: [], error: null }),
-    pcIds.length > 0
-      ? supabase.from('character_inventory').select('*, item:items(name)').in('character_id', pcIds)
-      : Promise.resolve({ data: [], error: null }),
-    npcIds.length > 0
-      ? supabase.from('npc_spells').select('*, spell:spells(name)').in('npc_id', npcIds)
-      : Promise.resolve({ data: [], error: null }),
+  const [pcSpells, charInventory, npcSpells] = await Promise.all([
+    fetchPCSpells(pcIds),
+    fetchCharacterInventory(pcIds),
+    fetchNPCSpells(npcIds),
   ])
-
-  for (const [result, name] of [
-    [pcSpellsResult, 'pc_spells'],
-    [charInventoryResult, 'character_inventory'],
-    [npcSpellsResult, 'npc_spells'],
-  ] as Array<[{ error: { message: string } | null }, string]>) {
-    if (result.error) throw new Error(`Error fetching ${name}: ${result.error.message}`)
-  }
-
-  const pcSpells = (pcSpellsResult.data ?? []) as unknown as Array<{ pc_id: string; spell: { name: string } | null }>
-  const charInventory = (charInventoryResult.data ?? []) as unknown as Array<{ character_id: string; item: { name: string } | null; quantity: number; equipped: boolean }>
-  const npcSpells = (npcSpellsResult.data ?? []) as unknown as Array<{ npc_id: string; spell: { name: string } | null }>
 
   // =============================================
   // campaign.md
