@@ -1,0 +1,12 @@
+{
+  "name": "GM Book of Tricks",
+  "short_name": "GM Tricks",
+  "start_url": "/home",
+  "display": "standalone",
+  "theme_color": "#141210",
+  "background_color": "#141210",
+  "icons": [
+    { "src": "/gm-book-of-tricks/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/gm-book-of-tricks/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
