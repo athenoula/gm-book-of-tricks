@@ -85,3 +85,6 @@ export { GiBookPile } from 'react-icons/gi'          // 📚 DM's cheat sheet
 // UI / theme
 export { GiSun } from 'react-icons/gi'               // ☀ light mode toggle
 export { GiMoonBats } from 'react-icons/gi'           // 🌙 dark mode toggle
+
+// PDF / print
+export { GiPaperTray } from 'react-icons/gi'         // 🖨 print/export to PDF

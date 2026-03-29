@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiSpikedDragonHead, GiHoodedFigure } from '@/components/ui/icons'
+import { GiSpikedDragonHead, GiHoodedFigure, GiPaperTray } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { useCampaignMonsters, useSearchSrdMonsters, useSaveMonster, useDeleteMonster } from './useMonsters'
 import { MonsterCreateForm } from './MonsterCreateForm'
@@ -11,6 +11,10 @@ import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
 import type { Monster } from '@/lib/types'
 import type { Open5eMonster } from '@/lib/open5e'
+import { generateMonsterPDF, generateBundlePDF } from '@/lib/export/pdf/generate'
+import { usePrintSelectStore } from '@/lib/export/pdf/usePrintSelectStore'
+import { PrintSelectionBar } from '@/components/ui/PrintSelectionBar'
+import type { BundleItem } from '@/lib/export/pdf/BundlePDF'
 
 export function BestiaryPage({ campaignId }: { campaignId: string }) {
   const [tab, setTab] = useState<'library' | 'search'>('library')
@@ -51,6 +55,8 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   const [editingMonster, setEditingMonster] = useState<Monster | null>(null)
   const [makeNPCMonster, setMakeNPCMonster] = useState<Monster | null>(null)
 
+  const { active: selectActive, selectedIds, toggle, enterSelectMode, exitSelectMode } = usePrintSelectStore()
+
   const sourceBooks = [...new Set(monsters?.map(m => m.source_book).filter(Boolean) ?? [])].sort()
 
   const filtered = monsters?.filter((m) =>
@@ -58,6 +64,14 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
   ).filter((m) =>
     !sourceBookFilter || m.source_book === sourceBookFilter
   )
+
+  function handlePrintBundle() {
+    const { selectedIds: ids, theme } = usePrintSelectStore.getState()
+    const selectedMonsters = (monsters ?? []).filter(m => ids.has(m.id))
+    const bundleItems: BundleItem[] = selectedMonsters.map(m => ({ type: 'monster' as const, data: m }))
+    generateBundlePDF(bundleItems, theme, 'bestiary')
+    usePrintSelectStore.getState().exitSelectMode()
+  }
 
   if (showCreateForm || editingMonster) {
     return (
@@ -90,6 +104,19 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
             </option>
           ))}
         </select>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            if (selectActive) {
+              exitSelectMode()
+            } else {
+              enterSelectMode('monster')
+            }
+          }}
+        >
+          {selectActive ? 'Cancel' : 'Select'}
+        </Button>
         <Button variant="primary" size="sm" onClick={() => setShowCreateForm(true)}>
           <GiSpikedDragonHead className="inline" size={16} /> Create Monster
         </Button>
@@ -120,6 +147,9 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
               onDelete={() => deleteMonster.mutate({ id: monster.id, campaignId })}
               onEdit={() => setEditingMonster(monster)}
               onMakeNPC={() => setMakeNPCMonster(monster)}
+              selectActive={selectActive}
+              selected={selectedIds.has(monster.id)}
+              onSelect={() => toggle(monster.id)}
             />
           </StaggerItem>
         ))}
@@ -132,26 +162,65 @@ function MonsterLibrary({ campaignId }: { campaignId: string }) {
           onClose={() => setMakeNPCMonster(null)}
         />
       )}
+
+      <PrintSelectionBar onPrint={handlePrintBundle} />
     </div>
   )
 }
 
-function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit, onMakeNPC }: {
+function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit, onMakeNPC, selectActive, selected, onSelect }: {
   monster: Monster
   expanded: boolean
   onToggle: () => void
   onDelete: () => void
   onEdit: () => void
   onMakeNPC: () => void
+  selectActive: boolean
+  selected: boolean
+  onSelect: () => void
 }) {
   const sb = monster.stat_block as Open5eMonster | null
 
+  function handlePrint(e: React.MouseEvent) {
+    e.stopPropagation()
+    generateMonsterPDF(monster, 'themed')
+  }
+
+  function handleRowClick() {
+    if (selectActive) {
+      onSelect()
+    } else {
+      onToggle()
+    }
+  }
+
   return (
-    <div className="bg-bg-base rounded-[--radius-md] border border-border overflow-hidden">
+    <div
+      className={`bg-bg-base rounded-[--radius-md] border overflow-hidden transition-colors ${
+        selectActive && selected
+          ? 'border-amber-500/70 bg-amber-500/5'
+          : 'border-border'
+      }`}
+    >
       <button
-        onClick={onToggle}
+        onClick={handleRowClick}
         className="w-full flex items-center gap-3 p-3 text-left hover:bg-bg-raised transition-colors cursor-pointer"
       >
+        {selectActive && (
+          <span
+            className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+              selected
+                ? 'bg-amber-500 border-amber-500'
+                : 'border-border bg-bg-raised'
+            }`}
+          >
+            {selected && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </span>
+        )}
         <span className="text-text-heading font-medium flex-1">{monster.name}</span>
         {monster.source_book && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
@@ -164,10 +233,21 @@ function MonsterCard({ monster, expanded, onToggle, onDelete, onEdit, onMakeNPC 
           <span>AC {monster.armor_class}</span>
           <span>HP {monster.hit_points}</span>
         </div>
-        <span className="text-xs text-text-muted">{expanded ? '▾' : '▸'}</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handlePrint}
+          className="p-1 text-text-muted hover:text-text-body"
+          title="Print monster PDF"
+        >
+          <GameIcon icon={GiPaperTray} size="sm" />
+        </Button>
+        {!selectActive && (
+          <span className="text-xs text-text-muted">{expanded ? '▾' : '▸'}</span>
+        )}
       </button>
 
-      {expanded && sb && (
+      {!selectActive && expanded && sb && (
         <div className="px-3 pb-3 border-t border-border pt-3 space-y-3 text-sm">
           {/* Ability scores */}
           <div className="grid grid-cols-6 gap-2 text-center">
