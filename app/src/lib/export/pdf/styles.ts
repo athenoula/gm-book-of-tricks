@@ -30,12 +30,12 @@ Font.register({
       fontWeight: 700,
     },
     {
-      src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uSsoa5M_tv7IihmnkabAReu49Y_Bo-HVKMBi4Ue5s.ttf',
+      src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uSsoa5M_tv7IihmnkabAReu49Y_Bo-HVKMBi6Ue5s7.ttf',
       fontWeight: 400,
       fontStyle: 'italic',
     },
     {
-      src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uSsoa5M_tv7IihmnkabAReu49Y_Bo-HVKMBi6Kb5s.ttf',
+      src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uSsoa5M_tv7IihmnkabAReu49Y_Bo-HVKMBi5zfJs7.ttf',
       fontWeight: 700,
       fontStyle: 'italic',
     },
