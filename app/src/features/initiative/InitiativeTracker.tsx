@@ -65,6 +65,7 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inl
       armor_class: c.armor_class,
       is_player: c.is_player,
       conditions: c.conditions,
+      ...(c.source_snapshot ? { source_snapshot: c.source_snapshot } : {}),
     })),
     combatant_count: sorted.length,
     round,
@@ -138,6 +139,7 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inl
         hp_max: snap.hp_max,
         armor_class: snap.armor_class,
         is_player: snap.is_player,
+        ...(snap.source_snapshot ? { source_snapshot: snap.source_snapshot } : {}),
       })
     }
 

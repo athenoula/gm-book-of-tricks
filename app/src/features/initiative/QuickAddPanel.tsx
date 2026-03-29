@@ -25,6 +25,7 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
   const addCombatant = useAddCombatant()
 
   const addPC = (pc: PlayerCharacter) => {
+    const scores = pc.ability_scores as AbilityScores
     const init = rollD20() + pc.initiative_bonus
     addCombatant.mutate({
       campaign_id: campaignId,
@@ -35,6 +36,22 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
       hp_max: pc.hp_max,
       armor_class: pc.armor_class,
       is_player: true,
+      source_type: 'pc',
+      source_snapshot: {
+        name: pc.name, race: pc.race, class: pc.class, subclass: pc.subclass,
+        level: pc.level, ability_scores: scores,
+        hp_current: pc.hp_current, hp_max: pc.hp_max, armor_class: pc.armor_class,
+        speed: pc.speed, proficiency_bonus: pc.proficiency_bonus,
+        saving_throw_proficiencies: pc.saving_throw_proficiencies,
+        skill_proficiencies: pc.skill_proficiencies,
+        equipment: pc.equipment, class_features: pc.class_features,
+        traits: pc.traits, personality_traits: pc.personality_traits,
+        ideals: pc.ideals, bonds: pc.bonds, flaws: pc.flaws,
+        backstory: pc.backstory, appearance: pc.appearance,
+        notes: pc.notes, player_name: pc.player_name,
+        portrait_url: pc.portrait_url, spellcasting_ability: pc.spellcasting_ability,
+        is_pc: true,
+      },
     })
   }
 
@@ -50,6 +67,13 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
       hp_max: npc.stats?.hp ?? 10,
       armor_class: npc.stats?.ac ?? 10,
       is_player: false,
+      source_type: 'npc',
+      source_snapshot: {
+        name: npc.name, race: npc.race, occupation: npc.occupation,
+        personality: npc.personality, appearance: npc.appearance,
+        notes: npc.notes, stats: npc.stats,
+        portrait_url: npc.portrait_url, stat_block: npc.stat_block,
+      },
     })
   }
 
@@ -66,6 +90,15 @@ export function QuickAddPanel({ campaignId, sessionId }: Props) {
       hp_max: monster.hit_points,
       armor_class: monster.armor_class,
       is_player: false,
+      source_type: 'monster',
+      source_snapshot: {
+        name: monster.name, size: monster.size, type: monster.type,
+        alignment: monster.alignment, challenge_rating: monster.challenge_rating,
+        armor_class: monster.armor_class, hit_points: monster.hit_points,
+        hit_dice: monster.hit_dice, speed: monster.speed,
+        stat_block: monster.stat_block,
+        armor_desc: monster.armor_desc, notes: monster.notes,
+      },
     })
   }
 

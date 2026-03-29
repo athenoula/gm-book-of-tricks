@@ -11,6 +11,7 @@ export type CombatantSnapshot = {
   armor_class: number
   is_player: boolean
   conditions: string[]
+  source_snapshot?: Record<string, unknown>
 }
 
 export type Battle = {
@@ -74,6 +75,7 @@ export function useSaveBattle() {
         armor_class: c.armor_class,
         is_player: c.is_player,
         conditions: type === 'template' ? [] : c.conditions,
+        ...(c.source_snapshot ? { source_snapshot: c.source_snapshot } : {}),
       }))
 
       const { data, error } = await supabase

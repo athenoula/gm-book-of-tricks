@@ -16,6 +16,7 @@ export type Combatant = {
   conditions: string[]
   source_type: 'pc' | 'npc' | 'monster' | null
   source_id: string | null
+  source_snapshot: Record<string, unknown> | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -84,6 +85,8 @@ export function useAddCombatant() {
       hp_max: number
       armor_class: number
       is_player: boolean
+      source_type?: 'pc' | 'npc' | 'monster'
+      source_snapshot?: Record<string, unknown>
     }) => {
       const { data, error } = await supabase
         .from('combatants')
