@@ -8,6 +8,7 @@ import { SPELL_SCHOOLS, SPELL_CLASSES } from '@/lib/types'
 import type { Open5eSpell } from '@/lib/open5e'
 import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { useCampaignSpells, useSearchSrdSpells, useSaveSpell, useBulkImportSpells, useDeleteSpell } from './useSpells'
+import { SpellCreateForm } from './SpellCreateForm'
 import type { Spell } from '@/lib/types'
 import { generateSpellPDF, generateBundlePDF } from '@/lib/export/pdf/generate'
 import { usePrintSelectStore } from '@/lib/export/pdf/usePrintSelectStore'
@@ -51,6 +52,8 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
   const [sourceBookFilter, setSourceBookFilter] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [importProgress, setImportProgress] = useState<string | null>(null)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingSpell, setEditingSpell] = useState<Spell | null>(null)
 
   const { active, selectedIds, toggle, enterSelectMode, exitSelectMode, theme } = usePrintSelectStore()
 
@@ -89,6 +92,16 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
     return acc
   }, {})
 
+  if (showCreateForm || editingSpell) {
+    return (
+      <SpellCreateForm
+        campaignId={campaignId}
+        spell={editingSpell ?? undefined}
+        onClose={() => { setShowCreateForm(false); setEditingSpell(null) }}
+      />
+    )
+  }
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-4">
@@ -108,6 +121,13 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
             <option key={sb} value={sb!}>{sb === 'Systems Reference Document' ? 'SRD' : sb}</option>
           ))}
         </select>
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => setShowCreateForm(true)}
+        >
+          <GiSparkles className="inline" size={16} /> Create Spell
+        </Button>
         <Button
           size="sm"
           variant="secondary"
@@ -155,6 +175,7 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
                     expanded={expandedId === spell.id}
                     onToggle={() => setExpandedId(expandedId === spell.id ? null : spell.id)}
                     onDelete={() => deleteSpell.mutate({ id: spell.id, campaignId })}
+                    onEdit={() => setEditingSpell(spell)}
                     selectMode={active}
                     selected={selectedIds.has(spell.id)}
                     onSelect={() => toggle(spell.id)}
@@ -170,11 +191,12 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
   )
 }
 
-function SpellCard({ spell, expanded, onToggle, onDelete, selectMode, selected, onSelect }: {
+function SpellCard({ spell, expanded, onToggle, onDelete, onEdit, selectMode, selected, onSelect }: {
   spell: Spell
   expanded: boolean
   onToggle: () => void
   onDelete: () => void
+  onEdit: () => void
   selectMode?: boolean
   selected?: boolean
   onSelect?: () => void
@@ -224,25 +246,34 @@ function SpellCard({ spell, expanded, onToggle, onDelete, selectMode, selected, 
         )}
       </div>
 
-      {expanded && data && (
+      {expanded && (
         <div className="px-3 pb-3 border-t border-border pt-3 space-y-2 text-sm">
           <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
-            <div><span className="text-text-muted">Casting Time:</span> {data.casting_time}</div>
-            <div><span className="text-text-muted">Range:</span> {data.range}</div>
-            <div><span className="text-text-muted">Duration:</span> {data.duration}</div>
+            <div><span className="text-text-muted">Casting Time:</span> {spell.casting_time ?? (data as Record<string, unknown>)?.casting_time as string}</div>
+            <div><span className="text-text-muted">Range:</span> {spell.range ?? (data as Record<string, unknown>)?.range as string}</div>
+            <div><span className="text-text-muted">Duration:</span> {spell.duration ?? (data as Record<string, unknown>)?.duration as string}</div>
             <div><span className="text-text-muted">Components:</span> {spell.components}</div>
           </div>
-          <p className="text-text-body text-sm whitespace-pre-line">{data.desc}</p>
-          {data.higher_level && (
+          {(data as Record<string, unknown>)?.desc && (
+            <p className="text-text-body text-sm whitespace-pre-line">{(data as Record<string, unknown>).desc as string}</p>
+          )}
+          {(data as Record<string, unknown>)?.higher_level && (
             <p className="text-text-secondary text-sm">
-              <span className="text-text-muted font-medium">At Higher Levels:</span> {data.higher_level}
+              <span className="text-text-muted font-medium">At Higher Levels:</span> {(data as Record<string, unknown>).higher_level as string}
             </p>
           )}
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-text-muted">{data.dnd_class}</span>
-            <Button size="sm" variant="ghost" onClick={onDelete} className="text-danger hover:text-danger">
-              Remove
-            </Button>
+            <span className="text-xs text-text-muted">{spell.classes.join(', ') || (data as Record<string, unknown>)?.dnd_class as string}</span>
+            <div className="flex gap-1">
+              {spell.source === 'homebrew' && (
+                <Button size="sm" variant="ghost" onClick={onEdit}>
+                  Edit
+                </Button>
+              )}
+              <Button size="sm" variant="ghost" onClick={onDelete} className="text-danger hover:text-danger">
+                Remove
+              </Button>
+            </div>
           </div>
         </div>
       )}
