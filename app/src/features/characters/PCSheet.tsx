@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PortraitFrame } from '@/components/ui/PortraitFrame'
+import { GameIcon } from '@/components/ui/GameIcon'
+import { GiQuillInk } from '@/components/ui/icons'
 import { getClassIcon } from '@/components/ui/class-icons'
 import { uploadImage } from '@/lib/storage'
 import { abilityModifier, formatModifier } from '@/lib/dnd'
@@ -12,6 +14,8 @@ import { useUpdatePC, useDeletePC, useUpdatePortrait } from './useCharacters'
 import { SpellPicker } from './SpellPicker'
 import { CharacterInventory } from '@/features/inventory/CharacterInventory'
 import type { PlayerCharacter, AbilityScores } from '@/lib/types'
+import { generatePCPDF } from '@/lib/export/pdf/generate'
+import { fetchPCSpells, fetchCharacterInventory } from '@/lib/export/fetch-campaign-data'
 
 const ABILITY_NAMES = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'] as const
 
@@ -42,6 +46,16 @@ export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: s
     if (window.confirm(`Delete ${pc.name}? This cannot be undone.`)) {
       deletePC.mutate({ id: pc.id, campaignId })
     }
+  }
+
+  const handlePrint = async () => {
+    const [pcSpells, inventory] = await Promise.all([
+      fetchPCSpells([pc.id]),
+      fetchCharacterInventory([pc.id]),
+    ])
+    const spellNames = pcSpells.map((r) => r.spell?.name).filter((n): n is string => !!n)
+    const inventoryNames = inventory.map((r) => r.item?.name).filter((n): n is string => !!n)
+    await generatePCPDF(pc, spellNames, inventoryNames, 'themed')
   }
 
   if (editing) {
@@ -83,6 +97,9 @@ export function PCSheet({ pc, campaignId }: { pc: PlayerCharacter; campaignId: s
             </div>
           </div>
           <div className="flex gap-2">
+            <Button size="sm" variant="ghost" onClick={handlePrint} title="Print character sheet">
+              <GameIcon icon={GiQuillInk} size="sm" />
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>Edit</Button>
             <Button size="sm" variant="ghost" onClick={handleDelete} className="text-danger hover:text-danger">Delete</Button>
           </div>

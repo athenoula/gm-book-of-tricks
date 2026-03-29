@@ -2,12 +2,16 @@ import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiPositionMarker } from '@/components/ui/icons'
+import { GiPositionMarker, GiQuillInk } from '@/components/ui/icons'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { uploadImage } from '@/lib/storage'
 import { useLocations, useCreateLocation, useUpdateLocation, useDeleteLocation, useLocationNPCs, useLinkNPC, useUnlinkNPC, useUpdateLocationImage } from './useLocations'
 import { useNPCs } from '@/features/characters/useCharacters'
 import type { Location } from './useLocations'
+import { generateLocationPDF, generateBundlePDF } from '@/lib/export/pdf/generate'
+import { usePrintSelectStore } from '@/lib/export/pdf/usePrintSelectStore'
+import { PrintSelectionBar } from '@/components/ui/PrintSelectionBar'
+import type { BundleItem } from '@/lib/export/pdf/BundlePDF'
 
 const LOCATION_TYPES = ['City', 'Town', 'Village', 'Dungeon', 'Wilderness', 'Building', 'Region', 'Landmark', 'Other'] as const
 
@@ -21,6 +25,8 @@ export function LocationsPage({ campaignId }: { campaignId: string }) {
   const [newType, setNewType] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [newParent, setNewParent] = useState('')
+
+  const { active, selectedIds, toggle, enterSelectMode, exitSelectMode, theme } = usePrintSelectStore()
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +42,15 @@ export function LocationsPage({ campaignId }: { campaignId: string }) {
     setNewDesc('')
     setNewParent('')
     setShowCreate(false)
+  }
+
+  const handleBundlePrint = async () => {
+    if (!locations) return
+    const items: BundleItem[] = locations
+      .filter((l) => selectedIds.has(l.id))
+      .map((l) => ({ type: 'location' as const, data: l, allLocations: locations }))
+    exitSelectMode()
+    await generateBundlePDF(items, theme, 'locations')
   }
 
   // Build hierarchy
@@ -57,9 +72,18 @@ export function LocationsPage({ campaignId }: { campaignId: string }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl flex items-center gap-2"><GameIcon icon={GiPositionMarker} size="xl" /> Locations</h2>
-        <Button size="sm" onClick={() => setShowCreate(!showCreate)}>
-          {showCreate ? 'Cancel' : '+ Add Location'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={active ? exitSelectMode : () => enterSelectMode('location')}
+          >
+            {active ? 'Cancel' : 'Select'}
+          </Button>
+          <Button size="sm" onClick={() => setShowCreate(!showCreate)}>
+            {showCreate ? 'Cancel' : '+ Add Location'}
+          </Button>
+        </div>
       </div>
 
       {showCreate && (
@@ -113,15 +137,20 @@ export function LocationsPage({ campaignId }: { campaignId: string }) {
               expanded={expandedId === loc.id}
               onToggle={() => setExpandedId(expandedId === loc.id ? null : loc.id)}
               depth={0}
+              selectMode={active}
+              selected={selectedIds.has(loc.id)}
+              onSelect={() => toggle(loc.id)}
             />
           </StaggerItem>
         ))}
       </StaggerList>
+
+      <PrintSelectionBar onPrint={handleBundlePrint} />
     </div>
   )
 }
 
-function LocationNode({ location, children_, allLocations, campaignId, expanded, onToggle, depth }: {
+function LocationNode({ location, children_, allLocations, campaignId, expanded, onToggle, depth, selectMode, selected, onSelect }: {
   location: Location
   children_: Location[]
   allLocations: Location[]
@@ -129,6 +158,9 @@ function LocationNode({ location, children_, allLocations, campaignId, expanded,
   expanded: boolean
   onToggle: () => void
   depth: number
+  selectMode?: boolean
+  selected?: boolean
+  onSelect?: () => void
 }) {
   const updateLocation = useUpdateLocation()
   const deleteLocation = useDeleteLocation()
@@ -167,16 +199,37 @@ function LocationNode({ location, children_, allLocations, campaignId, expanded,
 
   return (
     <div style={{ marginLeft: depth * 16 }}>
-      <div className="bg-bg-base rounded-[--radius-md] border border-border overflow-hidden">
-        <button
-          onClick={onToggle}
-          className="w-full flex items-center gap-3 p-3 text-left hover:bg-bg-raised transition-colors cursor-pointer"
-        >
-          <span className="text-text-heading font-medium flex-1">{location.name}</span>
-          {location.type && <span className="text-[10px] text-text-muted bg-bg-raised px-1.5 py-0.5 rounded-[--radius-sm]">{location.type}</span>}
-          {children_.length > 0 && <span className="text-[10px] text-text-muted">{children_.length} sub</span>}
-          <span className="text-xs text-text-muted">{expanded ? '▾' : '▸'}</span>
-        </button>
+      <div className={`bg-bg-base rounded-[--radius-md] border overflow-hidden ${selected ? 'border-primary' : 'border-border'}`}>
+        <div className="w-full flex items-center gap-3 p-3 hover:bg-bg-raised transition-colors">
+          {selectMode && (
+            <input
+              type="checkbox"
+              checked={selected ?? false}
+              onChange={onSelect}
+              className="rounded border-border accent-primary"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          <button
+            onClick={onToggle}
+            className="flex items-center gap-3 flex-1 text-left cursor-pointer min-w-0"
+          >
+            <span className="text-text-heading font-medium flex-1">{location.name}</span>
+            {location.type && <span className="text-[10px] text-text-muted bg-bg-raised px-1.5 py-0.5 rounded-[--radius-sm]">{location.type}</span>}
+            {children_.length > 0 && <span className="text-[10px] text-text-muted">{children_.length} sub</span>}
+            <span className="text-xs text-text-muted">{expanded ? '▾' : '▸'}</span>
+          </button>
+          {!selectMode && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => { e.stopPropagation(); generateLocationPDF(location, allLocations, 'themed') }}
+              title="Print location"
+            >
+              <GameIcon icon={GiQuillInk} size="sm" />
+            </Button>
+          )}
+        </div>
 
         {expanded && (
           <div className="border-t border-border p-3">

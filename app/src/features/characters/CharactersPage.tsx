@@ -11,6 +11,10 @@ import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { usePCs, useCreatePC, useNPCs, useCreateNPC, useDeleteNPC } from './useCharacters'
 import { PCSheet } from './PCSheet'
 import type { PlayerCharacter, NPC } from '@/lib/types'
+import { generateBundlePDF } from '@/lib/export/pdf/generate'
+import { usePrintSelectStore } from '@/lib/export/pdf/usePrintSelectStore'
+import { PrintSelectionBar } from '@/components/ui/PrintSelectionBar'
+import type { BundleItem } from '@/lib/export/pdf/BundlePDF'
 
 export function CharactersPage({ campaignId }: { campaignId: string }) {
   const [tab, setTab] = useState<'pcs' | 'npcs'>('pcs')
@@ -46,9 +50,27 @@ function PCList({ campaignId }: { campaignId: string }) {
   const createPC = useCreatePC()
   const [showForm, setShowForm] = useState(false)
 
+  const { active, selectedIds, toggle, enterSelectMode, exitSelectMode, theme } = usePrintSelectStore()
+
+  const handleBundlePrint = async () => {
+    if (!pcs) return
+    const items: BundleItem[] = pcs
+      .filter((pc) => selectedIds.has(pc.id))
+      .map((pc) => ({ type: 'character' as const, data: pc, spellNames: [], inventory: [] }))
+    exitSelectMode()
+    await generateBundlePDF(items, theme, 'characters')
+  }
+
   return (
     <div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-2 mb-4">
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={active ? exitSelectMode : () => enterSelectMode('character')}
+        >
+          {active ? 'Cancel' : 'Select'}
+        </Button>
         <Button size="sm" onClick={() => setShowForm(!showForm)} data-tutorial="create-character">
           {showForm ? 'Cancel' : '+ Add PC'}
         </Button>
@@ -83,10 +105,23 @@ function PCList({ campaignId }: { campaignId: string }) {
       <StaggerList className="space-y-4">
         {pcs?.map((pc) => (
           <StaggerItem key={pc.id}>
+            {active && (
+              <div className="flex items-center gap-3 mb-1 px-1">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(pc.id)}
+                  onChange={() => toggle(pc.id)}
+                  className="rounded border-border accent-primary"
+                />
+                <span className="text-sm text-text-secondary">{pc.name}</span>
+              </div>
+            )}
             <PCSheet pc={pc} campaignId={campaignId} />
           </StaggerItem>
         ))}
       </StaggerList>
+
+      <PrintSelectionBar onPrint={handleBundlePrint} />
     </div>
   )
 }

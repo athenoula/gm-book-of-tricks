@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
-import { GiSparkles } from '@/components/ui/icons'
+import { GiSparkles, GiQuillInk } from '@/components/ui/icons'
 import { Input } from '@/components/ui/Input'
 import { StaggerList, StaggerItem } from '@/components/motion'
 import { SPELL_SCHOOLS, SPELL_CLASSES } from '@/lib/types'
@@ -9,6 +9,10 @@ import type { Open5eSpell } from '@/lib/open5e'
 import { useCampaign } from '@/features/campaigns/useCampaigns'
 import { useCampaignSpells, useSearchSrdSpells, useSaveSpell, useBulkImportSpells, useDeleteSpell } from './useSpells'
 import type { Spell } from '@/lib/types'
+import { generateSpellPDF, generateBundlePDF } from '@/lib/export/pdf/generate'
+import { usePrintSelectStore } from '@/lib/export/pdf/usePrintSelectStore'
+import { PrintSelectionBar } from '@/components/ui/PrintSelectionBar'
+import type { BundleItem } from '@/lib/export/pdf/BundlePDF'
 
 export function SpellbookPage({ campaignId }: { campaignId: string }) {
   const [tab, setTab] = useState<'library' | 'search'>('library')
@@ -48,6 +52,8 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [importProgress, setImportProgress] = useState<string | null>(null)
 
+  const { active, selectedIds, toggle, enterSelectMode, exitSelectMode, theme } = usePrintSelectStore()
+
   const sourceBooks = [...new Set(spells?.map(s => s.source_book).filter(Boolean) ?? [])].sort()
 
   const filtered = spells?.filter((s) =>
@@ -65,6 +71,15 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
       },
     })
     setImportProgress(null)
+  }
+
+  const handleBundlePrint = async () => {
+    if (!spells) return
+    const items: BundleItem[] = spells
+      .filter((s) => selectedIds.has(s.id))
+      .map((s) => ({ type: 'spell' as const, data: s }))
+    exitSelectMode()
+    await generateBundlePDF(items, theme, 'spellbook')
   }
 
   const groupedByLevel = filtered?.reduce<Record<number, Spell[]>>((acc, spell) => {
@@ -93,6 +108,13 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
             <option key={sb} value={sb!}>{sb === 'Systems Reference Document' ? 'SRD' : sb}</option>
           ))}
         </select>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={active ? exitSelectMode : () => enterSelectMode('spell')}
+        >
+          {active ? 'Cancel' : 'Select'}
+        </Button>
         <Button
           size="sm"
           variant="secondary"
@@ -133,45 +155,74 @@ function SpellLibrary({ campaignId }: { campaignId: string }) {
                     expanded={expandedId === spell.id}
                     onToggle={() => setExpandedId(expandedId === spell.id ? null : spell.id)}
                     onDelete={() => deleteSpell.mutate({ id: spell.id, campaignId })}
+                    selectMode={active}
+                    selected={selectedIds.has(spell.id)}
+                    onSelect={() => toggle(spell.id)}
                   />
                 </StaggerItem>
               ))}
             </StaggerList>
           </div>
         ))}
+
+      <PrintSelectionBar onPrint={handleBundlePrint} />
     </div>
   )
 }
 
-function SpellCard({ spell, expanded, onToggle, onDelete }: {
+function SpellCard({ spell, expanded, onToggle, onDelete, selectMode, selected, onSelect }: {
   spell: Spell
   expanded: boolean
   onToggle: () => void
   onDelete: () => void
+  selectMode?: boolean
+  selected?: boolean
+  onSelect?: () => void
 }) {
   const data = spell.spell_data as Open5eSpell | null
 
   return (
-    <div className="bg-bg-base rounded-[--radius-md] border border-border overflow-hidden">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center gap-3 p-3 text-left hover:bg-bg-raised transition-colors cursor-pointer"
-      >
-        <span className="text-text-heading font-medium flex-1">{spell.name}</span>
-        {spell.source_book && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
-            {spell.source_book === 'Systems Reference Document' ? 'SRD' : spell.source_book}
-          </span>
+    <div className={`bg-bg-base rounded-[--radius-md] border overflow-hidden ${selected ? 'border-primary' : 'border-border'}`}>
+      <div className="w-full flex items-center gap-3 p-3 text-left hover:bg-bg-raised transition-colors">
+        {selectMode && (
+          <input
+            type="checkbox"
+            checked={selected ?? false}
+            onChange={onSelect}
+            className="rounded border-border accent-primary"
+            onClick={(e) => e.stopPropagation()}
+          />
         )}
-        <span className="text-xs text-text-muted">{spell.school}</span>
-        {spell.concentration && (
-          <span className="text-[10px] text-info bg-info/10 px-1.5 py-0.5 rounded-[--radius-sm]">C</span>
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-3 flex-1 text-left cursor-pointer min-w-0"
+        >
+          <span className="text-text-heading font-medium flex-1">{spell.name}</span>
+          {spell.source_book && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700/50 text-stone-400">
+              {spell.source_book === 'Systems Reference Document' ? 'SRD' : spell.source_book}
+            </span>
+          )}
+          <span className="text-xs text-text-muted">{spell.school}</span>
+          {spell.concentration && (
+            <span className="text-[10px] text-info bg-info/10 px-1.5 py-0.5 rounded-[--radius-sm]">C</span>
+          )}
+          {spell.ritual && (
+            <span className="text-[10px] text-accent bg-accent/10 px-1.5 py-0.5 rounded-[--radius-sm]">R</span>
+          )}
+          <span className="text-xs text-text-muted">{expanded ? '▾' : '▸'}</span>
+        </button>
+        {!selectMode && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => { e.stopPropagation(); generateSpellPDF(spell, 'themed') }}
+            title="Print spell"
+          >
+            <GameIcon icon={GiQuillInk} size="sm" />
+          </Button>
         )}
-        {spell.ritual && (
-          <span className="text-[10px] text-accent bg-accent/10 px-1.5 py-0.5 rounded-[--radius-sm]">R</span>
-        )}
-        <span className="text-xs text-text-muted">{expanded ? '▾' : '▸'}</span>
-      </button>
+      </div>
 
       {expanded && data && (
         <div className="px-3 pb-3 border-t border-border pt-3 space-y-2 text-sm">
