@@ -26,6 +26,7 @@ import { FeedbackWizardPage } from '@/features/feedback/FeedbackWizardPage'
 import { ReportPage } from '@/features/feedback/ReportPage'
 import { LandingPage } from '@/features/landing/LandingPage'
 import { FeaturePage } from '@/features/landing/FeaturePage'
+import { SettingsPage } from '@/features/settings/SettingsPage'
 
 // Root layout — wraps children in page transition
 function RootComponent() {
@@ -116,6 +117,19 @@ const reportRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/report',
   component: ReportPage,
+  beforeLoad: () => {
+    const { user, loading } = useAuth.getState()
+    if (!loading && !user) {
+      throw redirect({ to: '/login' })
+    }
+  },
+})
+
+// Protected: Settings
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  component: SettingsPage,
   beforeLoad: () => {
     const { user, loading } = useAuth.getState()
     if (!loading && !user) {
@@ -258,6 +272,7 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   feedbackRoute,
   reportRoute,
+  settingsRoute,
   campaignRoute.addChildren([
     campaignOverviewRoute,
     charactersRoute,
