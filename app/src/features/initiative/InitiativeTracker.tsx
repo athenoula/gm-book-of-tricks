@@ -8,6 +8,7 @@ import { useCombatants, useClearCombatants, useAddCombatant } from './useCombata
 import { useCombatState } from './useCombatState'
 import { useBattles, useSaveBattle, useDeleteBattle } from './useBattles'
 import { CombatantRow } from './CombatantRow'
+import { CombatantInfoPopover } from './CombatantInfoPopover'
 import { AddCombatantForm } from './AddCombatantForm'
 import { QuickAddPanel } from './QuickAddPanel'
 import { rollD20 } from '@/lib/dnd'
@@ -37,10 +38,14 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inl
   const [showLoad, setShowLoad] = useState(false)
   const [saveName, setSaveName] = useState('')
   const [saveType, setSaveType] = useState<'template' | 'save_state'>('template')
+  const [popoverCombatantId, setPopoverCombatantId] = useState<string | null>(null)
+  const [popoverAnchorRect, setPopoverAnchorRect] = useState<DOMRect | null>(null)
 
   const sorted = combatants
     ? [...combatants].sort((a, b) => b.initiative - a.initiative || a.name.localeCompare(b.name))
     : []
+
+  const popoverCombatant = popoverCombatantId ? sorted.find((c) => c.id === popoverCombatantId) : null
 
   // Auto-load battle when battleId is provided
   const loadedBattleRef = useRef<string | null>(null)
@@ -217,6 +222,10 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inl
                 combatant={combatant}
                 isActive={index === activeIndex}
                 inCombat={inCombat}
+                onShowInfo={(rect) => {
+                  setPopoverCombatantId(combatant.id)
+                  setPopoverAnchorRect(rect)
+                }}
               />
             ))}
           </AnimatePresence>
@@ -336,6 +345,19 @@ export function InitiativeTracker({ campaignId, sessionId, onSaveToTimeline, inl
             </div>
           )}
         </div>
+      )}
+      {/* Info Popover */}
+      {popoverCombatant && (
+        <CombatantInfoPopover
+          sourceType={popoverCombatant.source_type}
+          sourceSnapshot={popoverCombatant.source_snapshot}
+          combatantName={popoverCombatant.name}
+          combatantHp={popoverCombatant.hp_current}
+          combatantHpMax={popoverCombatant.hp_max}
+          combatantAc={popoverCombatant.armor_class}
+          anchorRect={popoverAnchorRect}
+          onClose={() => { setPopoverCombatantId(null); setPopoverAnchorRect(null) }}
+        />
       )}
     </div>
   )
