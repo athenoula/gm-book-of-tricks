@@ -29,6 +29,16 @@ Font.register({
       src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uUsoa5M_tv7IihmnkabC5XiXCAlXGks1WZKWp8OA.ttf',
       fontWeight: 700,
     },
+    {
+      src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uSsoa5M_tv7IihmnkabAReu49Y_Bo-HVKMBi4Ue5s.ttf',
+      fontWeight: 400,
+      fontStyle: 'italic',
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/crimsonpro/v28/q5uSsoa5M_tv7IihmnkabAReu49Y_Bo-HVKMBi6Kb5s.ttf',
+      fontWeight: 700,
+      fontStyle: 'italic',
+    },
   ],
 });
 
