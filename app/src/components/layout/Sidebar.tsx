@@ -6,7 +6,7 @@ import type { IconComponent } from '@/components/ui/icons'
 import {
   GiCrossedSwords, GiThreeFriends, GiSpikedDragonHead, GiSparkles,
   GiPositionMarker, GiRollingDices, GiNotebook, GiScrollUnfurled, GiCastle,
-  GiOpenBook, GiChatBubble, GiBugNet, GiSun, GiMoonBats, GiQuillInk,
+  GiOpenBook, GiChatBubble, GiBugNet, GiSun, GiMoonBats, GiQuillInk, GiCog,
 } from '@/components/ui/icons'
 import { useTheme } from '@/lib/theme'
 import { ChapterPicker } from '@/features/tutorial/ChapterPicker'
@@ -167,6 +167,22 @@ export function Sidebar({ campaignId }: { campaignId: string }) {
           <GameIcon icon={GiOpenBook} size="base" />
           {expanded && <span className="text-sm font-medium">Take the Tour</span>}
         </button>
+        <Link
+          to="/settings"
+          className={`
+            flex items-center gap-3 rounded-[--radius-md] min-h-[44px]
+            transition-colors duration-[--duration-fast]
+            ${expanded ? 'px-3' : 'justify-center'}
+            ${currentPath === '/settings'
+              ? 'bg-primary-ghost text-primary-light'
+              : 'text-text-muted hover:text-text-body hover:bg-bg-raised'
+            }
+          `}
+          title={expanded ? undefined : 'Settings'}
+        >
+          <GameIcon icon={GiCog} size="base" />
+          {expanded && <span className="text-sm font-medium">Settings</span>}
+        </Link>
         <Link
           to="/home"
           data-tutorial="all-campaigns"
