@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { CONDITIONS } from '@/lib/dnd'
 import type { TimelineBlock } from './useTimelineBlocks'
 import { useUpdateTimelineBlock } from './useTimelineBlocks'
+import { CombatantInfoPopover } from '@/features/initiative/CombatantInfoPopover'
 
 interface SnapshotCombatant {
   name: string
@@ -12,6 +13,7 @@ interface SnapshotCombatant {
   armor_class: number
   is_player: boolean
   conditions: string[]
+  source_snapshot?: Record<string, unknown>
 }
 
 interface Props {
@@ -34,6 +36,11 @@ export function InlineBattle({ block }: Props) {
   const [round, setRound] = useState(snapshot.round ?? 1)
   const [activeIndex, setActiveIndex] = useState(snapshot.active_index ?? 0)
   const [inCombat, setInCombat] = useState(snapshot.in_combat ?? false)
+
+  const [popoverIndex, setPopoverIndex] = useState<number | null>(null)
+  const [popoverAnchorRect, setPopoverAnchorRect] = useState<DOMRect | null>(null)
+
+  const popoverCombatant = popoverIndex !== null ? combatants[popoverIndex] : null
 
   // Persist state back to the timeline block
   const saveState = (
@@ -142,21 +149,40 @@ export function InlineBattle({ block }: Props) {
               hpPercent={hpPercent}
               onAdjustHp={(delta) => adjustHp(index, delta)}
               onToggleCondition={(cond) => toggleCondition(index, cond)}
+              onShowInfo={(rect) => {
+                setPopoverIndex(index)
+                setPopoverAnchorRect(rect)
+              }}
             />
           )
         })}
       </div>
+
+      {/* Info Popover */}
+      {popoverCombatant && (
+        <CombatantInfoPopover
+          sourceType={popoverCombatant.source_snapshot ? (popoverCombatant.source_snapshot.is_pc ? 'pc' : popoverCombatant.source_snapshot.stat_block ? 'monster' : 'npc') as 'pc' | 'npc' | 'monster' : null}
+          sourceSnapshot={popoverCombatant.source_snapshot ?? null}
+          combatantName={popoverCombatant.name}
+          combatantHp={popoverCombatant.hp_current}
+          combatantHpMax={popoverCombatant.hp_max}
+          combatantAc={popoverCombatant.armor_class}
+          anchorRect={popoverAnchorRect}
+          onClose={() => { setPopoverIndex(null); setPopoverAnchorRect(null) }}
+        />
+      )}
     </div>
   )
 }
 
-function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjustHp, onToggleCondition }: {
+function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjustHp, onToggleCondition, onShowInfo }: {
   combatant: SnapshotCombatant
   isActive: boolean
   isDowned: boolean
   hpPercent: number
   onAdjustHp: (delta: number) => void
   onToggleCondition: (cond: string) => void
+  onShowInfo?: (rect: DOMRect) => void
 }) {
   const [showConditions, setShowConditions] = useState(false)
 
@@ -174,9 +200,12 @@ function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjust
 
         {/* Name */}
         <div className="flex-1 min-w-0">
-          <span className={`text-sm font-medium truncate block ${isDowned ? 'line-through' : 'text-text-heading'}`}>
+          <button
+            onClick={(e) => onShowInfo?.((e.currentTarget as HTMLElement).getBoundingClientRect())}
+            className={`text-sm font-medium truncate block cursor-pointer hover:underline hover:decoration-amber-500/50 ${isDowned ? 'line-through' : 'text-text-heading'}`}
+          >
             {combatant.name}
-          </span>
+          </button>
           {combatant.conditions.length > 0 && (
             <div className="flex flex-wrap gap-0.5 mt-0.5">
               {combatant.conditions.map((cond) => {
