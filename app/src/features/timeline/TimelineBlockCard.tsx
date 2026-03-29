@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/Button'
 import { GameIcon } from '@/components/ui/GameIcon'
 import type { IconComponent } from '@/components/ui/icons'
@@ -187,16 +188,26 @@ export function TimelineBlockCard({ block, dragHandleProps, onPin, isPinned, isE
       )}
 
       {/* Content: expanded full view */}
-      {isExpanded && !block.is_collapsed && (
-        <div className="px-4 py-3">
-          {block.block_type === 'monster' && <MonsterFullView data={snapshot} />}
-          {block.block_type === 'npc' && <NPCFullView data={snapshot} />}
-          {block.block_type === 'spell' && <SpellFullView data={snapshot} />}
-          {block.block_type === 'location' && <LocationFullView data={snapshot} />}
-          {block.block_type === 'handout' && <HandoutFullView data={snapshot} />}
-          {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
-        </div>
-      )}
+      <AnimatePresence>
+        {isExpanded && !block.is_collapsed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 py-3">
+              {block.block_type === 'monster' && <MonsterFullView data={snapshot} />}
+              {block.block_type === 'npc' && <NPCFullView data={snapshot} />}
+              {block.block_type === 'spell' && <SpellFullView data={snapshot} />}
+              {block.block_type === 'location' && <LocationFullView data={snapshot} />}
+              {block.block_type === 'handout' && <HandoutFullView data={snapshot} />}
+              {block.block_type === 'battle' && !editingBattle && <InlineBattle block={block} />}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Inline Initiative Tracker for editing battles */}
       {editingBattle && block.block_type === 'battle' && (
