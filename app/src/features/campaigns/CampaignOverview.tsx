@@ -6,6 +6,7 @@ import { GiRollingDices } from '@/components/ui/icons'
 import { GAME_SYSTEMS } from '@/lib/types'
 import { SessionList } from '@/features/sessions/SessionList'
 import { CreateSessionDialog } from '@/features/sessions/CreateSessionDialog'
+import { exportCampaignWithToasts } from '@/lib/export/campaign-exporter'
 
 import { OrnamentalDivider } from '@/components/ui/OrnamentalDivider'
 import { CampaignFiles } from './CampaignFiles'
@@ -33,9 +34,18 @@ export function CampaignOverview({ campaignId }: { campaignId: string }) {
       <div className="mb-8">
         <div className="flex items-start justify-between gap-4 mb-2">
           <h2 className="text-2xl gold-foil">{campaign.name}</h2>
-          <span className="text-xs text-text-muted bg-bg-raised px-2.5 py-1 rounded-[--radius-sm] border border-border whitespace-nowrap mt-1">
-            {system?.label ?? campaign.game_system}
-          </span>
+          <div className="flex items-center gap-2 mt-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => exportCampaignWithToasts(campaign.id, campaign.name)}
+            >
+              Export
+            </Button>
+            <span className="text-xs text-text-muted bg-bg-raised px-2.5 py-1 rounded-[--radius-sm] border border-border whitespace-nowrap">
+              {system?.label ?? campaign.game_system}
+            </span>
+          </div>
         </div>
         {campaign.description && (
           <p className="text-text-secondary">{campaign.description}</p>
