@@ -13,6 +13,8 @@ interface Props {
 
 export function CombatantRow({ combatant, isActive, inCombat, onShowInfo }: Props) {
   const [showConditions, setShowConditions] = useState(false)
+  const [editingInit, setEditingInit] = useState(false)
+  const [editInitValue, setEditInitValue] = useState('')
   const updateCombatant = useUpdateCombatant()
   const removeCombatant = useRemoveCombatant()
 
@@ -56,12 +58,37 @@ export function CombatantRow({ combatant, isActive, inCombat, onShowInfo }: Prop
     >
       <div className="flex items-center gap-3">
         {/* Initiative badge */}
-        <div className={`
-          w-10 h-10 rounded-[--radius-sm] flex items-center justify-center text-sm font-mono font-semibold flex-shrink-0
-          ${combatant.is_player ? 'bg-info/15 text-info' : 'bg-danger/15 text-danger'}
-        `}>
-          {combatant.initiative}
-        </div>
+        {editingInit ? (
+          <input
+            type="number"
+            value={editInitValue}
+            onChange={(e) => setEditInitValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const num = parseInt(editInitValue, 10)
+                if (!isNaN(num)) {
+                  updateCombatant.mutate({ id: combatant.id, initiative: num })
+                }
+                setEditingInit(false)
+              }
+              if (e.key === 'Escape') setEditingInit(false)
+            }}
+            onBlur={() => setEditingInit(false)}
+            autoFocus
+            className={`w-10 h-10 rounded-[--radius-sm] text-center text-sm font-mono font-semibold flex-shrink-0 outline-none border border-primary bg-bg-base text-text-heading`}
+          />
+        ) : (
+          <button
+            onClick={() => { setEditInitValue(String(combatant.initiative)); setEditingInit(true) }}
+            className={`
+              w-10 h-10 rounded-[--radius-sm] flex items-center justify-center text-sm font-mono font-semibold flex-shrink-0 cursor-pointer hover:ring-1 hover:ring-amber-500/50 transition-all
+              ${combatant.is_player ? 'bg-info/15 text-info' : 'bg-danger/15 text-danger'}
+            `}
+            title="Click to edit initiative"
+          >
+            {combatant.initiative}
+          </button>
+        )}
 
         {/* Name + conditions */}
         <div className="flex-1 min-w-0">

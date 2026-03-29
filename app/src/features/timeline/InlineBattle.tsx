@@ -114,6 +114,13 @@ export function InlineBattle({ block }: Props) {
     saveState(updated, round, activeIndex, inCombat)
   }
 
+  const editInitiative = (index: number, newInit: number) => {
+    const updated = combatants.map((c, i) => i === index ? { ...c, initiative: newInit } : c)
+      .sort((a, b) => b.initiative - a.initiative)
+    setCombatants(updated)
+    saveState(updated, round, activeIndex, inCombat)
+  }
+
   if (combatants.length === 0) {
     return <p className="text-xs text-text-muted italic">No combatants in this encounter.</p>
   }
@@ -153,6 +160,7 @@ export function InlineBattle({ block }: Props) {
                 setPopoverIndex(index)
                 setPopoverAnchorRect(rect)
               }}
+              onEditInitiative={(newInit) => editInitiative(index, newInit)}
             />
           )
         })}
@@ -175,7 +183,7 @@ export function InlineBattle({ block }: Props) {
   )
 }
 
-function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjustHp, onToggleCondition, onShowInfo }: {
+function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjustHp, onToggleCondition, onShowInfo, onEditInitiative }: {
   combatant: SnapshotCombatant
   isActive: boolean
   isDowned: boolean
@@ -183,8 +191,11 @@ function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjust
   onAdjustHp: (delta: number) => void
   onToggleCondition: (cond: string) => void
   onShowInfo?: (rect: DOMRect) => void
+  onEditInitiative?: (newInit: number) => void
 }) {
   const [showConditions, setShowConditions] = useState(false)
+  const [editingInit, setEditingInit] = useState(false)
+  const [editInitValue, setEditInitValue] = useState('')
 
   return (
     <div className={`rounded-[--radius-md] border p-2.5 transition-colors ${
@@ -192,11 +203,34 @@ function CombatantInlineRow({ combatant, isActive, isDowned, hpPercent, onAdjust
     } ${isDowned ? 'opacity-50' : ''}`}>
       <div className="flex items-center gap-2">
         {/* Initiative */}
-        <div className={`w-8 h-8 rounded-[--radius-sm] flex items-center justify-center text-xs font-mono font-semibold flex-shrink-0 ${
-          combatant.is_player ? 'bg-info/15 text-info' : 'bg-danger/15 text-danger'
-        }`}>
-          {combatant.initiative}
-        </div>
+        {editingInit ? (
+          <input
+            type="number"
+            value={editInitValue}
+            onChange={(e) => setEditInitValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const num = parseInt(editInitValue, 10)
+                if (!isNaN(num)) onEditInitiative?.(num)
+                setEditingInit(false)
+              }
+              if (e.key === 'Escape') setEditingInit(false)
+            }}
+            onBlur={() => setEditingInit(false)}
+            autoFocus
+            className="w-8 h-8 rounded-[--radius-sm] text-center text-xs font-mono font-semibold flex-shrink-0 outline-none border border-primary bg-bg-base text-text-heading"
+          />
+        ) : (
+          <button
+            onClick={() => { setEditInitValue(String(combatant.initiative)); setEditingInit(true) }}
+            className={`w-8 h-8 rounded-[--radius-sm] flex items-center justify-center text-xs font-mono font-semibold flex-shrink-0 cursor-pointer hover:ring-1 hover:ring-amber-500/50 transition-all ${
+              combatant.is_player ? 'bg-info/15 text-info' : 'bg-danger/15 text-danger'
+            }`}
+            title="Click to edit initiative"
+          >
+            {combatant.initiative}
+          </button>
+        )}
 
         {/* Name */}
         <div className="flex-1 min-w-0">
