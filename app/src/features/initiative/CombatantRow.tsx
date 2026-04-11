@@ -73,7 +73,13 @@ export function CombatantRow({ combatant, isActive, inCombat, onShowInfo }: Prop
               }
               if (e.key === 'Escape') setEditingInit(false)
             }}
-            onBlur={() => setEditingInit(false)}
+            onBlur={() => {
+              const num = parseInt(editInitValue, 10)
+              if (!isNaN(num) && num !== combatant.initiative) {
+                updateCombatant.mutate({ id: combatant.id, initiative: num })
+              }
+              setEditingInit(false)
+            }}
             autoFocus
             className={`w-10 h-10 rounded-[--radius-sm] text-center text-sm font-mono font-semibold flex-shrink-0 outline-none border border-primary bg-bg-base text-text-heading`}
           />
