@@ -110,9 +110,15 @@ export function SceneBlock({ scene, dragHandleProps, onPin, isPinned, index }: P
             onKeyDown={(e) => e.key === 'Enter' && handleSave()}
           />
         ) : (
-          <span className={`flex-1 text-sm font-medium ${status.className}`}>
-            {scene.name}
-          </span>
+          <button
+            onClick={() => {
+              updateScene.mutate({ id: scene.id, is_collapsed: !scene.is_collapsed })
+            }}
+            className={`flex items-center gap-1 flex-1 text-left cursor-pointer min-w-0 ${status.className}`}
+          >
+            <span className="text-sm font-medium truncate">{scene.name}</span>
+            <span className="text-xs text-text-muted">{scene.is_collapsed ? '▸' : '▾'}</span>
+          </button>
         )}
 
         <div className="flex items-center gap-1">
@@ -144,13 +150,15 @@ export function SceneBlock({ scene, dragHandleProps, onPin, isPinned, index }: P
       </div>
 
       {/* Scene content */}
-      <div className="px-4 py-3">
-        <SceneEditor
-          content={editing ? editContent : displayContent}
-          editable={editing}
-          onChange={handleContentChange}
-        />
-      </div>
+      {(!scene.is_collapsed || editing) && (
+        <div className="px-4 py-3">
+          <SceneEditor
+            content={editing ? editContent : displayContent}
+            editable={editing}
+            onChange={handleContentChange}
+          />
+        </div>
+      )}
     </div>
   )
 }
