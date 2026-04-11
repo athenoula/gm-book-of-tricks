@@ -10,6 +10,7 @@ export type Scene = {
   content: string
   sort_order: number
   status: 'upcoming' | 'active' | 'done'
+  is_collapsed: boolean
   created_at: string
   updated_at: string
 }
@@ -56,7 +57,7 @@ export function useUpdateScene() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, ...input }: { id: string; name?: string; content?: string; status?: Scene['status']; sort_order?: number }) => {
+    mutationFn: async ({ id, ...input }: { id: string; name?: string; content?: string; status?: Scene['status']; sort_order?: number; is_collapsed?: boolean }) => {
       const { data, error } = await supabase
         .from('scenes')
         .update(input)

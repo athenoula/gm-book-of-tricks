@@ -10,6 +10,7 @@ export type TimelineBlock = {
   campaign_id: string
   block_type: BlockType
   source_id: string | null
+  group_id: string | null
   title: string
   content_snapshot: Record<string, unknown>
   sort_order: number
@@ -127,6 +128,42 @@ export function useReorderTimelineBlocks() {
       await Promise.all(
         blocks.map((b) =>
           supabase.from('timeline_blocks').update({ sort_order: b.sort_order }).eq('id', b.id)
+        )
+      )
+      return { sessionId }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['timeline-blocks', data.sessionId] })
+    },
+  })
+}
+
+export function useAssignToGroup() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ blockIds, groupId, sessionId }: { blockIds: string[]; groupId: string; sessionId: string }) => {
+      await Promise.all(
+        blockIds.map((id, i) =>
+          supabase.from('timeline_blocks').update({ group_id: groupId, sort_order: i }).eq('id', id)
+        )
+      )
+      return { sessionId }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['timeline-blocks', data.sessionId] })
+    },
+  })
+}
+
+export function useUnassignFromGroup() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ blockIds, sessionId, baseSortOrder }: { blockIds: string[]; sessionId: string; baseSortOrder: number }) => {
+      await Promise.all(
+        blockIds.map((id, i) =>
+          supabase.from('timeline_blocks').update({ group_id: null, sort_order: baseSortOrder + i }).eq('id', id)
         )
       )
       return { sessionId }
